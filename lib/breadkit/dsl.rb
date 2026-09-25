@@ -7,9 +7,10 @@ module Breadkit
     class Builder
       attr_reader :document
 
-      def initialize
+      def initialize(base_dir: Dir.pwd)
         @document = Document.new
         @expected = nil
+        @base_dir = base_dir
       end
 
       def title(value)
@@ -21,11 +22,11 @@ module Breadkit
       end
 
       def use_parts(path)
-        document.part_paths.concat(Dir.glob(path.to_s))
+        document.part_paths.concat(Dir.glob(resolve_path(path)))
       end
 
       def use_boards(path)
-        document.board_paths.concat(Dir.glob(path.to_s))
+        document.board_paths.concat(Dir.glob(resolve_path(path)))
       end
 
       def supply(name, voltage:, plus:, minus:)
@@ -114,7 +115,7 @@ module Breadkit
         document.lint_disables << { rule: rule_id.to_s, on: on&.to_s, reason: reason, location: source_location }
       end
 
-      def method_missing(name, *args, **kwargs, &block)
+      def method_missing(name, *_args, **_kwargs, &_block)
         suggestions = DidYouMean::SpellChecker.new(dictionary: METHODS).correct(name.to_s)
         hint = suggestions.empty? ? "" : "; did you mean #{suggestions.first.inspect}?"
         raise DSLError, "unknown DSL method #{name}#{hint}"
@@ -130,11 +131,17 @@ module Breadkit
         loc = caller_locations(2, 12).find { |item| item.path && !item.path.end_with?("/dsl.rb") }
         SourceLocation.new(path: loc&.path, line: loc&.lineno)
       end
+
+      def resolve_path(path)
+        value = path.to_s
+        File.expand_path(value, @base_dir)
+      end
     end
 
     def self.load_file(path)
-      builder = Builder.new
-      builder.instance_eval(File.read(path), File.expand_path(path), 1)
+      absolute = File.expand_path(path)
+      builder = Builder.new(base_dir: File.dirname(absolute))
+      builder.instance_eval(File.read(absolute), absolute, 1)
       builder.document
     rescue DSLError
       raise

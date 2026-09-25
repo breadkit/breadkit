@@ -44,6 +44,7 @@ module Breadkit
       switches = components.values.select { |component| !Array(component.part.data["switch"]).empty? }
       pairs = switches.flat_map { |component| Array(component.part.data["switch"]).map { |pair| [component, pair] } }
       return [State.new(name: nil, closed_switches: [])] if mode.to_s == "none" || pairs.empty?
+      # ponytail: exhaustive state generation stops at 8 switches; use a configurable search budget for larger circuits.
       if mode.to_s == "all" && switches.length <= 8
         (0...(1 << switches.length)).map do |bits|
           closed = []
@@ -83,11 +84,45 @@ module Breadkit
     end
 
     def shortest_path(terminal_a, terminal_b, state = nil)
-      a = node_for_reference(terminal_a.to_s)
-      b = node_for_reference(terminal_b.to_s)
-      return [] unless a && b
-      network = nets(state).find { |item| item.members.include?(terminal_a.to_s) && item.members.include?(terminal_b.to_s) }
-      network ? network.holes + network.members.grep(/\AW\d+\z/) : [terminal_a.to_s, terminal_b.to_s]
+      start, finish = hole_for_reference(terminal_a.to_s), hole_for_reference(terminal_b.to_s)
+      return [] unless start && finish
+      adjacency = Hash.new { |hash, key| hash[key] = [] }
+      board.strips.each_value do |ids|
+        # ponytail: each strip is a small clique; use virtual strip nodes if custom boards make this quadratic cost large.
+        ids.combination(2) { |left, right| adjacency[left] << [right, nil]; adjacency[right] << [left, nil] }
+      end
+      wires.each do |wire|
+        left, right = hole_for_reference(wire.from), hole_for_reference(wire.to)
+        next unless left && right
+        adjacency[left] << [right, wire.id]
+        adjacency[right] << [left, wire.id]
+      end
+      components.each_value do |component|
+        Array(component.part.data["internal"]).each do |pair|
+          join_physical_pins(adjacency, component, pair)
+        end
+      end
+      (state || State.new(name: nil, closed_switches: [])).closed_switches.each do |component, pair|
+        join_physical_pins(adjacency, component, pair)
+      end
+      previous, queue = { start => nil }, [start]
+      until queue.empty? || previous.key?(finish)
+        current = queue.shift
+        adjacency[current].each do |neighbor, edge|
+          next if previous.key?(neighbor)
+          previous[neighbor] = [current, edge]
+          queue << neighbor
+        end
+      end
+      return [terminal_a.to_s, terminal_b.to_s] unless previous.key?(finish)
+      path, current = [], finish
+      while (entry = previous[current])
+        parent, edge = entry
+        path << current
+        path << edge if edge
+        current = parent
+      end
+      (path << start).reverse
     end
 
     def node_for_reference(reference)
@@ -107,6 +142,29 @@ module Breadkit
     end
 
     private
+
+    def hole_for_reference(reference)
+      if reference.include?(".")
+        prefix, pin = reference.split(".", 2)
+        supply = supplies.find { |item| item.name == prefix }
+        return supply.plus if supply && pin == "+"
+        return supply.minus if supply && pin == "-"
+        component = components[prefix]
+        target = component && component.pins.values.find { |item| item.name == pin || item.number == pin }
+        return target&.hole_id
+      end
+      board.hole(reference)&.id
+    rescue ArgumentError
+      nil
+    end
+
+    def join_physical_pins(adjacency, component, pair)
+      left = component.pins.values.find { |pin| pin.number == pair[0].to_s || pin.name == pair[0].to_s }
+      right = component.pins.values.find { |pin| pin.number == pair[1].to_s || pin.name == pair[1].to_s }
+      return unless left&.hole_id && right&.hole_id
+      adjacency[left.hole_id] << [right.hole_id, component.ref]
+      adjacency[right.hole_id] << [left.hole_id, component.ref]
+    end
 
     def state_key(state)
       state.closed_switches.map { |component, pair| [component.ref, pair] }.sort_by(&:to_s)
@@ -248,7 +306,6 @@ module Breadkit
     end
 
     def solve(state)
-      nets = circuit.nets(state)
       edges = circuit.supplies.map do |supply|
         [supply, circuit.net_of("#{supply.name}.-", state), circuit.net_of("#{supply.name}.+", state)]
       end

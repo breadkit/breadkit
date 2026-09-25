@@ -1,0 +1,11 @@
+AllCops:
+  NewCops: disable
+  DisabledByDefault: true
+  TargetRubyVersion: 3.3
+  SuggestExtensions: false
+
+Lint:
+  Enabled: true
+
+Lint/StructNewOverride:
+  Enabled: false

@@ -6,6 +6,10 @@ module Breadkit
 
     def initialize(data)
       @data = data
+      terminal = data["terminal"] || {}
+      unless data["id"] && terminal["columns"].to_i.positive? && terminal["rows"].is_a?(Array) && terminal["groups"].is_a?(Array)
+        raise ArgumentError, "invalid board definition: #{data['id'] || '(missing id)'}"
+      end
     end
 
     def id

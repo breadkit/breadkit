@@ -10,11 +10,18 @@ module Breadkit
       when "ir", "nets"
         path = argv.shift
         raise ArgumentError, "usage: breadkit #{command} FILE" unless path
+        state_name = nil
+        if command == "nets"
+          OptionParser.new { |opts| opts.on("--state SWITCH") { |value| state_name = value } }.parse!(argv)
+          raise ArgumentError, "unexpected arguments: #{argv.join(' ')}" unless argv.empty?
+        end
         circuit = Breadkit.load(path)
         if command == "ir"
           puts JSON.pretty_generate(circuit.to_ir)
         else
-          circuit.nets.each { |net| puts "#{net.name}: #{net.members.join(', ')}" }
+          state = circuit.states.find { |item| item.name == state_name } if state_name
+          raise ArgumentError, "unknown switch state #{state_name}" if state_name && !state
+          circuit.nets(state).each { |net| puts "#{net.name}: #{net.members.join(', ')}" }
         end
         circuit.diagnostics.empty? ? 0 : 1
       when "parts"
