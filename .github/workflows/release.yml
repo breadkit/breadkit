@@ -22,31 +22,12 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "4.0"
-          bundler-cache: false
-      - name: Verify tag and gem versions
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          test "$(cat VERSION)" = "$version"
-          ruby -rrubygems -e '
-            version, *names = ARGV
-            major, minor = version.split(".")
-            constraint = major == "0" ? "~> 0.#{minor}.0" : "~> #{major}.#{minor}"
-            names.each do |name|
-              spec = Gem::Specification.load("#{name}/#{name}.gemspec")
-              abort "#{name} version mismatch" unless spec&.version&.to_s == version
-              next if name == "breadkit"
-              dependency = spec.runtime_dependencies.find { |item| item.name == "breadkit" }
-              abort "#{name} has an incompatible core dependency" unless dependency&.requirement&.to_s == constraint
-            end
-          ' "$version" breadkit breadkit-render breadkit-lint
+      - name: Verify tag matches gem version
+        run: test "v$(ruby -e 'require_relative "lib/breadkit/version"; print Breadkit::VERSION')" = "$GITHUB_REF_NAME"
       - name: Configure RubyGems Trusted Publishing
         uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
-      - name: Build and push gems
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          for gem in breadkit breadkit-render breadkit-lint; do
-            (cd "$gem" && gem build "$gem.gemspec" && gem push "$gem-$version.gem")
-          done
+      - name: Build and push breadkit
+        run: gem build breadkit.gemspec && gem push "breadkit-${GITHUB_REF_NAME#v}.gem"
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}

@@ -91,18 +91,18 @@ command -v bkrender bklint breadkit   # 手元で既存コマンドと衝突し�
 - RubyGems.org は既存 gem と紛らわしい名前（タイポスクワッティング対策）の公開を拒否することがあります。拒否された場合は名前を変更し、設計書・名前空間・コマンド名を一括で置換します。
 - 名前を変える可能性があるうちは、名前空間（`Breadkit`）を書き散らさず定数にまとめておくと置換が楽です。
 
-**完了条件**：3つの gem 名がすべて 404（未使用）であることを確認し、名前を確定した。
+**完了条件**：3つの gem 名がすべて 404 であり、GitHub の各リポジトリ名も確保できることを確認した。
 
 ### 0-3. RubyGems.org と GitHub の準備
 
 **作業**
 
 1. RubyGems.org でアカウントを作成し、MFA（多要素認証）を「UI と API」の両方に対して有効化する。
-2. 手元で `gem signin` を実行し、API キーを取得する（初回公開は手動で行うため）。
-3. GitHub にリポジトリ `YOUR_NAME/breadkit` を作成する（公開、README なし）。
-4. `main` ブランチの保護を設定する（PR 必須、CI 成功必須）。
+2. 手元で gem signin を実行し、初回公開に使う API キーを取得する。
+3. GitHub 組織 breadkit に、公開リポジトリ breadkit、breadkit-render、breadkit-lint をそれぞれ作成する（README なし）。
+4. 各リポジトリで main を既定ブランチにし、CI を有効にする。オーナーは main に直接 push できる。
 
-**完了条件**：`gem signin` が成功し、GitHub に空のリポジトリがある。
+**完了条件**：3つの公開リポジトリがあり、各 main に個別の履歴を持たせられる。
 
 ### 0-4. 事前に決めておくこと
 
@@ -119,236 +119,73 @@ command -v bkrender bklint breadkit   # 手元で既存コマンドと衝突し�
 
 ## 3. Phase 1：リポジトリ雛形と CI
 
-### 1-1. 3 gem の雛形を作る
+### 1-1. 3つの gem を別々のリポジトリで管理する
 
 **作業**
 
-```sh
-git clone git@github.com:YOUR_NAME/breadkit.git
-cd breadkit
+GitHub に breadkit、breadkit-render、breadkit-lint のリポジトリを用意し、各ディレクトリをそれぞれのリポジトリのルートにする。各ディレクトリは bundle gem で個別に生成し、個別の .git と main を持たせる。モノレポ化や --no-git は使わない。
 
-# モノレポ内に 3 つの gem を生成（入れ子の git リポジトリを作らないよう --no-git）
-for g in breadkit breadkit-render breadkit-lint; do
-  bundle gem "$g" --no-git --no-exe --no-ci --test=rspec --linter=rubocop --mit --changelog --no-coc
-done
+開発時は3つを同じ親ディレクトリに clone する。
 
-# LICENSE.txt は各 gem のパッケージに含める必要があるため各ディレクトリに残し、ルートにも置く
-cp breadkit/LICENSE.txt ./LICENSE.txt
-# CHANGELOG はルートの1ファイルに集約する（gem ごとの節に分けて書く）
-rm breadkit/CHANGELOG.md breadkit-render/CHANGELOG.md breadkit-lint/CHANGELOG.md
-touch CHANGELOG.md
-echo "0.1.0" > VERSION
+```text
+projects/
+├── breadkit/
+├── breadkit-render/
+└── breadkit-lint/
 ```
 
-`bundle gem breadkit-render` は `Breadkit::Render` 名前空間（`lib/breadkit/render.rb`、`lib/breadkit/render/version.rb`）を生成します。実行ファイルは名前が gem 名と異なるため手で作ります。
+レンダラーとリンターの開発用 Gemfile は隣にある breadkit を path 依存として参照する。実行時の依存は gemspec に通常の gem バージョン範囲として宣言する。
 
-```sh
-mkdir -p breadkit/exe breadkit-render/exe breadkit-lint/exe
-touch breadkit/exe/breadkit breadkit-render/exe/bkrender breadkit-lint/exe/bklint
-chmod +x breadkit/exe/breadkit breadkit-render/exe/bkrender breadkit-lint/exe/bklint
-```
+**完了条件**：各ディレクトリが対応する GitHub リポジトリの main を追跡し、それぞれ単独で gem build できる。
+
+### 1-2. gemspec と Gemfile を整える
+
+各 gemspec の homepage、source_code_uri、changelog_uri、bug_tracker_uri、documentation_uri は、その gem の GitHub リポジトリを指す。breadkit-render と breadkit-lint は breadkit を実行時依存に含め、対応できるコアの範囲をバージョン制約で表す。
+
+レンダラーとリンターの Gemfile には開発時だけ次を指定する。
 
 ```ruby
-#!/usr/bin/env ruby
-# breadkit-render/exe/bkrender
-require "breadkit/render"
-exit Breadkit::Render::CLI.new.run(ARGV)
-```
-
-**完了条件**：設計書 [2.4](./DESIGN.md#24-リポジトリ構成モノレポ) のディレクトリ構成になっている。
-
-### 1-2. gemspec を整える
-
-**作業**：3つの gemspec を次の方針で編集します（例は `breadkit-render`）。
-
-```ruby
-# breadkit-render/breadkit-render.gemspec
-require_relative "lib/breadkit/render/version"
-
-Gem::Specification.new do |spec|
-  spec.name        = "breadkit-render"
-  spec.version     = Breadkit::Render::VERSION
-  spec.authors     = ["Your Name"]
-  spec.email       = ["you@example.com"]
-  spec.summary     = "Render breadboard wiring written in the Breadkit DSL to SVG / PNG / JPEG."
-  spec.description = "bkrender turns a Breadkit DSL file into a breadboard wiring diagram."
-  spec.homepage    = "https://github.com/YOUR_NAME/breadkit"
-  spec.license     = "MIT"
-  spec.required_ruby_version = ">= 3.3"
-
-  spec.metadata = {
-    "homepage_uri"          => spec.homepage,
-    "source_code_uri"       => "#{spec.homepage}/tree/main/breadkit-render",
-    "changelog_uri"         => "#{spec.homepage}/blob/main/CHANGELOG.md",
-    "bug_tracker_uri"       => "#{spec.homepage}/issues",
-    "documentation_uri"     => "#{spec.homepage}/tree/main/docs",
-    "rubygems_mfa_required" => "true"
-  }
-
-  spec.files = Dir.chdir(__dir__) do
-    `git ls-files -z`.split("\x0").reject { |f| f.start_with?("spec/", "bin/", ".") }
-  end
-  spec.bindir        = "exe"
-  spec.executables   = ["bkrender"]
-  spec.require_paths = ["lib"]
-
-  spec.add_dependency "breadkit", "~> 0.1.0"
-end
-```
-
-| gem | executables | 追加で files に含まれるべきもの | add_dependency |
-|---|---|---|---|
-| `breadkit` | `breadkit` | `data/boards/*.yml`、`data/parts/*.yml`、`schema/ir-v1.json`、`locales/*.yml` | なし |
-| `breadkit-render` | `bkrender` | `locales/*.yml` | `breadkit ~> 0.1.0` |
-| `breadkit-lint` | `bklint` | `config/default.yml`、`locales/*.yml` | `breadkit ~> 0.1.0` |
-
-`git ls-files` はコミット（またはステージ）済みのファイルしか列挙しません。YAML などのデータファイルを追加したら必ずコミットしてください（リリース前に [6-3](#6-3-パッケージの中身を確認する) で確認します）。
-
-**完了条件**：各 gem ディレクトリで `gem build *.gemspec` が警告なしで成功する。
-
-### 1-3. 開発用 Gemfile とルートの Rakefile
-
-**作業**：レンダラーとリンターは、開発中はローカルのコアを参照します。
-
-```ruby
-# breadkit-render/Gemfile（breadkit-lint も同様）
-source "https://rubygems.org"
-gemspec
-
 gem "breadkit", path: "../breadkit"
-
-group :development, :test do
-  gem "rake"
-  gem "rspec"
-  gem "rubocop", require: false
-  gem "simplecov", require: false
-  gem "ruby-vips", require: false   # breadkit-render のみ。任意バックエンドの検証用
-end
 ```
 
-```ruby
-# Gemfile（ルート）
-source "https://rubygems.org"
-gem "rake"
+この前提で3つを同じ親ディレクトリに clone する。GitHub Actions もコアを breadkit、対象 gem を breadkit-render または breadkit-lint として兄弟ディレクトリに checkout してからテストする。
+
+gemspec の files は git ls-files を使うため、配布するデータ、ロケール、ルール文書は各リポジトリで追跡対象にする。spec、coverage、pkg など開発生成物は gem に含めない。
+
+**完了条件**：各リポジトリで gem build が成功し、gem specification で必要なファイルと依存範囲を確認できる。
+
+### 1-3. テストとビルド
+
+ルート横断 Rakefile は作らない。各リポジトリで個別に Bundler を実行する。
+
+```sh
+cd breadkit
+bundle install
+bundle exec rake
+gem build breadkit.gemspec
+
+cd ../breadkit-render
+bundle install
+bundle exec rake
+gem build breadkit-render.gemspec
+
+cd ../breadkit-lint
+bundle install
+bundle exec rake
+gem build breadkit-lint.gemspec
 ```
 
-```ruby
-# Rakefile（ルート）
-GEMS = %w[breadkit breadkit-render breadkit-lint].freeze
+breadkit-render と breadkit-lint のローカルテストは隣の breadkit checkout を使う。クリーンな利用環境では gemspec のバージョン制約に従い RubyGems から core を解決する。
 
-def each_gem(task)
-  GEMS.each do |g|
-    Dir.chdir(g) { Bundler.with_unbundled_env { sh "bundle exec rake #{task}" } }
-  end
-end
+**完了条件**：3リポジトリそれぞれで RSpec、RuboCop、gem build が成功する。
 
-desc "全 gem のテスト"
-task(:spec) { each_gem("spec") }
-desc "全 gem の静的解析"
-task(:rubocop) { each_gem("rubocop") }
-desc "全 gem をビルド（各 gem の pkg/ に出力）"
-task(:build) { each_gem("build") }
-task default: %i[rubocop spec]
+### 1-4. リポジトリごとに CI を設定する
 
-desc "全 gem のバージョンと相互依存を更新（例: rake bump[0.2.0]）"
-task :bump, [:version] do |_, args|
-  version = args.fetch(:version)
-  major, minor, = version.split(".")
-  constraint = major == "0" ? "~> 0.#{minor}.0" : "~> #{major}.#{minor}"
+各リポジトリの ci.yml は、その gem の RSpec・RuboCop・gem build を実行する。Ruby 3.3、3.4、4.0 を検証する。breadkit-render ではラスタ変換が必要なジョブに librsvg、libvips、日本語フォントを入れる。
 
-  File.write("VERSION", "#{version}\n")
-  Dir["*/lib/**/version.rb"].each do |f|
-    File.write(f, File.read(f).sub(/VERSION = ".*?"/, %(VERSION = "#{version}")))
-  end
-  %w[breadkit-render breadkit-lint].each do |g|
-    path = "#{g}/#{g}.gemspec"
-    File.write(path, File.read(path).sub(/add_dependency "breadkit", ".*?"/,
-                                         %(add_dependency "breadkit", "#{constraint}")))
-  end
-  puts "bumped to #{version} (breadkit #{constraint})"
-end
-```
+レンダラーとリンターの CI は breadkit を兄弟ディレクトリに checkout し、共通例題も検査する。リンターは有効例が無警告であることと、examples/bad の期待ルールが検出されることを確認する。レンダラーは有効例を画像に変換する。
 
-**完了条件**：ルートで `bundle install && bundle exec rake` が成功する（中身が空のテストで可）。
-
-### 1-4. CI を設定する
-
-**作業**：`.github/workflows/ci.yml` を作成します。
-
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-
-jobs:
-  test:
-    name: ${{ matrix.gem }} / Ruby ${{ matrix.ruby }} / ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        ruby: ["3.3", "3.4", "4.0"]
-        gem: [breadkit, breadkit-render, breadkit-lint]
-        include:
-          - { os: macos-latest, ruby: "4.0", gem: breadkit-render }
-    defaults:
-      run:
-        working-directory: ${{ matrix.gem }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: Install rasterizer (Linux)
-        if: matrix.gem == 'breadkit-render' && runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y librsvg2-bin libvips-dev fonts-noto-cjk
-      - name: Install rasterizer (macOS)
-        if: matrix.gem == 'breadkit-render' && runner.os == 'macOS'
-        run: brew install librsvg vips
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          bundler-cache: true
-          working-directory: ${{ matrix.gem }}
-      - run: bundle exec rake
-
-  examples:
-    name: examples (lint + render)
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v6
-      - run: sudo apt-get update && sudo apt-get install -y librsvg2-bin fonts-noto-cjk
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "4.0"
-          bundler-cache: true
-          working-directory: breadkit-render
-      - name: Build and install gems locally
-        run: |
-          for g in breadkit breadkit-render breadkit-lint; do
-            (cd "$g" && gem build "$g.gemspec" && gem install --local "./$g-$(cat ../VERSION).gem")
-          done
-      - name: Lint examples (must be clean)
-        run: bklint examples/*.bk.rb
-      - name: Render examples
-        run: |
-          mkdir -p out
-          for f in examples/*.bk.rb; do
-            bkrender "$f" -o "out/$(basename "$f" .bk.rb).png"
-          done
-      - uses: actions/upload-artifact@v4
-        with:
-          name: rendered-examples
-          path: out/
-```
-
-`examples` ジョブは Phase 5 で例題がそろってから有効にします（それまでは `if: false` にしておく）。描画結果は Artifacts からダウンロードして目視確認できます。アクションの版は作業時点の最新メジャーを確認して使ってください。
-
-**完了条件**：PR を作ると全マトリクスが緑になる。 → **M1 達成**
-
----
+**完了条件**：各リポジトリの main と Pull Request で、そのリポジトリの CI が成功する。 → **M1 達成**
 
 ## 4. Phase 2：コア（breadkit）
 
@@ -605,214 +442,135 @@ bundle exec exe/bkrender ../examples/01_led_button.bk.rb | head -c 100   # 標�
 
 | 文書 | 内容 |
 |---|---|
-| ルート `README.md` | プロジェクト概要、3 gem の関係、描画例の画像、クイックスタート |
 | 各 gem の `README.md` | インストール、使い方、オプション一覧。レンダラーはラスタ変換バックエンドの導入方法と日本語フォントの注意 |
 | `docs/dsl.md` | DSL リファレンス（設計書 3 章を利用者向けに書き直したもの） |
-| `docs/rules/**/*.md` | ルールごとの説明（Phase 4 で作成） |
+| `breadkit-lint/docs/rules/**/*.md` | ルールごとの説明（Phase 4 で作成） |
 | セキュリティの注意 | DSL は Ruby コードとして実行されるため、信頼できないファイルを評価しないこと。代替として IR JSON 入力が使えること |
 
-### 5-4. CI の結合ジョブを有効化
+### 5-4. gem 間の結合を確認する
 
-**作業**：`ci.yml` の `examples` ジョブの `if: false` を外す。
-
-**完了条件**：CI が緑で、Artifacts に例題の PNG が出力されている。
-
----
+breadkit の examples を使って、breadkit-lint が正常例を警告なしで検査し、breadkit-render が SVG / PNG を生成できることを確認する。例題は各 gem の CI から core リポジトリを checkout して実行する。
 
 ## 8. Phase 6：初回リリース（v0.1.0）
 
-初回は RubyGems.org 上に gem が存在しないため、手元から MFA 付きで手動公開します。2回目以降は Phase 7 の自動リリースに切り替えます。
+初回はコアを先に RubyGems.org へ公開し、その後、利用可能になったコアのバージョン範囲に対応するレンダラーとリンターを個別に公開する。gem のバージョン番号とリリース日は揃える必要がない。
 
-### 6-1. リリース前チェックリスト
+### 6-1. gem ごとのリリース前チェック
 
-- [ ] `main` の CI がすべて緑
-- [ ] `VERSION` と3つの `version.rb` がすべて `0.1.0`（`rake bump[0.1.0]` で揃える）
-- [ ] `breadkit-render` / `breadkit-lint` の依存が `breadkit ~> 0.1.0`
-- [ ] `CHANGELOG.md` に v0.1.0 の節がある（gem ごとの小見出し）
-- [ ] README の例がそのまま動く
-- [ ] gemspec の `summary` / `description` / `homepage` / `metadata` に仮の値（TODO 等）が残っていない
+各リポジトリで次を確認する。
 
-### 6-2. ビルドする
+- [ ] そのリポジトリの main CI が緑
+- [ ] gemspec のバージョンと lib 内の version.rb が一致
+- [ ] README のコマンド例が動く
+- [ ] CHANGELOG.md にその gem のリリース内容がある
+- [ ] gemspec の summary / description / homepage / metadata に TODO 等が残っていない
+- [ ] gem に含めるファイルと実行ファイルを確認済み
 
-```sh
-bundle exec rake build
-ls */pkg/*.gem
-# breadkit/pkg/breadkit-0.1.0.gem
-# breadkit-render/pkg/breadkit-render-0.1.0.gem
-# breadkit-lint/pkg/breadkit-lint-0.1.0.gem
-```
+レンダラーとリンターでは、gemspec の breadkit 依存範囲がテストしたコア API / IR と合っていることも確認する。
 
-### 6-3. パッケージの中身を確認する
+### 6-2. 各 gem を個別にビルドする
+
+各リポジトリのルートで実行する。
 
 ```sh
-gem specification breadkit/pkg/breadkit-0.1.0.gem files
-gem specification breadkit-lint/pkg/breadkit-lint-0.1.0.gem files
+bundle exec rake
+gem build breadkit.gemspec
+gem specification breadkit-*.gem files
 ```
 
-- [ ] `breadkit` に `data/boards/*.yml`、`data/parts/*.yml`、`schema/ir-v1.json`、`locales/*.yml`、`exe/breadkit` が含まれる
-- [ ] `breadkit-lint` に `config/default.yml` と `exe/bklint` が含まれる
-- [ ] `breadkit-render` に `exe/bkrender` が含まれる
-- [ ] 各 gem に `LICENSE.txt` が含まれる
-- [ ] `spec/` や開発用ファイルが含まれていない
+レンダラーでは breadkit-render.gemspec と breadkit-render-*.gem、リンターでは breadkit-lint.gemspec と breadkit-lint-*.gem を指定する。spec、coverage、開発用 Gemfile が配布物に入っていないことを確認する。
 
-### 6-4. クリーンな環境でインストールを試す
+### 6-3. クリーンな環境で確認する
 
-```sh
-docker run --rm -v "$PWD":/work -w /work ruby:3.3 bash -c '
-  apt-get update -qq && apt-get install -y -qq librsvg2-bin >/dev/null
-  gem install --local ./breadkit/pkg/breadkit-0.1.0.gem &&
-  gem install --local ./breadkit-render/pkg/breadkit-render-0.1.0.gem &&
-  gem install --local ./breadkit-lint/pkg/breadkit-lint-0.1.0.gem &&
-  bklint examples/01_led_button.bk.rb &&
-  bkrender examples/01_led_button.bk.rb -o /tmp/out.png &&
-  echo OK
-'
-```
+Ruby 3.3 の新しい環境で core gem をインストールしてから、レンダラーとリンターをそれぞれインストールする。各 CLI で core の DSL 例題を処理し、SVG と PNG を生成する。CI と同じ例題検査も行う。
 
-**完了条件**：`OK` が表示される（最小対応バージョンの Ruby 3.3 で確認する）。
+### 6-4. RubyGems.org に公開する
 
-### 6-5. 公開する
+MFA を使い、まず breadkit を公開する。インストールを確認した後、breadkit-render と breadkit-lint を必要な順に個別公開する。依存 gem が未公開なら先に公開する。公開済みバージョンは上書きできないため、公開直前にファイルとバージョンを再確認する。
 
-依存関係の順（コア → レンダラー → リンター）で push します。MFA のワンタイムパスワードを求められます。
+### 6-5. GitHub Releases と公開後の確認
 
-```sh
-gem push breadkit/pkg/breadkit-0.1.0.gem
-gem push breadkit-render/pkg/breadkit-render-0.1.0.gem
-gem push breadkit-lint/pkg/breadkit-lint-0.1.0.gem
+各リポジトリで、その gem のバージョンに対応する vX.Y.Z タグを push し、GitHub Release を作る。3つの gem のタグは別々に作成できる。
 
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-### 6-6. 公開後の確認
-
-- [ ] 3つの gem ページが RubyGems.org に表示され、ソースコード・変更履歴へのリンクが機能する
-- [ ] 新しいコンテナで `gem install breadkit-render breadkit-lint` が成功し、コアが依存として入る
-- [ ] GitHub Releases に v0.1.0 を作成し、CHANGELOG の内容を記載する
+- [ ] RubyGems.org の各 gem ページから正しい GitHub リポジトリへ移動できる
+- [ ] クリーン環境で各 gem をインストールできる
+- [ ] breadkit-render と breadkit-lint の依存解決で互換性のある breadkit が入る
+- [ ] GitHub Release の内容が各リポジトリの CHANGELOG と一致する
 
 → **M5 達成**
 
----
-
-## 9. Phase 7：継続リリースと運用
+## 9. Phase 7：個別リリースと運用
 
 ### 7-1. Trusted Publishing を設定する
 
-API キーをリポジトリに置かずに GitHub Actions から公開できるようにします。
+RubyGems.org で各 gem の Trusted Publisher を設定する。Repository owner / name は gem ごとに breadkit/breadkit、breadkit/breadkit-render、breadkit/breadkit-lint とする。Workflow filename は release.yml、Environment は release。
 
-1. RubyGems.org で3つの gem それぞれの設定画面から Trusted Publisher（GitHub Actions）を追加する。
-   - Repository owner / name：`YOUR_NAME` / `breadkit`
-   - Workflow filename：`release.yml`
-   - Environment：`release`
-2. GitHub リポジトリの Settings → Environments で `release` 環境を作り、承認者（Required reviewers）に自分を設定する。タグの push だけで勝手に公開されないようにするためです。
+GitHub の各リポジトリに release 環境を設定する。承認を必須にする場合は、各リポジトリの Environment に Required reviewers を指定する。RUBYGEMS_TRUSTED_PUBLISHING=enabled は、その gem の Trusted Publisher と環境設定が完了してからリポジトリ変数に追加する。
 
-リポジトリ変数 `RUBYGEMS_TRUSTED_PUBLISHING=enabled` は、3 gem の Trusted Publisher と `release` 環境の承認者を設定した後に追加します。未設定の間はリリースジョブを実行しません。
+### 7-2. リポジトリ単位のリリース
 
-詳細は RubyGems ガイドの Trusted Publishing のページを参照してください。
+各 release.yml は自リポジトリの version.rb と vX.Y.Z タグを照合し、自分の gem だけをビルドして RubyGems.org に公開する。GitHub Release もそのリポジトリで作る。コアを変更していないレンダラーやリンターに新しいタグを付ける必要はない。
 
-### 7-2. リリースワークフローを追加する
+### 7-3. 次回以降のリリース手順
 
-```yaml
-# .github/workflows/release.yml
-name: Release
-
-on:
-  push:
-    tags: ["v*"]
-
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    environment: release
-    permissions:
-      contents: write   # GitHub Release の作成
-      id-token: write   # Trusted Publishing（OIDC）
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ruby
-      - name: Verify tag matches VERSION
-        run: test "v$(cat VERSION)" = "$GITHUB_REF_NAME"
-      - name: Configure RubyGems credentials
-        uses: rubygems/configure-rubygems-credentials@main   # 可能ならコミット SHA に固定する
-      - name: Build and push (core first)
-        run: |
-          version="${GITHUB_REF_NAME#v}"
-          for g in breadkit breadkit-render breadkit-lint; do
-            (cd "$g" && gem build "$g.gemspec" && gem push "$g-$version.gem")
-          done
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --generate-notes
-```
-
-`configure-rubygems-credentials` は入力なしで使うと Trusted Publisher として OIDC 認証を行い、`gem push` が使う資格情報を設定します。
-
-### 7-3. 2回目以降のリリース手順
+リリースする gem のリポジトリで作業する。
 
 ```sh
-git switch main && git pull
-bundle exec rake "bump[0.2.0]"
-# CHANGELOG.md に v0.2.0 の節を書く
-bundle exec rake                      # テストと静的解析
-git commit -am "Release v0.2.0"
-git tag v0.2.0
-git push origin main v0.2.0
-# → Actions の Release ジョブが承認待ちになる → 承認すると 3 gem が順に公開される
+git switch main
+git pull
+# version.rb と CHANGELOG.md をこの gem だけ更新
+bundle exec rake
+gem build <gem-name>.gemspec
+git add .
+git commit -m "Release vX.Y.Z"
+git tag vX.Y.Z
+git push origin main vX.Y.Z
 ```
 
-公開後は [6-6](#6-6-公開後の確認) と同じ確認を行います。 → **M6 達成**
+breadkit の API または IR を変更した場合は、レンダラーとリンターの互換性を確認する。追随が必要なリポジトリだけで依存範囲・テスト・バージョンを更新してリリースする。
 
 ### 7-4. 運用
 
 | 項目 | 内容 |
 |---|---|
-| 依存の更新 | Dependabot で GitHub Actions のバージョン更新 PR を自動作成 |
-| Issue テンプレート | 不具合報告（DSL ファイル、`bklint` の出力、`bkrender --version` を必須項目に）、パーツ追加依頼（型番・データシートの URL・ピン配置） |
-| セキュリティ | `SECURITY.md` に脆弱性の報告窓口を記載 |
-| 対応 Ruby | 公式サポートが終了したバージョンは次のマイナーリリースで対応を外す（CHANGELOG に明記） |
-| 問題のあるリリース | 修正版を速やかに出す。どうしても必要な場合のみ `gem yank <gem> -v <version>` を3つの gem すべてに行う |
-| 新しいルール | マイナーリリースでは `Enabled: pending` で追加し、次のメジャー（1.0 前は数マイナー後）で既定有効化を検討 |
+| 依存の更新 | Dependabot を各リポジトリで有効にする |
+| Issue テンプレート | gem ごとに不具合報告と再現用 DSL / IR を受け取る |
+| セキュリティ | 各リポジトリに SECURITY.md と報告窓口を記載する |
+| 対応 Ruby | 公式サポートが終了したバージョンは次のマイナーリリースで対応を外す |
+| 問題のあるリリース | 影響する gem を特定し、必要な修正版のみを公開する |
+| 新しいルール | リンターのリポジトリで追加し、ルール ID と既定有効化時期を CHANGELOG に記載する |
 
 ---
 
 ## 付録 A. フェーズ完了チェックリスト
 
-- [ ] **M1** 3 gem の雛形がそろい、CI が全マトリクスで緑
-- [ ] **M2** `breadkit nets` で例題のネットが設計どおり
-- [ ] **M3** 例題を SVG / PNG / JPEG で描画でき、スナップショットが確定
-- [ ] **M4** MVP ルールで `examples/` は無警告、`examples/bad/` は期待どおり検出
-- [ ] **M5** v0.1.0 を RubyGems.org に公開し、クリーン環境でのインストールを確認
-- [ ] **M6** Trusted Publishing で v0.2.0 を公開
+- [ ] **M1** 3つの独立したリポジトリに雛形があり、それぞれの CI が緑
+- [ ] **M2** breadkit nets で例題のネットが設計どおり
+- [ ] **M3** breadkit-render で例題を SVG / PNG / JPEG に描画でき、スナップショットが確定
+- [ ] **M4** breadkit-lint で正常例と誤り例を期待どおり検査
+- [ ] **M5** 3 gem を個別に RubyGems.org へ公開し、クリーン環境で確認
+- [ ] **M6** Trusted Publishing で各 gem を個別にリリース
 
 ## 付録 B. コマンド早見表
 
 | 目的 | コマンド |
 |---|---|
-| 全テスト | `bundle exec rake`（ルート） |
-| 1 gem のテスト | `cd breadkit-lint && bundle exec rspec` |
-| スナップショット更新 | `cd breadkit-render && UPDATE_SNAPSHOTS=1 bundle exec rspec` |
-| ネット一覧 | `cd breadkit && bundle exec exe/breadkit nets ../examples/01_led_button.bk.rb` |
-| 描画 | `bkrender FILE -o out.png --scale 3 --legend` |
-| リント | `bklint FILE`、`bklint FILE -f json > lint.json` |
-| リント結果を重ねて描画 | `bkrender FILE -o review.png --annotations lint.json` |
-| バージョン更新 | `bundle exec rake "bump[0.2.0]"` |
-| ビルド | `bundle exec rake build` |
-| パッケージ内容確認 | `gem specification <gem>.gem files` |
+| コアのテスト | cd breadkit && bundle exec rake |
+| レンダラーのテスト | cd breadkit-render && bundle exec rake |
+| リンターのテスト | cd breadkit-lint && bundle exec rake |
+| スナップショット更新 | cd breadkit-render && UPDATE_SNAPSHOTS=1 bundle exec rspec |
+| ネット一覧 | cd breadkit && bundle exec exe/breadkit nets examples/01_led_button.bk.rb |
+| 描画 | bkrender FILE -o out.png --scale 3 --legend |
+| リント | bklint FILE、bklint FILE -f json > lint.json |
+| リント結果を重ねて描画 | bkrender FILE --annotations lint.json -o review.png |
+| ビルド | 各 gem リポジトリで gem build <gem-name>.gemspec |
+| パッケージ確認 | gem specification <gem-file>.gem files |
 
 ## 付録 C. トラブルシューティング
 
 | 症状 | 原因と対処 |
 |---|---|
-| PNG 出力で「バックエンドが見つからない」 | `rsvg-convert` が未導入。`brew install librsvg` / `apt-get install librsvg2-bin` |
-| vips で SVG が読めない | libvips が librsvg なしでビルドされている。`vips -l \| grep svgload` で確認し、librsvg 付きの libvips を入れる |
-| PNG で日本語ラベルが豆腐（□）になる | ラスタ変換環境に日本語フォントがない。`fonts-noto-cjk` などを導入 |
-| JPEG の背景が黒い | 透過部分が平坦化されていない。`--background white`（既定）が効いているか確認 |
-| 公開した gem で YAML が見つからない | `git ls-files` に載っていない（未コミット）。コミットして再ビルドし、[6-3](#6-3-パッケージの中身を確認する) で確認 |
-| `gem push` で名前が拒否される | 既存 gem と類似した名前として拒否された。[0-2](#0-2-gem-名とコマンド名の空きを確認する) に戻り名前を変更 |
-| リリースワークフローが認証で失敗 | Trusted Publisher のワークフロー名・環境名の不一致、または `id-token: write` の付け忘れ |
-| スナップショットテストが環境によって落ちる | 浮動小数の丸め漏れ、ハッシュの順序依存。出力が決定的か（設計書 [5.7](./DESIGN.md#57-svg-出力の要件)）を確認 |
+| PNG 出力で「バックエンドが見つからない」 | rsvg-convert が未導入。brew install librsvg / apt-get install librsvg2-bin |
+| vips で SVG が読めない | libvips が librsvg なしでビルドされている。vips -l で svgload を確認 |
+| PNG で日本語ラベルが豆腐（□）になる | ラスタ変換環境に日本語フォントがない。fonts-noto-cjk などを導入 |
+| gem build にファイルが含まれない | git ls-files の対象か確認し、各リポジトリでコミットされていることを確認 |

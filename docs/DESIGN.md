@@ -114,55 +114,33 @@ flowchart LR
 3. **解析（Analyze）**：Union-Find でネットを構築し、電源制約から各ネットの電位を求める。スイッチがある場合は状態ごとに行う（遅延評価・メモ化）。
 4. **出力**：レンダラーは `Circuit` から SVG を生成し、必要ならラスタ変換する。リンターは `Circuit` にルールを適用してオフェンスを出力する。
 
-### 2.4 リポジトリ構成（モノレポ）
+### 2.4 リポジトリ構成
 
 ```text
-breadkit/                         # GitHub リポジトリ
-├── README.md
-├── LICENSE.txt
-├── CHANGELOG.md
-├── Rakefile                      # 3 gem 横断タスク（test / build / release）
-├── VERSION                       # 3 gem 共通バージョン（ロックステップ）
-├── docs/
-│   ├── DESIGN.md                 # 本書
-│   ├── WORK_PROCEDURE.md         # 作業手順書
-│   ├── dsl.md                    # DSL リファレンス（利用者向け）
-│   └── rules/                    # ルールごとの解説（bklint --explain と同内容）
-├── examples/
-│   ├── 01_led_button.bk.rb
-│   ├── 02_555_blinker.bk.rb
-│   ├── 03_arduino_blink.bk.rb
-│   └── bad/                      # 意図的に誤りを含む例（リンターの動作確認用）
-├── breadkit/                     # コア gem
-│   ├── breadkit.gemspec
-│   ├── exe/breadkit
-│   ├── data/
-│   │   ├── boards/               # full.yml / half.yml / mini.yml
-│   │   └── parts/                # resistor.yml / led.yml / ne555.yml ...
-│   ├── lib/breadkit/
-│   │   ├── dsl/  model/  resolver/  analysis/  ir/  cli/
-│   │   └── version.rb
-│   └── spec/
-├── breadkit-render/
-│   ├── breadkit-render.gemspec
-│   ├── exe/bkrender
-│   ├── lib/breadkit/render/
-│   │   ├── svg/  parts/  themes/  rasterizer/  cli.rb
-│   │   └── version.rb
-│   └── spec/  (snapshots/ を含む)
-├── breadkit-lint/
-│   ├── breadkit-lint.gemspec
-│   ├── exe/bklint
-│   ├── config/default.yml        # 全ルールの既定設定
-│   ├── lib/breadkit/lint/
-│   │   ├── rules/layout/  rules/electrical/  rules/intent/  rules/style/
-│   │   ├── formatters/  config.rb  engine.rb  cli.rb
-│   │   └── version.rb
-│   └── spec/  (fixtures/rules/ を含む)
-└── .github/workflows/
-    ├── ci.yml
-    └── release.yml
+ breadkit/breadkit/               # コア gem の GitHub リポジトリ
+ ├── breadkit.gemspec
+ ├── exe/breadkit
+ ├── data/                        # ボード・パーツ定義
+ ├── lib/breadkit/                # DSL・解決・解析・IR
+ ├── docs/                        # DSL と設計の文書
+ ├── examples/                    # 共通の DSL 例題
+ └── .github/workflows/           # コア単体の CI とリリース
+
+ breadkit/breadkit-render/        # レンダラー gem の GitHub リポジトリ
+ ├── breadkit-render.gemspec
+ ├── exe/bkrender
+ ├── lib/breadkit/render/
+ └── .github/workflows/           # レンダラー単体の CI とリリース
+
+ breadkit/breadkit-lint/          # リンター gem の GitHub リポジトリ
+ ├── breadkit-lint.gemspec
+ ├── exe/bklint
+ ├── config/  locales/  docs/rules/
+ ├── lib/breadkit/lint/
+ └── .github/workflows/           # リンター単体の CI とリリース
 ```
+
+3つのリポジトリは同じ作業ディレクトリの隣同士に clone する。レンダラーとリンターの開発用 Gemfile は `../breadkit` を参照する。
 
 名前空間は `Breadkit`（コア）、`Breadkit::Render`、`Breadkit::Lint` とし、RubyGems の命名慣習（ハイフン＝名前空間の拡張）に合わせる。
 
@@ -1010,8 +988,9 @@ bkrender circuit.bk.rb -o review.png --annotations lint.json
 
 ## 10. バージョニングと互換性
 
-- セマンティックバージョニングに従う。3 gem は**同じバージョン番号で同時にリリース**する（ロックステップ。[ADR-007](#adr-007-モノレポとロックステップ版管理)）。
+- 各 gem は独立したセマンティックバージョニングとリリース周期を持つ（[ADR-007](#adr-007-個別リポジトリと独立したバージョン管理)）。
 - `breadkit-render` と `breadkit-lint` の `breadkit` への依存指定は、0.x 系では `"~> 0.MINOR.0"`、1.0 以降は `"~> 1.MINOR"` とする。
+- コアの互換性に影響する変更を行う場合は、影響する gem の依存範囲と CI を更新する。コアの変更だけで追随する gem のバージョンを上げる必要はない。
 - **DSL**：メソッドやオプションを廃止する場合は、少なくとも1つ前のマイナーバージョンで非推奨警告を出す。
 - **IR**：フィールドの追加は `schema_version` を変えない。削除・意味の変更は `schema_version` を上げ、リーダーは自分が知る最大値以下を受け付ける。
 - **ルール ID**：改名する場合は旧 ID を別名として残し、設定ファイルで旧 ID を使うと警告を出す。
@@ -1056,11 +1035,11 @@ bkrender circuit.bk.rb -o review.png --annotations lint.json
 - **決定**：CLI は `OptionParser`、XML は自前の最小ビルダー、設定は `psych`。Thor や Nokogiri は使わない。
 - **理由**：インストールの失敗要因（ネイティブ拡張、依存衝突）を減らし、他プロジェクトの Gemfile に入れても影響しないようにする。
 
-### ADR-007: モノレポとロックステップ版管理
+### ADR-007: 個別リポジトリと独立したバージョン管理
 
-- **決定**：3 gem を1リポジトリで管理し、同じバージョンで同時にリリースする。
-- **理由**：コアの変更とレンダラー・リンターの追随を1つの PR で行え、組み合わせの互換性で悩まない。
-- **影響**：変更のない gem もバージョンが上がる。CHANGELOG は gem ごとの節に分けて記載する。
+- **決定**：`breadkit`、`breadkit-render`、`breadkit-lint` をそれぞれ別の GitHub リポジトリで管理し、gem ごとにバージョンを付けてリリースする。
+- **理由**：各 gem は独立してインストール・配布でき、変更のない gem に不要なバージョン更新を課さない。各ディレクトリも `bundle gem` で個別に生成している。
+- **影響**：互換性は gemspec の依存範囲と各リポジトリの CI で確認する。コア API / IR の変更時は、影響する依存 gem の CI と制約を個別に更新する。
 
 ---
 
