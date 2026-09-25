@@ -10,11 +10,11 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Describe and analyze breadboard circuits with a Ruby DSL."
   spec.description = "Breadkit resolves breadboard wiring DSL files into deterministic circuit connectivity and JSON IR."
-  spec.homepage = "https://github.com/ydah/breadkit"
+  spec.homepage = "https://github.com/breadkit/breadkit"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.3"
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "#{spec.homepage}/tree/main/breadkit"
+  spec.metadata["source_code_uri"] = "#{spec.homepage}/tree/main"
   spec.metadata["bug_tracker_uri"] = "#{spec.homepage}/issues"
   spec.metadata["documentation_uri"] = "#{spec.homepage}/tree/main/docs"
   spec.metadata["rubygems_mfa_required"] = "true"
@@ -22,8 +22,8 @@ Gem::Specification.new do |spec|
   gemspec = File.basename(__FILE__)
   spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
     ls.readlines("\x0", chomp: true).reject do |f|
-      (f == gemspec) || f.start_with?(*%w[bin/ Gemfile .gitignore .rspec .rubocop.yml Rakefile spec/ .github/ examples/]) ||
-        %w[CHANGELOG.md VERSION].include?(f)
+      (f == gemspec) || f.start_with?(*%w[bin/ Gemfile .gitignore .rspec .rubocop.yml Rakefile spec/ .github/ examples/ scripts/ .idea/ docs/rules/]) ||
+      %w[CHANGELOG.md VERSION docs/DESIGN.md docs/WORK_PROCEDURE.md].include?(f)
     end
   end
   spec.bindir = "exe"

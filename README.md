@@ -1,6 +1,6 @@
 # breadkit
 
-`breadkit` provides the shared DSL, board and part definitions, connectivity analysis, and JSON IR used by `breadkit-render` and `breadkit-lint`.
+`breadkit` provides the Ruby DSL, board and part definitions, connectivity analysis, and JSON IR used by [`breadkit-render`](https://github.com/breadkit/breadkit-render) and [`breadkit-lint`](https://github.com/breadkit/breadkit-lint).
 
 ```sh
 gem install breadkit
@@ -9,6 +9,6 @@ breadkit ir circuit.bk.rb > circuit.json
 breadkit parts
 ```
 
-DSL input is executable Ruby. Use only trusted `.bk.rb` files; IR JSON is the data-only alternative.
+Ruby DSL files execute as code. Load only trusted files; use IR JSON for data-only input.
 
-The full project guide and [DSL reference](../docs/dsl.md) are maintained at the repository root.
+See the [DSL reference](docs/dsl.md) and [project design](docs/DESIGN.md).
