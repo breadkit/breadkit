@@ -1,0 +1,8 @@
+id: electrolytic
+category: passive
+placement: leads
+pins:
+  - {num: 1, name: plus, aliases: ["+"]}
+  - {num: 2, name: minus, aliases: ["-"]}
+polarity: {positive: plus, negative: minus}
+render: {shape: electrolytic}

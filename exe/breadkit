@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "breadkit"
+exit Breadkit::CLI.new.run(ARGV)

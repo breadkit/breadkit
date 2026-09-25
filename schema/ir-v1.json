@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Breadkit IR v1",
+  "type": "object",
+  "required": ["schema_version", "board", "components", "wires", "supplies", "labels"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "title": { "type": ["string", "null"] },
+    "board": { "type": "object", "required": ["type"], "properties": { "type": { "type": "string" }, "options": { "type": "object" } } },
+    "components": { "type": "array" },
+    "wires": { "type": "array" },
+    "supplies": { "type": "array" },
+    "labels": { "type": "array" },
+    "expectations": { "type": "array" },
+    "analysis": { "type": "object" }
+  },
+  "additionalProperties": true
+}

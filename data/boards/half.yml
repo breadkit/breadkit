@@ -1,0 +1,16 @@
+id: half
+name: Half-size breadboard (400 tie points)
+terminal:
+  columns: 30
+  rows: [a, b, c, d, e, f, g, h, i, j]
+  groups: [[a, b, c, d, e], [f, g, h, i, j]]
+rails:
+  - {id: "T+", side: top, order: 0}
+  - {id: "T-", side: top, order: 1}
+  - {id: "B+", side: bottom, order: 1}
+  - {id: "B-", side: bottom, order: 0}
+rail_layout:
+  holes: 25
+  group_size: 5
+  start_column: 2
+  segments: [[1, 25]]
