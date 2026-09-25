@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101719">
+    <meta name="description" content="Describe breadboard circuits in Ruby. Breadkit resolves connections, renders diagrams, and checks wiring.">
+    <title>Breadkit — describe a circuit, trace every connection</title>
+    <link rel="canonical" href="https://breadkit.github.io/breadkit/">
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./assets/site.css">
+  </head>
+  <body class="min-h-dvh bg-ink font-sans text-paper antialiased">
+    <a class="sr-only rounded-sm bg-copper px-4 py-3 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:outline-2 focus:outline-offset-4 focus:outline-paper" href="#main">Skip to content</a>
+
+    <header class="border-b border-line">
+      <div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
+        <a class="flex items-center gap-3 rounded-sm text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./" aria-label="Breadkit home">
+          <svg aria-hidden="true" class="size-8" viewBox="0 0 48 48" fill="none">
+            <path d="M8 13h32M8 35h32M13 8v32M35 8v32" stroke="#3d4b47" stroke-width="2" />
+            <path d="M13 13h22v22H13z" stroke="#d99755" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" />
+            <circle cx="13" cy="13" r="2.5" fill="#e8eeeb" />
+            <circle cx="35" cy="35" r="2.5" fill="#e8eeeb" />
+          </svg>
+          <span class="text-xl font-semibold">breadkit</span>
+        </a>
+        <nav aria-label="Main navigation" class="flex items-center gap-4 text-sm text-muted sm:gap-6">
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#packages">Tools</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit/blob/main/docs/dsl.md">DSL guide</a>
+          <a class="hidden rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper sm:inline" href="https://github.com/breadkit/breadkit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:px-10 lg:py-24">
+        <div class="max-w-xl">
+          <p class="mb-5 text-sm font-medium text-copper">A Ruby DSL for breadboard circuits</p>
+          <h1 class="text-balance text-4xl font-semibold leading-tight text-paper sm:text-5xl lg:text-6xl">Describe the circuit.<br>Trace every connection.</h1>
+          <p class="mt-6 max-w-lg text-pretty text-lg leading-8 text-muted">Write down the board, parts, and wires. Breadkit resolves the connections into circuit data you can render and check.</p>
+
+          <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+            <a class="rounded-sm bg-copper px-5 py-3 font-semibold text-ink hover:bg-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit/blob/main/docs/dsl.md">Read the DSL guide</a>
+            <a class="rounded-sm py-3 font-medium text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#packages">Explore the tools</a>
+          </div>
+
+          <div class="mt-10 border-l-2 border-copper pl-5">
+            <p class="mb-3 text-sm text-muted">A few of the declarations</p>
+            <pre class="overflow-x-auto font-mono text-sm leading-6 text-paper"><code>board :half
+resistor :R1, "330", pins: %w[a12 a16]
+led :D1, color: :red, anode: "b16", cathode: "b17"
+wire "a17", "B-", color: :black
+expect { connected "R1.2", "D1.anode" }</code></pre>
+          </div>
+        </div>
+
+        <figure class="m-0 overflow-hidden rounded-xl border border-line bg-board p-3 sm:p-5">
+          <svg class="h-auto w-full" viewBox="0 0 760 500" role="img" aria-label="LED circuit on a breadboard">
+            <title>LED circuit on a breadboard</title>
+            <desc>A resistor and LED linked between the positive and ground rails by copper-colored wires.</desc>
+            <defs>
+              <pattern id="rail-holes" width="24" height="24" patternUnits="userSpaceOnUse">
+                <circle cx="12" cy="12" r="3.2" fill="#61706a" />
+              </pattern>
+              <pattern id="terminal-holes" width="24" height="24" patternUnits="userSpaceOnUse">
+                <circle cx="12" cy="12" r="3.2" fill="#52615b" />
+              </pattern>
+            </defs>
+
+            <rect x="12" y="12" width="736" height="476" rx="18" fill="#182220" stroke="#3d4b47" />
+            <path d="M68 80h624M68 112h624M68 422h624" stroke="#52615b" stroke-width="1" />
+            <rect x="68" y="68" width="624" height="24" fill="url(#rail-holes)" />
+            <rect x="68" y="100" width="624" height="24" fill="url(#rail-holes)" />
+            <rect x="68" y="410" width="624" height="24" fill="url(#rail-holes)" />
+            <rect x="68" y="144" width="624" height="96" fill="url(#terminal-holes)" />
+            <rect x="68" y="278" width="624" height="96" fill="url(#terminal-holes)" />
+            <rect x="68" y="246" width="624" height="24" fill="#111918" />
+
+            <text x="32" y="86" fill="#e8eeeb" font-family="ui-monospace, monospace" font-size="14">+</text>
+            <text x="32" y="118" fill="#a1b0aa" font-family="ui-monospace, monospace" font-size="14">−</text>
+            <text x="32" y="430" fill="#a1b0aa" font-family="ui-monospace, monospace" font-size="14">−</text>
+            <text x="630" y="58" fill="#a1b0aa" font-family="ui-monospace, monospace" font-size="12">Power rails</text>
+            <text x="580" y="136" fill="#a1b0aa" font-family="ui-monospace, monospace" font-size="12">Terminal rows</text>
+
+            <g fill="none" stroke="#d99755" stroke-linecap="round" stroke-linejoin="round" stroke-width="5">
+              <path d="M164 80v100h74" />
+              <path d="M362 180h98v126" />
+              <path d="M460 327v95" />
+            </g>
+            <polyline points="238,180 251,166 266,194 281,166 296,194 311,166 326,194 342,180 362,180" fill="none" stroke="#d99755" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
+            <circle cx="460" cy="316" r="20" fill="#182220" stroke="#d99755" stroke-width="4" />
+            <path d="M450 306h20l-10 17-10-17zm-2 21h24" fill="#d99755" />
+            <path d="M477 305l10-8m-6 18 13-2" stroke="#d99755" stroke-linecap="round" stroke-width="2" />
+            <g fill="#e8eeeb" font-family="ui-monospace, monospace" font-size="13">
+              <text x="220" y="152">R1 · 330 Ω</text>
+              <text x="493" y="322">D1 · LED</text>
+              <text x="590" y="84">5V</text>
+              <text x="590" y="430">GND</text>
+            </g>
+            <g fill="#d99755">
+              <circle cx="164" cy="80" r="5" />
+              <circle cx="164" cy="180" r="5" />
+              <circle cx="362" cy="180" r="5" />
+              <circle cx="460" cy="296" r="5" />
+              <circle cx="460" cy="327" r="5" />
+              <circle cx="460" cy="422" r="5" />
+            </g>
+          </svg>
+          <figcaption class="flex flex-wrap items-center justify-between gap-3 border-t border-line px-2 pt-4 text-sm text-muted">
+            <span>Resolved connections, ready to inspect.</span>
+            <span class="font-mono text-paper">LED · 330 Ω · 5 V</span>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="packages" class="border-t border-line bg-board/60">
+        <div class="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-10">
+          <div class="grid gap-5 pb-10 md:grid-cols-2 md:items-end">
+            <h2 class="max-w-lg text-balance text-3xl font-semibold leading-tight text-paper sm:text-4xl">One circuit model.<br>Three independent tools.</h2>
+            <p class="max-w-lg text-pretty leading-7 text-muted md:justify-self-end">Use the shared core on its own, then add rendering or linting as needed. Each gem has its own repository and release cycle.</p>
+          </div>
+
+          <ul class="m-0 grid list-none border-y border-line p-0 md:grid-cols-3">
+            <li class="py-7 md:pr-8 md:py-8">
+              <p class="mb-4 text-sm text-copper">Circuit model</p>
+              <h3 class="text-xl font-semibold text-paper">breadkit</h3>
+              <p class="mt-3 min-h-14 max-w-sm text-pretty leading-6 text-muted">Describe boards and parts, resolve wires into nets, and export circuit data.</p>
+              <a class="mt-5 inline-flex rounded-sm font-medium text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit">Open the core repository</a>
+            </li>
+            <li class="border-t border-line py-7 md:border-l md:border-t-0 md:px-8 md:py-8">
+              <p class="mb-4 text-sm text-copper">Circuit drawings</p>
+              <h3 class="text-xl font-semibold text-paper">breadkit-render</h3>
+              <p class="mt-3 min-h-14 max-w-sm text-pretty leading-6 text-muted">Render the same circuit as a deterministic SVG, with optional raster output.</p>
+              <a class="mt-5 inline-flex rounded-sm font-medium text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit-render">Open the renderer repository</a>
+            </li>
+            <li class="border-t border-line py-7 md:border-l md:border-t-0 md:pl-8 md:py-8">
+              <p class="mb-4 text-sm text-copper">Circuit checks</p>
+              <h3 class="text-xl font-semibold text-paper">breadkit-lint</h3>
+              <p class="mt-3 min-h-14 max-w-sm text-pretty leading-6 text-muted">Catch wiring, layout, and electrical mistakes before building the circuit.</p>
+              <a class="mt-5 inline-flex rounded-sm font-medium text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit-lint">Open the linter repository</a>
+            </li>
+          </ul>
+
+          <div class="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+            <a class="rounded-sm text-muted underline decoration-line underline-offset-4 hover:text-paper hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit/tree/main/examples">Browse circuit examples</a>
+            <a class="rounded-sm text-muted underline decoration-line underline-offset-4 hover:text-paper hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit">Visit the Breadkit organization</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-line">
+      <div class="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-7 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
+        <p class="m-0">Breadkit makes circuit intent easier to read, render, and check.</p>
+        <a class="w-fit rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit/blob/main/LICENSE.txt">MIT License</a>
+      </div>
+    </footer>
+  </body>
+</html>

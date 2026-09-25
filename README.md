@@ -2,6 +2,8 @@
 
 `breadkit` provides the Ruby DSL, board and part definitions, connectivity analysis, and JSON IR used by [`breadkit-render`](https://github.com/breadkit/breadkit-render) and [`breadkit-lint`](https://github.com/breadkit/breadkit-lint).
 
+Project site: https://breadkit.github.io/breadkit/
+
 ```sh
 gem install breadkit
 breadkit nets circuit.bk.rb

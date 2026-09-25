@@ -11,3 +11,5 @@
 Gemfile.lock
 .rspec_status
 *.gem
+node_modules/
+_site/
