@@ -1,0 +1,31 @@
+AllRules:
+  SwitchStates: single
+  FailLevel: warning
+  NewRules: enable
+
+Layout/InvalidHole: {Enabled: true, Severity: error}
+Layout/UnknownPart: {Enabled: true, Severity: error}
+Layout/UnknownPin: {Enabled: true, Severity: error}
+Layout/DuplicateRef: {Enabled: true, Severity: error}
+Layout/InvalidPlacement: {Enabled: true, Severity: error}
+Layout/HoleConflict: {Enabled: true, Severity: error}
+Layout/NoFreeHole: {Enabled: true, Severity: error}
+Layout/PinsInSameStrip: {Enabled: true, Severity: error}
+Electrical/ShortCircuit: {Enabled: true, Severity: error}
+Electrical/ShortedComponent: {Enabled: true, Severity: warning}
+Electrical/FloatingPin: {Enabled: true, Severity: warning}
+Electrical/DanglingWire: {Enabled: true, Severity: warning}
+Electrical/SplitRail: {Enabled: true, Severity: warning}
+Electrical/MissingSeriesResistor: {Enabled: true, Severity: error}
+Electrical/ReversePolarity: {Enabled: true, Severity: error}
+Electrical/PowerPinUnconnected: {Enabled: true, Severity: warning}
+Electrical/SupplyVoltageRange: {Enabled: true, Severity: error}
+Electrical/NoCommonGround: {Enabled: true, Severity: warning}
+Electrical/NetLabelConflict: {Enabled: true, Severity: error}
+Intent/ConnectionMismatch: {Enabled: true, Severity: error}
+Intent/UnknownNet: {Enabled: true, Severity: error}
+Style/WireColor:
+  Enabled: true
+  Severity: info
+  PositiveColors: [red, orange]
+  GroundColors: [black, blue]

@@ -1,0 +1,23 @@
+rules:
+  Layout/InvalidHole: A hole does not exist on the selected board.
+  Layout/UnknownPart: The part definition is not available.
+  Layout/UnknownPin: A component pin reference does not exist.
+  Layout/DuplicateRef: A component or wire identifier is repeated.
+  Layout/InvalidPlacement: A component footprint does not fit the board.
+  Layout/HoleConflict: More than one lead occupies the same hole.
+  Layout/NoFreeHole: Automatic placement could not find a free hole.
+  Layout/PinsInSameStrip: Two pins of one component share a conductive strip.
+  Electrical/ShortCircuit: Power constraints produce inconsistent voltages.
+  Electrical/ShortedComponent: A two-pin component is bypassed.
+  Electrical/FloatingPin: A component pin has no external connection.
+  Electrical/DanglingWire: A wire end has no other connection.
+  Electrical/SplitRail: A used segment of a split rail has no supply.
+  Electrical/MissingSeriesResistor: An LED has an unprotected path across a supply.
+  Electrical/ReversePolarity: A polarized part is connected backwards.
+  Electrical/PowerPinUnconnected: An IC power or ground pin is not connected to a supply.
+  Electrical/SupplyVoltageRange: An IC supply voltage is outside its rated range.
+  Electrical/NoCommonGround: Power supplies do not share a ground.
+  Electrical/NetLabelConflict: Different labels name one net.
+  Intent/ConnectionMismatch: Wiring differs from declared expectations.
+  Intent/UnknownNet: An expectation refers to an unknown net.
+  Style/WireColor: A wire color differs from the supply color convention.

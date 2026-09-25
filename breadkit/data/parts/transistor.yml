@@ -1,0 +1,9 @@
+id: transistor
+aliases: [2N3904]
+category: transistor
+placement: leads
+pins:
+  - {num: 1, name: emitter, aliases: [e]}
+  - {num: 2, name: base, aliases: [b]}
+  - {num: 3, name: collector, aliases: [c]}
+render: {shape: generic}

@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: bundler
+    directory: "/breadkit"
+    schedule:
+      interval: weekly
+  - package-ecosystem: bundler
+    directory: "/breadkit-render"
+    schedule:
+      interval: weekly
+  - package-ecosystem: bundler
+    directory: "/breadkit-lint"
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

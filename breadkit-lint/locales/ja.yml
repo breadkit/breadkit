@@ -1,0 +1,23 @@
+rules:
+  Layout/InvalidHole: 選択したボードに存在しない穴です。
+  Layout/UnknownPart: パーツ定義が見つかりません。
+  Layout/UnknownPin: 指定した部品ピンが存在しません。
+  Layout/DuplicateRef: 部品記号またはワイヤ ID が重複しています。
+  Layout/InvalidPlacement: 部品の配置がボードに収まりません。
+  Layout/HoleConflict: 同じ穴に複数のリードが挿されています。
+  Layout/NoFreeHole: 自動配置できる空き穴がありません。
+  Layout/PinsInSameStrip: 同じ部品の複数ピンが同一ストリップに接続しています。
+  Electrical/ShortCircuit: 電源間の電位に矛盾があります。
+  Electrical/ShortedComponent: 2端子部品が迂回されています。
+  Electrical/FloatingPin: 部品ピンが外部に接続されていません。
+  Electrical/DanglingWire: ワイヤの端が他の要素に接続されていません。
+  Electrical/SplitRail: 分断された電源レールの一部に電源がありません。
+  Electrical/MissingSeriesResistor: LED に電流制限抵抗がありません。
+  Electrical/ReversePolarity: 有極性部品が逆向きに接続されています。
+  Electrical/PowerPinUnconnected: IC の電源ピンまたは GND ピンが電源につながっていません。
+  Electrical/SupplyVoltageRange: IC の電源電圧が定格範囲外です。
+  Electrical/NoCommonGround: 複数の電源で GND が共通化されていません。
+  Electrical/NetLabelConflict: 同じネットに異なる名前が付いています。
+  Intent/ConnectionMismatch: 宣言した接続と実際の配線が異なります。
+  Intent/UnknownNet: 宣言で参照したネットが見つかりません。
+  Style/WireColor: 電源レールの慣例とワイヤ色が異なります。

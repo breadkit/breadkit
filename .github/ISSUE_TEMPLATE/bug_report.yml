@@ -1,0 +1,24 @@
+name: Bug report
+description: Report a Breadkit defect
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Include the smallest DSL or IR file that reproduces the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Command and output
+      description: Include the full command and bklint/bkrender output.
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Ruby and Breadkit versions
+      placeholder: Ruby 4.0.0; breadkit 0.1.0
+    validations:
+      required: true

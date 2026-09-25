@@ -1,0 +1,22 @@
+name: Part request
+description: Request a built-in breadboard part definition
+body:
+  - type: input
+    id: part
+    attributes:
+      label: Part name and exact model
+    validations:
+      required: true
+  - type: input
+    id: datasheet
+    attributes:
+      label: Datasheet URL
+    validations:
+      required: true
+  - type: textarea
+    id: pinout
+    attributes:
+      label: Pinout and breadboard footprint
+      description: Include pin names, numbering, spacing, and internal connections.
+    validations:
+      required: true
