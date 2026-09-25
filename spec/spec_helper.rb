@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+require "simplecov"
+SimpleCov.start do
+  skip "/spec/"
+  coverage :line, minimum: 90
+end
+
 require "breadkit"
 
 RSpec.configure do |config|

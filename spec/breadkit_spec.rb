@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "json_schemer"
+
 RSpec.describe Breadkit do
   describe Breadkit::Value do
     it "parses engineering suffixes and RKM values" do
@@ -35,7 +37,7 @@ RSpec.describe Breadkit do
   end
 
   describe "DSL and analysis" do
-    let(:path) { File.expand_path("../examples/01_led_button.bk.rb", __dir__) }
+    let(:path) { File.expand_path("../../examples/01_led_button.bk.rb", __dir__) }
     let(:circuit) { Breadkit.load(path) }
 
     it "resolves the example and assigns automatic rail holes deterministically" do
@@ -48,9 +50,17 @@ RSpec.describe Breadkit do
       expect(circuit.net_of("SW1.3", circuit.states.last).name).to eq("VCC")
     end
 
-    it "round-trips resolved circuits through IR" do
-      loaded = Breadkit::IR::Reader.new.read(circuit.to_ir)
-      expect(loaded.to_ir).to eq(circuit.to_ir)
+    it "round-trips every example through schema-valid IR" do
+      schema = JSON.parse(File.read(File.expand_path("../schema/ir-v1.json", __dir__)))
+      schemer = JSONSchemer.schema(schema)
+      examples = Dir[File.expand_path("../../examples/*.bk.rb", __dir__)].sort
+
+      examples.each do |path|
+        ir = Breadkit.load(path).to_ir
+        expect(schemer.validate(ir).to_a).to be_empty, "#{File.basename(path)} does not match schema"
+        expect(Breadkit::IR::Reader.new.read(ir).to_ir).to eq(ir)
+      end
+      expect(schemer.valid?({ "schema_version" => 1 })).to be(false)
     end
   end
 
@@ -77,7 +87,7 @@ RSpec.describe Breadkit do
     circuit = Breadkit::Resolver.new.call(builder.document)
     expect(circuit.diagnostics.map(&:code)).to include("unknown_pin", "unknown_net")
 
-    short = Breadkit.load(File.expand_path("../examples/bad/short_circuit.bk.rb", __dir__))
+    short = Breadkit.load(File.expand_path("../../examples/bad/short_circuit.bk.rb", __dir__))
     path = short.shortest_path("USB.+", "USB.-")
     expect(path).to include("W1", "W2")
     expect(path.length).to be < 10
@@ -129,6 +139,36 @@ RSpec.describe Breadkit do
       builder.instance_eval("board :half; #{source}", "diagnostic.bk.rb", 1)
       codes = Breadkit::Resolver.new.call(builder.document).diagnostics.map(&:code)
       expect(codes).to include(expected.to_s), "expected #{expected} from #{source}"
+    end
+  end
+
+  describe Breadkit::CLI do
+    let(:example) { File.expand_path("../../examples/01_led_button.bk.rb", __dir__) }
+
+    it "prints nets, switch states, IR, and part definitions" do
+      status = nil
+      expect { status = described_class.new.run(["nets", example]) }.to output(/VCC:/).to_stdout
+      expect(status).to eq(0)
+      expect { status = described_class.new.run(["nets", example, "--state", "SW1"]) }.to output(/VCC:/).to_stdout
+      expect(status).to eq(0)
+      expect { status = described_class.new.run(["ir", example]) }.to output(/"schema_version": 1/).to_stdout
+      expect(status).to eq(0)
+      expect { status = described_class.new.run(["parts"]) }.to output(/pin_header/).to_stdout
+      expect(status).to eq(0)
+    end
+
+    it "returns usage and input errors with non-success statuses" do
+      cli = described_class.new
+      status = nil
+      expect { status = cli.run(["nets"]) }.to output(/usage: breadkit nets FILE/).to_stderr
+      expect(status).to eq(2)
+      expect { status = cli.run(["nets", example, "--state", "missing"]) }
+        .to output(/unknown switch state missing/).to_stderr
+      expect(status).to eq(2)
+      expect { status = cli.run(["unknown"]) }.to output(/Usage: breadkit/).to_stdout
+      expect(status).to eq(2)
+      expect { status = cli.run(["--help"]) }.to output(/Usage: breadkit/).to_stdout
+      expect(status).to eq(0)
     end
   end
 end
