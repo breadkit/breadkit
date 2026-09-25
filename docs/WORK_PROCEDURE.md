@@ -274,7 +274,7 @@ breadkit-render と breadkit-lint のローカルテストは隣の breadkit che
 
 **作業**：`breadkit ir` / `nets` / `parts` を `OptionParser` で実装。YARD コメントを公開 API に付ける。
 
-**完了条件**：`bundle exec exe/breadkit nets ../examples/01_led_button.bk.rb` でネット一覧が表示される。 → **M2 達成**
+**完了条件**：`bundle exec exe/breadkit nets examples/01_led_button.bk.rb` でネット一覧が表示される。 → **M2 達成**
 
 ---
 
@@ -350,9 +350,9 @@ end
 **完了条件**
 
 ```sh
-bundle exec exe/bkrender ../examples/01_led_button.bk.rb -o /tmp/led.svg
-bundle exec exe/bkrender ../examples/01_led_button.bk.rb -o /tmp/led.png --scale 3
-bundle exec exe/bkrender ../examples/01_led_button.bk.rb | head -c 100   # 標準出力に SVG
+bundle exec exe/bkrender examples/01_led_button.bk.rb -o /tmp/led.svg
+bundle exec exe/bkrender examples/01_led_button.bk.rb -o /tmp/led.png --scale 3
+bundle exec exe/bkrender examples/01_led_button.bk.rb | head -c 100   # 標準出力に SVG
 ```
 
 がすべて成功し、終了コードが設計どおり。 → **M3 達成**

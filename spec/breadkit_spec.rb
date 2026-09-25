@@ -37,7 +37,7 @@ RSpec.describe Breadkit do
   end
 
   describe "DSL and analysis" do
-    let(:path) { File.expand_path("../../examples/01_led_button.bk.rb", __dir__) }
+    let(:path) { File.expand_path("../examples/01_led_button.bk.rb", __dir__) }
     let(:circuit) { Breadkit.load(path) }
 
     it "resolves the example and assigns automatic rail holes deterministically" do
@@ -53,7 +53,7 @@ RSpec.describe Breadkit do
     it "round-trips every example through schema-valid IR" do
       schema = JSON.parse(File.read(File.expand_path("../schema/ir-v1.json", __dir__)))
       schemer = JSONSchemer.schema(schema)
-      examples = Dir[File.expand_path("../../examples/*.bk.rb", __dir__)].sort
+      examples = Dir[File.expand_path("../examples/*.bk.rb", __dir__)].sort
 
       examples.each do |path|
         ir = Breadkit.load(path).to_ir
@@ -87,7 +87,7 @@ RSpec.describe Breadkit do
     circuit = Breadkit::Resolver.new.call(builder.document)
     expect(circuit.diagnostics.map(&:code)).to include("unknown_pin", "unknown_net")
 
-    short = Breadkit.load(File.expand_path("../../examples/bad/short_circuit.bk.rb", __dir__))
+    short = Breadkit.load(File.expand_path("../examples/bad/short_circuit.bk.rb", __dir__))
     path = short.shortest_path("USB.+", "USB.-")
     expect(path).to include("W1", "W2")
     expect(path.length).to be < 10
@@ -143,7 +143,7 @@ RSpec.describe Breadkit do
   end
 
   describe Breadkit::CLI do
-    let(:example) { File.expand_path("../../examples/01_led_button.bk.rb", __dir__) }
+    let(:example) { File.expand_path("../examples/01_led_button.bk.rb", __dir__) }
 
     it "prints nets, switch states, IR, and part definitions" do
       status = nil
