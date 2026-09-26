@@ -19,10 +19,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, ruby: "3.3" }
-          - { os: ubuntu-latest, ruby: "3.4" }
-          - { os: ubuntu-latest, ruby: "4.0" }
-          - { os: macos-latest, ruby: "4.0" }
+          - os: ubuntu-latest
+            ruby: "3.3"
+          - os: ubuntu-latest
+            ruby: "3.4"
+          - os: ubuntu-latest
+            ruby: "4.0"
+          - os: macos-latest
+            ruby: "4.0"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
