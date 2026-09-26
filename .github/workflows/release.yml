@@ -12,7 +12,6 @@ concurrency:
 
 jobs:
   publish:
-    if: ${{ vars.RUBYGEMS_TRUSTED_PUBLISHING == 'enabled' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: release
@@ -29,12 +28,6 @@ jobs:
           bundler: default
       - name: Verify tag matches gem version
         run: test "v$(ruby -e 'require_relative "lib/breadkit/version"; print Breadkit::VERSION')" = "$GITHUB_REF_NAME"
-      - name: Configure RubyGems Trusted Publishing
-        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
-      - name: Build with strict gem validation
-        run: gem build --strict breadkit.gemspec --output "$RUNNER_TEMP/package.gem"
-      - name: Publish breadkit
-        run: gem push "$RUNNER_TEMP/package.gem"
       - name: Prepare release notes
         run: |
           version="${GITHUB_REF_NAME#v}"
@@ -46,6 +39,12 @@ jobs:
             END { if (!found) exit 1 }
           ' CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
           grep -q '[^[:space:]]' "$RUNNER_TEMP/release-notes.md"
+      - name: Build with strict gem validation
+        run: gem build --strict breadkit.gemspec --output "$RUNNER_TEMP/package.gem"
+      - name: Configure RubyGems Trusted Publishing
+        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+      - name: Publish breadkit
+        run: gem push "$RUNNER_TEMP/package.gem"
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
