@@ -4,31 +4,49 @@ on:
   push:
     tags: ["v*"]
 
-permissions:
-  contents: read
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
-  release:
+  publish:
     if: ${{ vars.RUBYGEMS_TRUSTED_PUBLISHING == 'enabled' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: release
     permissions:
       contents: write
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073 # v1.324.0
         with:
           ruby-version: "4.0"
+          bundler: default
       - name: Verify tag matches gem version
         run: test "v$(ruby -e 'require_relative "lib/breadkit/version"; print Breadkit::VERSION')" = "$GITHUB_REF_NAME"
       - name: Configure RubyGems Trusted Publishing
         uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
-      - name: Build and push breadkit
-        run: gem build breadkit.gemspec && gem push "breadkit-${GITHUB_REF_NAME#v}.gem"
+      - name: Build with strict gem validation
+        run: gem build --strict breadkit.gemspec --output "$RUNNER_TEMP/package.gem"
+      - name: Publish breadkit
+        run: gem push "$RUNNER_TEMP/package.gem"
+      - name: Prepare release notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v version="$version" '
+            $0 == "## " version || index($0, "## " version " ") == 1 ||
+            $0 == "## [" version "]" || index($0, "## [" version "] ") == 1 { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+            END { if (!found) exit 1 }
+          ' CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
+          grep -q '[^[:space:]]' "$RUNNER_TEMP/release-notes.md"
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/release-notes.md"

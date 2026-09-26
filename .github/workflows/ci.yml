@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -20,10 +24,10 @@ jobs:
           - { os: ubuntu-latest, ruby: "4.0" }
           - { os: macos-latest, ruby: "4.0" }
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073 # v1.324.0
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
@@ -37,4 +41,32 @@ jobs:
           for file in examples/*.bk.rb; do
             bundle exec breadkit nets "$file" > /dev/null
           done
-      - run: gem build breadkit.gemspec
+
+  package:
+    name: Strict gem build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073 # v1.324.0
+        with:
+          ruby-version: "4.0"
+          bundler: default
+      - run: gem build --strict breadkit.gemspec
+
+  signatures:
+    name: RBS signatures
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073 # v1.324.0
+        with:
+          ruby-version: "4.0"
+          bundler: default
+      - run: gem install rbs --no-document # zizmor: ignore[adhoc-packages]
+      - run: rbs -I sig validate
