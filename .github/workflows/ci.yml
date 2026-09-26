@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, ruby: "3.3" }
+          - { os: ubuntu-latest, ruby: "3.4" }
+          - { os: ubuntu-latest, ruby: "4.0" }
+          - { os: macos-latest, ruby: "4.0" }
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: bundle exec rake
+      - name: Read examples under C locale
+        if: matrix.os == 'ubuntu-latest' && matrix.ruby == '4.0'
+        env:
+          LANG: C
+          LC_ALL: C
+        run: |
+          for file in examples/*.bk.rb; do
+            bundle exec breadkit nets "$file" > /dev/null
+          done
+      - run: gem build breadkit.gemspec

@@ -1,0 +1,10 @@
+# Pin order: https://www.onsemi.com/pdf/datasheet/2n3906-d.pdf
+id: 2n3906
+category: transistor
+transistor_polarity: PNP
+placement: leads
+pins:
+  - {num: 1, name: emitter, aliases: [e]}
+  - {num: 2, name: base, aliases: [b]}
+  - {num: 3, name: collector, aliases: [c]}
+render: {shape: generic}

@@ -1,0 +1,8 @@
+id: mini
+name: Mini breadboard (170 tie points)
+terminal:
+  columns: 17
+  rows: [a, b, c, d, e, f, g, h, i, j]
+  groups: [[a, b, c, d, e], [f, g, h, i, j]]
+  ravine_between: [e, f]
+rails: []

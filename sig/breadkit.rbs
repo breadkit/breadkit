@@ -1,0 +1,180 @@
+module Breadkit
+  VERSION: String
+
+  class Error < StandardError
+  end
+
+  class DSLError < Error
+  end
+
+  def self.load: (String path) -> Circuit
+
+  class SourceLocation
+    attr_reader path: String
+    attr_reader line: Integer?
+  end
+
+  class Diagnostic
+    attr_reader code: String
+    attr_reader severity: String
+    attr_reader message: String
+    attr_reader location: SourceLocation?
+    attr_reader targets: Array[String]
+  end
+
+  class Pin
+    attr_reader name: String
+    attr_reader hole_id: String?
+    attr_reader node_id: String?
+  end
+
+  class Component
+    attr_reader ref: String
+    attr_reader part: PartDef
+    attr_reader pins: Hash[String, Pin]
+    def pin: (String | Symbol | Integer reference) -> Pin?
+  end
+
+  class Wire
+    attr_reader id: String
+    attr_reader from: String
+    attr_reader to: String
+    attr_reader electrical: bool
+  end
+
+  class Supply
+    attr_reader name: String
+    attr_reader voltage: Float
+    attr_reader plus: String
+    attr_reader minus: String
+    attr_reader location: SourceLocation?
+  end
+
+  class Label
+    attr_reader name: String
+    attr_reader at: String
+    attr_reader location: SourceLocation?
+  end
+
+  class Net
+    attr_reader name: String
+    attr_reader members: Array[String]
+    attr_reader holes: Array[String]
+    attr_reader potential: Float?
+  end
+
+  class State
+    attr_reader name: String?
+    attr_reader closed_switches: Array[untyped]
+  end
+
+  class PotentialResult
+    attr_reader values: Hash[String, Float]
+    attr_reader conflicts: Array[untyped]
+  end
+
+  class Circuit
+    attr_reader title: String?
+    attr_reader board: Board
+    attr_reader components: Hash[String, Component]
+    attr_reader wires: Array[Wire]
+    attr_reader supplies: Array[Supply]
+    attr_reader labels: Array[Label]
+    attr_reader expectations: Array[Hash[Symbol, untyped]]
+    attr_reader lint_disables: Array[Hash[Symbol, untyped]]
+    attr_reader diagnostics: Array[Diagnostic]
+    def states: (?String mode) -> Array[State]
+    def nets: (?State? state) -> Array[Net]
+    def potentials: (?State? state) -> PotentialResult
+    def net_of: (String reference, ?State? state) -> Net?
+    def shortest_path: (String a, String b, ?State? state) -> Array[untyped]
+    def to_ir: () -> Hash[String, untyped]
+  end
+
+  class BoardDef
+    attr_reader data: Hash[String, untyped]
+    def initialize: (Hash[String, untyped] data) -> void
+    def id: () -> String
+    def self.load: (String | Symbol id, ?extra_paths: Array[String], ?extra_definitions: Array[Hash[String, untyped]]) -> BoardDef
+  end
+
+  class Board
+    attr_reader definition: BoardDef
+    attr_reader holes: Hash[String, untyped]
+    attr_reader strips: Hash[String, Array[String]]
+    def initialize: (BoardDef definition, ?split_rails: bool) -> void
+    def hole: (String id) -> untyped
+    def strip: (String id) -> Array[String]?
+    def width: () -> Integer
+    def height: () -> Integer
+    def row_count: () -> Integer
+    def terminal_rows: () -> Array[String]
+    def ravine_between: () -> Array[String]
+    def rail_ids: () -> Array[String]
+    def rail_polarity: (String id) -> String?
+  end
+
+  class HoleId
+    attr_reader kind: Symbol
+    attr_reader row: String?
+    attr_reader col: Integer?
+    attr_reader rail: String?
+    def self.parse: (String value, ?board: Board?) -> HoleId
+    def to_s: () -> String
+  end
+
+  class PartDef
+    attr_reader data: Hash[String, untyped]
+    def initialize: (Hash[String, untyped] data) -> void
+    def id: () -> String
+    def pins: () -> Array[Hash[String, untyped]]
+    def placement: () -> String
+    def pin: (String | Symbol | Integer value) -> Hash[String, untyped]?
+  end
+
+  class PartLibrary
+    def initialize: (?extra_paths: Array[String], ?extra_definitions: Array[Hash[String, untyped]]) -> void
+    def find: (String | Symbol name, ?pin_count: Integer?) -> PartDef?
+    def all: () -> Array[PartDef]
+  end
+
+  class Value
+    attr_reader value: Float
+    attr_reader unit: String
+    def initialize: (String | Numeric value) -> void
+    def self.parse: (String | Numeric input) -> Float
+    def to_s: () -> String
+  end
+
+  class Resolver
+    def call: (Document document) -> Circuit
+  end
+
+  class CLI
+    def run: (Array[String] argv) -> Integer
+  end
+
+  class Document
+    attr_accessor title: String?
+    attr_accessor board: Hash[Symbol, untyped]
+    attr_accessor board_paths: Array[String]
+    attr_accessor board_definitions: Array[Hash[String, untyped]]
+    attr_accessor part_paths: Array[String]
+    attr_accessor part_definitions: Array[Hash[String, untyped]]
+  end
+
+  module DSL
+    def self.load_file: (String path) -> Document
+  end
+
+  module IR
+    class Writer
+      def write: (Circuit circuit) -> Hash[String, untyped]
+    end
+
+    class Reader
+      def read_file: (String path) -> Circuit
+      def read: (Hash[String, untyped] data) -> Circuit
+    end
+  end
+end

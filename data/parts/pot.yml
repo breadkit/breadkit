@@ -1,0 +1,12 @@
+id: pot
+category: passive
+placement: footprint
+pins:
+  - {num: 1, name: left}
+  - {num: 2, name: wiper}
+  - {num: 3, name: right}
+footprint:
+  "1": [0, 0]
+  "2": [1, 0]
+  "3": [2, 0]
+render: {shape: generic}

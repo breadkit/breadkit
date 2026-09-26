@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@source "./**/*.html";
+
+@theme {
+  --color-ink: #101719;
+  --color-board: #1b2423;
+  --color-line: #3d4b47;
+  --color-paper: #e8eeeb;
+  --color-muted: #a1b0aa;
+  --color-copper: #d99755;
+  --font-sans: "Avenir Next", Avenir, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Breadkit part definition v1",
+  "type": "object",
+  "required": ["id", "pins"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "aliases": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "category": { "type": "string" },
+    "placement": { "enum": ["leads", "dip", "footprint", "offboard"] },
+    "pins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["num"],
+        "properties": {
+          "num": { "type": ["integer", "string"] },
+          "name": { "type": "string" },
+          "aliases": { "type": "array", "items": { "type": "string" } },
+          "type": { "type": "string" },
+          "role": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "polarity": { "type": "object", "additionalProperties": { "type": ["string", "integer"] } },
+    "footprint": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array", "prefixItems": [{ "type": "integer" }, { "type": "integer" }],
+        "minItems": 2, "maxItems": 2
+      }
+    },
+    "internal": { "$ref": "#/$defs/pairs" },
+    "switch": { "$ref": "#/$defs/pairs" },
+    "same_strip_ok": { "$ref": "#/$defs/pairs" }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "pairs": {
+      "type": "array",
+      "items": {
+        "type": "array", "prefixItems": [{ "type": ["string", "integer"] }, { "type": ["string", "integer"] }],
+        "minItems": 2, "maxItems": 2
+      }
+    }
+  }
+}

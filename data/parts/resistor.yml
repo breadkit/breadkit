@@ -1,0 +1,7 @@
+id: resistor
+category: passive
+placement: leads
+pins:
+  - {num: 1, name: "1"}
+  - {num: 2, name: "2"}
+render: {shape: resistor}

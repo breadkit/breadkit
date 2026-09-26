@@ -1,0 +1,23 @@
+id: sht31
+category: module
+placement: offboard
+pins:
+  - num: 1
+    name: VIN
+    type: power
+  - num: 2
+    name: GND
+    type: ground
+  - num: 3
+    name: SCL
+    type: clock
+  - num: 4
+    name: SDA
+    type: data
+  - num: 5
+    name: ADR
+    type: address
+  - num: 6
+    name: ALR
+    type: interrupt
+render: {shape: offboard, label: SHT31}

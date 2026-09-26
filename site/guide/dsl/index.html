@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101719">
+    <meta name="description" content="Breadkit DSL reference: declarations, component placement, hole and pin references, layers, switch states, and CLI commands.">
+    <title>DSL reference | Breadkit</title>
+    <link rel="canonical" href="https://breadkit.github.io/breadkit/guide/dsl/">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../../assets/site.css">
+  </head>
+  <body class="min-h-dvh bg-ink font-sans text-paper antialiased">
+    <a class="sr-only rounded-sm bg-copper px-4 py-3 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:outline-2 focus:outline-offset-4 focus:outline-paper" href="#main">Skip to content</a>
+    <header class="border-b border-line">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-10">
+        <a class="flex items-center gap-3 rounded-sm text-xl font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../../" aria-label="Breadkit home"><img class="size-8" src="../../favicon.svg" alt="" width="32" height="32"><span>breadkit</span></a>
+        <nav aria-label="Main navigation" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../">Guide</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../components/">Components</a>
+          <a class="rounded-sm text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./" aria-current="page">Reference</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-render/">Render</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-lint/">Lint</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="mx-auto grid max-w-7xl gap-10 px-5 py-10 sm:px-8 lg:grid-cols-12 lg:px-10">
+      <aside class="border-b border-line pb-6 lg:col-span-2 lg:self-start lg:sticky lg:top-8 lg:border-b-0 lg:pb-0" aria-label="Guide chapters">
+        <p class="mb-4 text-sm font-semibold">User guide</p>
+        <nav aria-label="Guide navigation" class="flex flex-wrap gap-x-5 gap-y-3 text-sm text-muted lg:flex-col lg:gap-3">
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../">Getting started</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../components/">Components and modules</a>
+          <a class="rounded-sm text-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./" aria-current="page">DSL reference</a>
+          <span class="hidden border-t border-line pt-4 text-xs text-muted lg:block">Related tools</span>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-render/">Render a diagram</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-lint/">Check a circuit</a>
+        </nav>
+      </aside>
+
+      <main id="main" class="min-w-0 lg:col-span-10 xl:col-span-8">
+        <p class="text-sm font-medium text-copper">Breadkit / Reference</p>
+        <h1 class="mt-3 text-balance text-4xl font-semibold leading-tight sm:text-5xl">DSL reference</h1>
+        <p class="mt-6 max-w-3xl text-pretty text-lg leading-8 text-muted">A <code class="font-mono text-paper">.bk.rb</code> file describes the board, parts, wires, and expected connections. Breadkit resolves it into nets and JSON IR. The file runs as Ruby, so only load files you trust.</p>
+
+        <section id="example" class="scroll-mt-8 mt-12 border-t border-line pt-10">
+          <h2 class="text-balance text-2xl font-semibold">A small circuit</h2>
+          <p class="mt-4 text-pretty leading-7 text-muted">This is the button and LED example used in the <a class="text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../#led-example">guide</a>.</p>
+          <pre class="mt-5 overflow-x-auto rounded-lg border border-line bg-board p-5 font-mono text-sm leading-6"><code>title "Button-controlled LED"
+board :half
+supply :USB, voltage: 5.0, plus: "B+1", minus: "B-1"
+net :VCC, at: "B+1"
+net :GND, at: "B-1"
+
+button :SW1, at: "e10"
+resistor :R1, "330", pins: %w[a12 a16]
+led :D1, color: :red, anode: "b16", cathode: "b17"
+wire "a10", "B+", color: :red
+wire "a17", "B-", color: :black
+
+expect do
+  connected "SW1.1", :VCC
+  isolated :VCC, :GND
+end</code></pre>
+        </section>
+
+        <section id="declarations" class="scroll-mt-8 mt-12 border-t border-line pt-10">
+          <h2 class="text-balance text-2xl font-semibold">Declarations</h2>
+          <div class="mt-6 overflow-x-auto rounded-lg border border-line">
+            <table class="w-full min-w-2xl border-collapse text-left text-sm">
+              <thead class="bg-board"><tr><th class="px-4 py-3 font-semibold">Method</th><th class="px-4 py-3 font-semibold">Purpose</th></tr></thead>
+              <tbody class="text-muted">
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">title(text)</th><td class="px-4 py-4">Set the diagram title.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">board(id, split_rails: false)</th><td class="px-4 py-4">Select <code>:full</code>, <code>:half</code>, <code>:mini</code>, or a custom board ID.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">use_parts(path) / use_boards(path)</th><td class="px-4 py-4">Load YAML definitions relative to the DSL file. Globs are supported.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">supply(name, voltage:, plus:, minus:)</th><td class="px-4 py-4">Add a DC source. Both terminals occupy board holes.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">net(name, at:)</th><td class="px-4 py-4">Label a hole or component pin.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">part(ref, type, value = nil, pins: ..., at: ..., **attrs)</th><td class="px-4 py-4">Place a defined part. <code>pins:</code> accepts an ordered array or a pin-name hash.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">wire(from, to, color: nil, route: :straight, layer: nil)</th><td class="px-4 py-4">Connect holes or pins. Use <code>route: :arc</code> for a curve or <code>route: :edge</code> around the board edge. Options also include <code>id:</code>, <code>electrical:</code>, and <code>dashed:</code>.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">offboard(name, type, side: :left, at: nil, unused: [])</th><td class="px-4 py-4">Place a module beside the board. <code>at:</code> aligns its first pin; extra attributes such as <code>address:</code> appear on the module.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">expect(strict: false) { ... }</th><td class="px-4 py-4">Declare <code>connected</code>, <code>isolated</code>, or named <code>net</code> expectations. Strict mode also rejects unlisted pins on declared nets.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">lint_disable(rule, on: nil, reason: nil)</th><td class="px-4 py-4">Suppress a lint rule, optionally for one target.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-5 text-pretty leading-7 text-muted">Short forms are available for <code class="font-mono text-paper">resistor</code>, <code class="font-mono text-paper">capacitor</code>, <code class="font-mono text-paper">electrolytic</code>, <code class="font-mono text-paper">diode</code>, <code class="font-mono text-paper">led</code>, <code class="font-mono text-paper">transistor</code>, <code class="font-mono text-paper">pot</code>, <code class="font-mono text-paper">button</code>, and <code class="font-mono text-paper">ic</code>. See the <a class="text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../components/">component examples</a>.</p>
+        </section>
+
+        <section id="references" class="scroll-mt-8 mt-12 border-t border-line pt-10">
+          <h2 class="text-balance text-2xl font-semibold">Hole and pin references</h2>
+          <ul class="mt-5 list-disc space-y-3 pl-6 text-pretty leading-7 text-muted">
+            <li>Terminal holes use rows <code class="font-mono text-paper">a</code> through <code class="font-mono text-paper">j</code> and 1-based numbers, such as <code class="font-mono text-paper">a10</code> or <code class="font-mono text-paper">J30</code>.</li>
+            <li>Rail holes use <code class="font-mono text-paper">T+</code>, <code class="font-mono text-paper">T-</code>, <code class="font-mono text-paper">B+</code>, and <code class="font-mono text-paper">B-</code>, with an optional 1-based index. A rail without an index selects a free hole.</li>
+            <li>Custom board YAML may define other row and rail IDs. Rows <code class="font-mono text-paper">u</code> and <code class="font-mono text-paper">v</code> use <code class="font-mono text-paper">u1</code> and <code class="font-mono text-paper">v1</code>; a rail with <code class="font-mono text-paper">id: PWR</code> uses <code class="font-mono text-paper">PWR1</code> or <code class="font-mono text-paper">PWR</code>. Set rail <code class="font-mono text-paper">polarity:</code> to <code class="font-mono text-paper">+</code> or <code class="font-mono text-paper">-</code> for polarity-aware rendering.</li>
+            <li>Component pins use names such as <code class="font-mono text-paper">R1.1</code>, <code class="font-mono text-paper">D1.anode</code>, or <code class="font-mono text-paper">U1.VCC</code>. A wire endpoint referencing a placed pin selects a free hole on its conductive strip.</li>
+            <li><code class="font-mono text-paper">ne555</code> and generic <code class="font-mono text-paper">dip</code> parts must straddle the center gap. For a generic DIP, set <code class="font-mono text-paper">pin_count</code>, such as <code class="font-mono text-paper">part :U2, :dip, pin_count: 14, at: "e20"</code>.</li>
+            <li>A generic header can be sized with <code class="font-mono text-paper">part :J1, :pin_header, pin_count: 4, pins: %w[a1 a2 a3 a4]</code>.</li>
+          </ul>
+          <p class="mt-5 text-pretty leading-7 text-muted">Values accept SI suffixes and RKM notation, including <code class="font-mono text-paper">4.7k</code>, <code class="font-mono text-paper">4k7</code>, <code class="font-mono text-paper">1M</code>, <code class="font-mono text-paper">100n</code>, and <code class="font-mono text-paper">10uF</code>.</p>
+        </section>
+
+        <section id="layers" class="scroll-mt-8 mt-12 border-t border-line pt-10">
+          <h2 class="text-balance text-2xl font-semibold">Layers and module pins</h2>
+          <p class="mt-4 text-pretty leading-7 text-muted">Give wires and components the same <code class="font-mono text-paper">layer:</code> to show them together in an interactive SVG. A layer can be one name or a list of names. Components without a layer remain visible in every view. Use <code class="font-mono text-paper">electrical: false, dashed: true</code> for an alternate visual connection that does not affect connectivity.</p>
+          <p class="mt-4 text-pretty leading-7 text-muted">Custom YAML definitions can mark module pins with <code class="font-mono text-paper">type:</code> values such as <code class="font-mono text-paper">power</code>, <code class="font-mono text-paper">ground</code>, <code class="font-mono text-paper">clock</code>, <code class="font-mono text-paper">data</code>, <code class="font-mono text-paper">address</code>, or <code class="font-mono text-paper">interrupt</code>. The renderer colors those markers and dims unwired pins.</p>
+        </section>
+
+        <section id="cli" class="scroll-mt-8 mt-12 border-t border-line pt-10 pb-16">
+          <h2 class="text-balance text-2xl font-semibold">Switch states, IR, and CLI</h2>
+          <p class="mt-4 text-pretty leading-7 text-muted"><code class="font-mono text-paper">circuit.states("none")</code>, <code class="font-mono text-paper">circuit.states("single")</code>, and <code class="font-mono text-paper">circuit.states("all")</code> control switch contact simulation. <code class="font-mono text-paper">Breadkit.load(path)</code> reads DSL or JSON IR. <code class="font-mono text-paper">circuit.to_ir</code> returns the resolved circuit data, including selected hole positions.</p>
+          <pre class="mt-5 overflow-x-auto rounded-lg border border-line bg-board p-5 font-mono text-sm leading-7"><code>breadkit nets circuit.bk.rb
+breadkit parts
+breadkit ir circuit.bk.rb</code></pre>
+          <p class="mt-4 text-pretty leading-7 text-muted">Use <code class="font-mono text-paper">breadkit nets</code> to inspect connections, <code class="font-mono text-paper">breadkit parts</code> to list built-in definitions, and <code class="font-mono text-paper">breadkit ir</code> to print JSON IR.</p>
+        </section>
+      </main>
+
+      <nav class="hidden xl:col-span-2 xl:block xl:self-start xl:sticky xl:top-8" aria-label="On this page">
+        <p class="mb-4 text-sm font-semibold">On this page</p>
+        <ul class="space-y-3 border-l border-line pl-4 text-sm text-muted">
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#example">Example</a></li>
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#declarations">Declarations</a></li>
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#references">References</a></li>
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#layers">Layers and pins</a></li>
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#cli">CLI and IR</a></li>
+        </ul>
+      </nav>
+    </div>
+    <footer class="border-t border-line"><div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-7 text-sm text-muted sm:px-8 lg:px-10"><p>Use the guide for a step-by-step example.</p><a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../">Back to the guide</a></div></footer>
+  </body>
+</html>

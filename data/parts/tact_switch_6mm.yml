@@ -1,0 +1,19 @@
+id: tact_switch_6mm
+aliases: [button]
+category: switch
+placement: footprint
+straddle: true
+pins:
+  - {num: 1, name: "1"}
+  - {num: 2, name: "2"}
+  - {num: 3, name: "3"}
+  - {num: 4, name: "4"}
+footprint:
+  "1": [0, 0]
+  "2": [0, 3]
+  "3": [2, 0]
+  "4": [2, 3]
+internal: [[1, 2], [3, 4]]
+switch: [[1, 3]]
+same_strip_ok: [[1, 2], [3, 4]]
+render: {shape: tact_switch}

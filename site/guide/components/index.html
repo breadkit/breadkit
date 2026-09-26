@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101719">
+    <meta name="description" content="Breadkit component examples and custom module definitions with typed pins.">
+    <title>Components and modules | Breadkit</title>
+    <link rel="canonical" href="https://breadkit.github.io/breadkit/guide/components/">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../../assets/site.css">
+  </head>
+  <body class="min-h-dvh bg-ink font-sans text-paper antialiased">
+    <a class="sr-only rounded-sm bg-copper px-4 py-3 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:outline-2 focus:outline-offset-4 focus:outline-paper" href="#main">Skip to content</a>
+    <header class="border-b border-line">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-10">
+        <a class="flex items-center gap-3 rounded-sm text-xl font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../../" aria-label="Breadkit home"><img class="size-8" src="../../favicon.svg" alt="" width="32" height="32"><span>breadkit</span></a>
+        <nav aria-label="Main navigation" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../">Guide</a>
+          <a class="rounded-sm text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./" aria-current="page">Components</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../dsl/">Reference</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-render/">Render</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-lint/">Lint</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="mx-auto grid max-w-7xl gap-10 px-5 py-10 sm:px-8 lg:grid-cols-12 lg:px-10">
+      <aside class="border-b border-line pb-6 lg:col-span-2 lg:self-start lg:sticky lg:top-8 lg:border-b-0 lg:pb-0" aria-label="Guide chapters">
+        <p class="mb-4 text-sm font-semibold">User guide</p>
+        <nav aria-label="Guide navigation" class="flex flex-wrap gap-x-5 gap-y-3 text-sm text-muted lg:flex-col lg:gap-3">
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../">Getting started</a>
+          <a class="rounded-sm text-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./" aria-current="page">Components and modules</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../dsl/">DSL reference</a>
+          <span class="hidden border-t border-line pt-4 text-xs text-muted lg:block">Related tools</span>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-render/">Render a diagram</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-lint/">Check a circuit</a>
+        </nav>
+      </aside>
+
+      <main id="main" class="min-w-0 lg:col-span-10 xl:col-span-8">
+        <p class="text-sm font-medium text-copper">Breadkit / Components</p>
+        <h1 class="mt-3 text-balance text-4xl font-semibold leading-tight sm:text-5xl">Components and modules</h1>
+        <p class="mt-6 max-w-3xl text-pretty text-lg leading-8 text-muted">Place a component by naming the holes for its leads or its anchor hole. Use <code class="font-mono text-paper">offboard</code> for modules beside the breadboard, then wire their named pins.</p>
+
+        <section id="parts" class="scroll-mt-8 border-t border-line pt-10 mt-12">
+          <h2 class="text-balance text-2xl font-semibold">Common components</h2>
+          <p class="mt-4 text-pretty leading-7 text-muted">These built-in definitions support rendering and connection analysis. Hole positions are examples; choose positions that fit your circuit.</p>
+          <div class="mt-6 overflow-x-auto rounded-lg border border-line">
+            <table class="w-full min-w-2xl border-collapse text-left text-sm">
+              <thead class="bg-board"><tr><th class="px-4 py-3 font-semibold">Component</th><th class="px-4 py-3 font-semibold">DSL</th><th class="px-4 py-3 font-semibold">Placement</th></tr></thead>
+              <tbody class="text-muted">
+                <tr class="border-t border-line"><th class="px-4 py-4 font-semibold text-paper">Resistor</th><td class="px-4 py-4 font-mono text-paper">resistor :R1, "330", pins: %w[a12 a16]</td><td class="px-4 py-4">Two leads</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-semibold text-paper">LED</th><td class="px-4 py-4 font-mono text-paper">led :D1, color: :red, anode: "b16", cathode: "b17"</td><td class="px-4 py-4">Two polarized leads</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-semibold text-paper">Push button</th><td class="px-4 py-4 font-mono text-paper">button :SW1, at: "e10"</td><td class="px-4 py-4">Across the center gap</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-semibold text-paper">Capacitor</th><td class="px-4 py-4 font-mono text-paper">capacitor :C1, "10n", pins: %w[h23 h24]</td><td class="px-4 py-4">Two nonpolarized leads</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-semibold text-paper">Electrolytic capacitor</th><td class="px-4 py-4 font-mono text-paper">electrolytic :C2, "100u", plus: "g22", minus: "j24"</td><td class="px-4 py-4">Positive and negative leads</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-semibold text-paper">NE555</th><td class="px-4 py-4 font-mono text-paper">ic :U1, "NE555", at: "e20"</td><td class="px-4 py-4">Anchor at pin 1</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-5 text-pretty leading-7 text-muted">Built-in definitions also include diodes, transistors, and potentiometers. BC547 and BC557 use CBE pin order; 2N3904 and 2N3906 use EBC. An unknown transistor model emits a warning and uses the generic EBC order. Run <code class="font-mono text-paper">breadkit parts</code> to list definitions. Values may use units such as <code class="font-mono text-paper">4.7k</code> or <code class="font-mono text-paper">10uF</code>.</p>
+        </section>
+
+        <section id="modules" class="scroll-mt-8 border-t border-line pt-10 mt-12">
+          <h2 class="text-balance text-2xl font-semibold">Define module pins</h2>
+          <p class="mt-4 text-pretty leading-7 text-muted">Define offboard modules such as OLEDs and sensors in YAML. This excerpt from the SHT31 definition names each pin and its <code class="font-mono text-paper">type:</code>, which controls the pin marker color.</p>
+          <div class="mt-6 grid min-w-0 gap-5 xl:grid-cols-2">
+            <div class="min-w-0 rounded-lg border border-line bg-board"><div class="border-b border-line px-4 py-3 text-sm text-muted">parts/sht31.yml</div><pre class="overflow-x-auto p-4 font-mono text-xs leading-6 sm:text-sm"><code>id: sht31
+category: module
+placement: offboard
+pins:
+  - {num: 1, name: VIN, type: power}
+  - {num: 2, name: GND, type: ground}
+  - {num: 3, name: SCL, type: clock}
+  - {num: 4, name: SDA, type: data}
+  - {num: 5, name: ADR, type: address}
+  - {num: 6, name: ALR, type: interrupt}
+render: {shape: offboard, label: SHT31}</code></pre></div>
+            <div class="min-w-0 rounded-lg border border-line bg-board"><div class="border-b border-line px-4 py-3 text-sm text-muted">Use it in a circuit file</div><pre class="overflow-x-auto p-4 font-mono text-xs leading-6 sm:text-sm"><code>board :full
+use_parts "parts/*.yml"
+offboard :SHT31, :sht31, side: :right,
+         at: "a12", address: "0x44"
+
+wire "SHT31.SCL", "h22", color: :yellow
+wire "SHT31.SDA", "h24", color: :blue</code></pre><p class="px-4 pb-5 text-pretty text-sm leading-6 text-muted">The module appears beside the board. Wire SCL and SDA by name, and connect the real power pins too.</p></div>
+          </div>
+          <p class="mt-5 text-pretty leading-7 text-muted">For a board-mounted module such as an RP2040, define <code class="font-mono text-paper">placement: footprint</code> and its pin positions, then place it with <code class="font-mono text-paper">part :PICO, :rp2040_clone, at: "c1"</code>. <a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit/tree/main/examples/parts">Browse the part definitions</a>.</p>
+        </section>
+
+        <section id="sensor-demo" class="scroll-mt-8 border-t border-line pt-10 mt-12 pb-16">
+          <h2 class="text-balance text-2xl font-semibold">A circuit with several modules</h2>
+          <p class="mt-4 text-pretty leading-7 text-muted">The sensor demo places an RP2040-compatible board on the breadboard and an OLED plus two SHT31 modules beside it. Power, I2C, switches, and IR wiring can be shown layer by layer.</p>
+          <figure class="mt-6 overflow-hidden rounded-lg border border-line bg-board">
+            <div class="flex justify-center p-5 sm:p-8"><img class="h-auto w-full max-w-lg" src="https://breadkit.github.io/breadkit-render/images/sensor-demo.png" alt="Diagram with an RP2040, OLED, two SHT31 modules, switches, and IR sensor modules" width="848" height="1311" loading="lazy"></div>
+            <figcaption class="flex flex-wrap gap-x-5 gap-y-2 border-t border-line px-5 py-4 text-sm text-muted"><a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-render/images/sensor-demo.svg">Open layered SVG</a><a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit/blob/main/examples/05_sensor_demo.bk.rb">View circuit source</a></figcaption>
+          </figure>
+        </section>
+      </main>
+
+      <nav class="hidden xl:col-span-2 xl:block xl:self-start xl:sticky xl:top-8" aria-label="On this page">
+        <p class="mb-4 text-sm font-semibold">On this page</p>
+        <ul class="space-y-3 border-l border-line pl-4 text-sm text-muted">
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#parts">Common components</a></li>
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#modules">Module definitions</a></li>
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#sensor-demo">Multi-module example</a></li>
+        </ul>
+      </nav>
+    </div>
+    <footer class="border-t border-line"><div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-7 text-sm text-muted sm:px-8 lg:px-10"><p>See component connections in both the diagram and the circuit data.</p><a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../">Back to the guide</a></div></footer>
+  </body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101719">
+    <meta name="description" content="Describe breadboard components and wiring in Ruby, then inspect connections, render diagrams, and catch mistakes.">
+    <title>Breadkit | Describe your breadboard circuit</title>
+    <link rel="canonical" href="https://breadkit.github.io/breadkit/">
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./assets/site.css">
+  </head>
+  <body class="min-h-dvh bg-ink font-sans text-paper antialiased">
+    <a class="sr-only rounded-sm bg-copper px-4 py-3 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:outline-2 focus:outline-offset-4 focus:outline-paper" href="#main">Skip to content</a>
+    <header class="border-b border-line">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-10">
+        <a class="flex items-center gap-3 rounded-sm text-xl font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./" aria-label="Breadkit home">
+          <img class="size-8" src="./favicon.svg" alt="" width="32" height="32">
+          <span>breadkit</span>
+        </a>
+        <nav aria-label="Main navigation" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./guide/">Guide</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./guide/components/">Components</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./guide/dsl/">Reference</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-render/">Render</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-lint/">Lint</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:px-10 lg:py-24">
+        <div class="max-w-xl">
+          <p class="mb-5 text-sm font-medium text-copper">Breadboard circuits, written in Ruby</p>
+          <h1 class="text-balance text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">Make every connection clear.</h1>
+          <p class="mt-6 max-w-lg text-pretty text-lg leading-8 text-muted">Describe holes, components, and wires. Breadkit resolves the connections so you can render a diagram and check the same circuit for mistakes.</p>
+          <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+            <a class="rounded-sm bg-copper px-5 py-3 font-semibold text-ink hover:bg-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./guide/">Read the guide</a>
+            <a class="rounded-sm py-3 font-medium text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./guide/components/">Browse components</a>
+          </div>
+          <div class="mt-10 border-l-2 border-copper pl-5">
+            <p class="mb-3 text-sm text-muted">From the button and LED example</p>
+            <pre class="overflow-x-auto font-mono text-sm leading-6 text-paper"><code>board :half
+button :SW1, at: "e10"
+resistor :R1, "330", pins: %w[a12 a16]
+led :D1, color: :red, anode: "b16", cathode: "b17"</code></pre>
+          </div>
+        </div>
+        <figure class="m-0 overflow-hidden rounded-xl border border-line bg-board">
+          <div class="flex min-h-96 items-center justify-center p-5 sm:p-8">
+            <img class="h-auto w-full max-w-xs" src="./assets/01_led_button.svg" alt="Generated half-size breadboard diagram with a switch, resistor, and LED" width="205" height="320">
+          </div>
+          <figcaption class="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-4 text-sm text-muted">
+            <span>SVG generated from the complete example</span>
+            <a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./guide/#led-example">See code and output</a>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="workflow" class="border-t border-line bg-board/60">
+        <div class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10">
+          <h2 class="text-balance text-3xl font-semibold">One circuit file, three tools</h2>
+          <ol class="mt-8 grid list-none gap-0 border-y border-line p-0 md:grid-cols-3">
+            <li class="py-6 md:pr-8"><p class="text-sm text-copper">1. Describe</p><h3 class="mt-2 text-balance text-xl font-semibold">breadkit</h3><p class="mt-3 text-pretty leading-7 text-muted">Write board holes, parts, wires, and expected connections in Ruby.</p></li>
+            <li class="border-t border-line py-6 md:border-l md:border-t-0 md:px-8"><p class="text-sm text-copper">2. Render</p><h3 class="mt-2 text-balance text-xl font-semibold">breadkit-render</h3><p class="mt-3 text-pretty leading-7 text-muted">Generate SVG or PNG diagrams from the same file.</p></li>
+            <li class="border-t border-line py-6 md:border-l md:border-t-0 md:pl-8"><p class="text-sm text-copper">3. Check</p><h3 class="mt-2 text-balance text-xl font-semibold">breadkit-lint</h3><p class="mt-3 text-pretty leading-7 text-muted">Check placement, electrical connections, and design intent.</p></li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="mx-auto grid max-w-7xl gap-8 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:px-10">
+        <div>
+          <h2 class="text-balance text-3xl font-semibold">Start with a working example</h2>
+          <p class="mt-4 max-w-xl text-pretty leading-7 text-muted">The guide pairs real Ruby files with their generated diagrams. Start with a button and LED, then move on to an offboard module.</p>
+          <a class="mt-6 inline-block rounded-sm font-semibold text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./guide/">Open the user guide</a>
+        </div>
+        <div class="rounded-lg border border-line bg-board p-5">
+          <p class="mb-3 text-sm text-muted">Install and run</p>
+          <pre class="overflow-x-auto font-mono text-sm leading-7"><code>gem install breadkit breadkit-render breadkit-lint
+bkrender circuit.bk.rb -o circuit.svg
+bklint circuit.bk.rb</code></pre>
+          <p class="mt-4 text-pretty text-sm leading-6 text-muted">DSL files run as Ruby. Only load files you trust.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-line">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-7 text-sm text-muted sm:px-8 lg:px-10">
+        <p>The three Breadkit tools are published in separate repositories.</p>
+        <a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit">GitHub organization</a>
+      </div>
+    </footer>
+  </body>
+</html>

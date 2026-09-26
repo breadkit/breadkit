@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101719">
+    <meta name="description" content="Learn Breadkit by writing a circuit in Ruby and comparing the code with real generated diagrams.">
+    <title>User guide | Breadkit</title>
+    <link rel="canonical" href="https://breadkit.github.io/breadkit/guide/">
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../assets/site.css">
+  </head>
+  <body class="min-h-dvh bg-ink font-sans text-paper antialiased">
+    <a class="sr-only rounded-sm bg-copper px-4 py-3 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:outline-2 focus:outline-offset-4 focus:outline-paper" href="#main">Skip to content</a>
+    <header class="border-b border-line">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-10">
+        <a class="flex items-center gap-3 rounded-sm text-xl font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../" aria-label="Breadkit home"><img class="size-8" src="../favicon.svg" alt="" width="32" height="32"><span>breadkit</span></a>
+        <nav aria-label="Main navigation" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
+          <a class="rounded-sm text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./" aria-current="page">Guide</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./components/">Components</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./dsl/">Reference</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-render/">Render</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-lint/">Lint</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="mx-auto grid max-w-7xl gap-10 px-5 py-10 sm:px-8 lg:grid-cols-12 lg:px-10">
+      <aside class="border-b border-line pb-6 lg:col-span-2 lg:self-start lg:sticky lg:top-8 lg:border-b-0 lg:pb-0" aria-label="Guide chapters">
+        <p class="mb-4 text-sm font-semibold text-paper">User guide</p>
+        <nav aria-label="Guide navigation" class="flex flex-wrap gap-x-5 gap-y-3 text-sm text-muted lg:flex-col lg:gap-3">
+          <a class="rounded-sm text-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./" aria-current="page">Getting started</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./components/">Components and modules</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./dsl/">DSL reference</a>
+          <span class="hidden border-t border-line pt-4 text-xs text-muted lg:block">Related tools</span>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-render/">Render a diagram</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://breadkit.github.io/breadkit-lint/">Check a circuit</a>
+        </nav>
+      </aside>
+
+      <main id="main" class="min-w-0 lg:col-span-10 xl:col-span-8">
+        <p class="text-sm font-medium text-copper">Breadkit / Guide</p>
+        <h1 class="mt-3 text-balance text-4xl font-semibold leading-tight sm:text-5xl">From circuit code to diagram.</h1>
+        <p class="mt-6 max-w-3xl text-pretty text-lg leading-8 text-muted">Follow a working example from component placement to SVG output. Each diagram below was generated from the code shown beside it.</p>
+
+        <section id="setup" class="scroll-mt-8 border-t border-line pt-10 mt-12">
+          <h2 class="text-balance text-2xl font-semibold">Set up</h2>
+          <p class="mt-4 text-pretty leading-7 text-muted">Install Ruby and the gems you need. Breadkit describes the circuit, breadkit-render draws it, and breadkit-lint checks it.</p>
+          <pre class="mt-5 overflow-x-auto rounded-lg border border-line bg-board p-5 font-mono text-sm leading-7"><code>gem install breadkit breadkit-render breadkit-lint</code></pre>
+          <p class="mt-4 text-pretty text-sm leading-6 text-muted"><code class="font-mono text-paper">.bk.rb</code> files run as Ruby. Only load files you trust. Use IR JSON when you need to exchange data without executing code.</p>
+        </section>
+
+        <section id="led-example" class="scroll-mt-8 border-t border-line pt-10 mt-12">
+          <h2 class="text-balance text-2xl font-semibold">Code and output: button and LED</h2>
+          <p class="mt-4 text-pretty leading-7 text-muted"><code class="font-mono text-paper">01_led_button.bk.rb</code> places a switch, resistor, and LED on a half-size board. The code is on the left; the generated diagram is on the right.</p>
+          <div class="mt-6 grid min-w-0 gap-5 xl:grid-cols-2">
+            <div class="min-w-0 rounded-lg border border-line bg-board">
+              <div class="border-b border-line px-4 py-3 text-sm text-muted">01_led_button.bk.rb</div>
+              <pre class="overflow-x-auto p-4 font-mono text-xs leading-6 sm:text-sm"><code>title "Button-controlled LED"
+board :half
+
+supply :USB, voltage: 5.0, plus: "B+1", minus: "B-1"
+net :VCC, at: "B+1"
+net :GND, at: "B-1"
+
+button :SW1, at: "e10"
+resistor :R1, "330", pins: %w[a12 a16]
+led :D1, color: :red, anode: "b16", cathode: "b17"
+
+wire "a10", "B+", color: :red
+wire "a17", "B-", color: :black
+
+expect do
+  connected "SW1.1", :VCC
+  connected "SW1.3", "R1.1"
+  connected "R1.2", "D1.anode"
+  connected "D1.cathode", :GND
+  isolated :VCC, :GND
+end</code></pre>
+            </div>
+            <figure class="m-0 flex min-w-0 flex-col rounded-lg border border-line bg-board">
+              <div class="flex flex-1 items-center justify-center p-5">
+                <img class="h-auto w-full max-w-sm" src="../assets/01_led_button.svg" alt="Half-size breadboard diagram connecting a switch, resistor, LED, and ground" width="205" height="320">
+              </div>
+              <figcaption class="border-t border-line px-4 py-3 text-sm text-muted">Generated SVG. <a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../assets/01_led_button.svg">Open full size</a></figcaption>
+            </figure>
+          </div>
+          <p class="mt-5 text-pretty leading-7 text-muted"><code class="font-mono text-paper">at: "e10"</code> places the switch's first pin in hole e10. <code class="font-mono text-paper">pins:</code>, <code class="font-mono text-paper">anode:</code>, and <code class="font-mono text-paper">cathode:</code> name the holes occupied by component leads. <code class="font-mono text-paper">wire</code> joins strips or rails with a jumper.</p>
+          <pre class="mt-5 overflow-x-auto rounded-lg border border-line bg-board p-5 font-mono text-sm leading-7"><code>bkrender 01_led_button.bk.rb -o led.svg --theme dark
+bklint 01_led_button.bk.rb
+breadkit nets 01_led_button.bk.rb</code></pre>
+          <p class="mt-4 text-pretty text-sm leading-6 text-muted"><code class="font-mono text-paper">expect</code> records the intended connections. bklint compares them with the resolved circuit. <a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit/blob/main/examples/01_led_button.bk.rb">View the original file</a>.</p>
+        </section>
+
+        <section id="holes" class="scroll-mt-8 border-t border-line pt-10 mt-12">
+          <h2 class="text-balance text-2xl font-semibold">Holes and power rails</h2>
+          <p class="mt-4 text-pretty leading-7 text-muted">Terminal holes use a letter from <code class="font-mono text-paper">a</code> to <code class="font-mono text-paper">j</code> and a number, such as <code class="font-mono text-paper">a10</code>. Rails use <code class="font-mono text-paper">T+</code> / <code class="font-mono text-paper">T-</code> at the top and <code class="font-mono text-paper">B+</code> / <code class="font-mono text-paper">B-</code> at the bottom. <code class="font-mono text-paper">B+1</code> selects a position; <code class="font-mono text-paper">B+</code> chooses a free hole.</p>
+          <div class="mt-5 overflow-x-auto rounded-lg border border-line">
+            <table class="w-full min-w-lg border-collapse text-left text-sm">
+              <thead class="bg-board text-paper"><tr><th class="px-4 py-3 font-semibold">Reference</th><th class="px-4 py-3 font-semibold">Meaning</th></tr></thead>
+              <tbody class="text-muted">
+                <tr class="border-t border-line"><td class="px-4 py-3 font-mono text-paper">e10</td><td class="px-4 py-3">Hole 10 in column e</td></tr>
+                <tr class="border-t border-line"><td class="px-4 py-3 font-mono text-paper">B+1</td><td class="px-4 py-3">First hole on the bottom positive rail</td></tr>
+                <tr class="border-t border-line"><td class="px-4 py-3 font-mono text-paper">D1.anode</td><td class="px-4 py-3">The conductive strip containing D1's anode</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="module-example" class="scroll-mt-8 border-t border-line pt-10 mt-12">
+          <h2 class="text-balance text-2xl font-semibold">Offboard modules</h2>
+          <p class="mt-4 text-pretty leading-7 text-muted">Use <code class="font-mono text-paper">offboard</code> to place an Arduino Uno or another module beside the breadboard and connect wires to its named pins. This diagram was generated from the code shown here.</p>
+          <div class="mt-6 grid min-w-0 gap-5 xl:grid-cols-2">
+            <div class="min-w-0 rounded-lg border border-line bg-board">
+              <div class="border-b border-line px-4 py-3 text-sm text-muted">03_arduino_blink.bk.rb</div>
+              <pre class="overflow-x-auto p-4 font-mono text-xs leading-6 sm:text-sm"><code>title "Arduino UNO LED"
+board :half
+offboard :UNO, "arduino_uno", side: :left
+
+resistor :R1, "330", pins: %w[a10 a14]
+led :D1, color: :red, anode: "b14", cathode: "b16"
+
+wire "UNO.D13", "c10", color: :yellow
+wire "a16", "UNO.GND", color: :black
+
+expect do
+  connected "UNO.D13", "R1.1"
+  connected "R1.2", "D1.anode"
+  connected "D1.cathode", "UNO.GND"
+end</code></pre>
+            </div>
+            <figure class="m-0 flex min-w-0 flex-col rounded-lg border border-line bg-board">
+              <div class="flex flex-1 items-center justify-center p-5"><img class="h-auto w-full" src="../assets/03_arduino_blink.svg" alt="Generated diagram wiring an offboard Arduino Uno to a breadboard resistor and LED" width="265" height="236"></div>
+              <figcaption class="border-t border-line px-4 py-3 text-sm text-muted">Connected to Arduino Uno D13 and GND. <a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../assets/03_arduino_blink.svg">Open full size</a></figcaption>
+            </figure>
+          </div>
+          <p class="mt-5 text-pretty leading-7 text-muted">Custom modules define pin names and <code class="font-mono text-paper">type:</code> values in YAML. Types such as power, ground, clock, and data also control the pin markers in the diagram. <a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./components/#modules">See a module definition</a>.</p>
+        </section>
+
+        <section id="next" class="scroll-mt-8 border-t border-line pt-10 mt-12 pb-16">
+          <h2 class="text-balance text-2xl font-semibold">Where to go next</h2>
+          <div class="mt-5 grid gap-5 sm:grid-cols-2">
+            <a class="rounded-lg border border-line bg-board p-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./components/"><h3 class="text-balance text-lg font-semibold">Components and modules</h3><p class="mt-2 text-pretty text-sm leading-6 text-muted">Find examples for resistors, LEDs, switches, ICs, OLEDs, and sensors.</p></a>
+            <a class="rounded-lg border border-line bg-board p-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./dsl/"><h3 class="text-balance text-lg font-semibold">DSL reference</h3><p class="mt-2 text-pretty text-sm leading-6 text-muted">Look up declarations, hole references, and CLI commands.</p></a>
+          </div>
+        </section>
+      </main>
+
+      <nav class="hidden xl:col-span-2 xl:block xl:self-start xl:sticky xl:top-8" aria-label="On this page">
+        <p class="mb-4 text-sm font-semibold">On this page</p>
+        <ul class="space-y-3 border-l border-line pl-4 text-sm text-muted">
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#setup">Set up</a></li>
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#led-example">Code and output</a></li>
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#holes">Holes and rails</a></li>
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#module-example">Modules</a></li>
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#next">Next steps</a></li>
+        </ul>
+      </nav>
+    </div>
+    <footer class="border-t border-line"><div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-7 text-sm text-muted sm:px-8 lg:px-10"><p>Diagrams are generated from Breadkit examples.</p><a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../">Back to home</a></div></footer>
+  </body>
+</html>

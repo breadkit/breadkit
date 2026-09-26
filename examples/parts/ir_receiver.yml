@@ -1,0 +1,12 @@
+id: ir_receiver
+category: module
+placement: footprint
+pins:
+  - {num: 1, name: OUT, type: data}
+  - {num: 2, name: VCC, type: power}
+  - {num: 3, name: GND, type: ground}
+footprint:
+  "1": [0, 0]
+  "2": [1, 0]
+  "3": [2, 0]
+render: {shape: module, label: Receiver, size_mm: [14, 7], fill: "#F1EFE8", stroke: "#888780", text_color: "#25312b"}

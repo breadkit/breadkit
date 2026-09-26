@@ -1,0 +1,10 @@
+# Pin order: https://www.onsemi.com/download/data-sheet/pdf/bc556b-d.pdf
+id: bc557
+category: transistor
+transistor_polarity: PNP
+placement: leads
+pins:
+  - {num: 1, name: collector, aliases: [c]}
+  - {num: 2, name: base, aliases: [b]}
+  - {num: 3, name: emitter, aliases: [e]}
+render: {shape: generic}

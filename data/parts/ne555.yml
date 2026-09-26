@@ -1,0 +1,16 @@
+id: ne555
+aliases: [NE555, "555"]
+category: ic
+placement: dip
+package: {pins: 8}
+pins:
+  - {num: 1, name: GND, role: ground}
+  - {num: 2, name: TRIG}
+  - {num: 3, name: OUT}
+  - {num: 4, name: RESET}
+  - {num: 5, name: CTRL}
+  - {num: 6, name: THR}
+  - {num: 7, name: DIS}
+  - {num: 8, name: VCC, role: power}
+supply_range: [4.5, 16.0]
+render: {shape: dip, label: NE555}

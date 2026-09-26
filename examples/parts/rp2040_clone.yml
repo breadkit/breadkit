@@ -1,0 +1,87 @@
+id: rp2040_clone
+category: module
+placement: footprint
+pins:
+  - {num: 1, name: GP0, type: data, label: true}
+  - {num: 2, name: GP1, type: clock, label: true}
+  - {num: 3, name: GP2, type: data, label: true}
+  - {num: 4, name: GP3, type: data, label: true}
+  - {num: 5, name: GP4, type: data, label: true}
+  - {num: 6, name: GND, type: ground, label: true}
+  - {num: 7, name: GP5}
+  - {num: 8, name: GP6}
+  - {num: 9, name: GP7}
+  - {num: 10, name: GP8}
+  - {num: 11, name: GP9}
+  - {num: 12, name: GP10}
+  - {num: 13, name: GP11}
+  - {num: 14, name: GP12}
+  - {num: 15, name: GP13}
+  - {num: 16, name: GP14}
+  - {num: 17, name: GP15}
+  - {num: 18, name: GP16}
+  - {num: 19, name: GP17}
+  - {num: 20}
+  - {num: 21}
+  - {num: 22}
+  - {num: 23}
+  - {num: 24}
+  - {num: 25}
+  - {num: 26}
+  - {num: 27}
+  - {num: 28}
+  - {num: 29}
+  - {num: 30}
+  - {num: 31}
+  - {num: 32}
+  - {num: 33}
+  - {num: 34}
+  - {num: 35, name: GND3, type: ground, label: GND}
+  - {num: 36, name: 3V3, type: power, label: true}
+  - {num: 37, name: EN, label: true}
+  - {num: 38, name: GND2, type: ground, label: GND}
+  - {num: 39, name: VIN, type: power, label: true}
+  - {num: 40, name: VBUS, type: power, label: true}
+internal: [[6, 35], [35, 38]]
+footprint:
+  "1": [0, 0]
+  "2": [1, 0]
+  "3": [2, 0]
+  "4": [3, 0]
+  "5": [4, 0]
+  "6": [5, 0]
+  "7": [6, 0]
+  "8": [7, 0]
+  "9": [8, 0]
+  "10": [9, 0]
+  "11": [10, 0]
+  "12": [11, 0]
+  "13": [12, 0]
+  "14": [13, 0]
+  "15": [14, 0]
+  "16": [15, 0]
+  "17": [16, 0]
+  "18": [17, 0]
+  "19": [18, 0]
+  "20": [19, 0]
+  "21": [19, 7]
+  "22": [18, 7]
+  "23": [17, 7]
+  "24": [16, 7]
+  "25": [15, 7]
+  "26": [14, 7]
+  "27": [13, 7]
+  "28": [12, 7]
+  "29": [11, 7]
+  "30": [10, 7]
+  "31": [9, 7]
+  "32": [8, 7]
+  "33": [7, 7]
+  "34": [6, 7]
+  "35": [5, 7]
+  "36": [4, 7]
+  "37": [3, 7]
+  "38": [2, 7]
+  "39": [1, 7]
+  "40": [0, 7]
+render: {shape: module, label: RP2040, size_mm: [51, 21], fill: "#2C2C2A", stroke: "#171715", text_color: "#FFFFFF"}

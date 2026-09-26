@@ -1,0 +1,34 @@
+id: arduino_uno
+category: offboard
+placement: offboard
+pins:
+  - {num: 1, name: D0}
+  - {num: 2, name: D1}
+  - {num: 3, name: D2}
+  - {num: 4, name: D3}
+  - {num: 5, name: D4}
+  - {num: 6, name: D5}
+  - {num: 7, name: D6}
+  - {num: 8, name: D7}
+  - {num: 9, name: D8}
+  - {num: 10, name: D9}
+  - {num: 11, name: D10}
+  - {num: 12, name: D11}
+  - {num: 13, name: D12}
+  - {num: 14, name: D13}
+  - {num: 15, name: GND, role: ground}
+  - {num: 16, name: 5V, role: power}
+  - {num: 17, name: A0}
+  - {num: 18, name: A1}
+  - {num: 19, name: A2}
+  - {num: 20, name: A3}
+  - {num: 21, name: A4}
+  - {num: 22, name: A5}
+  - {num: 23, name: 3V3, role: power}
+  - {num: 24, name: VIN, role: power}
+  - {num: 25, name: GND2, role: ground}
+  - {num: 26, name: GND3, role: ground}
+  - {num: 27, name: RESET}
+  - {num: 28, name: AREF}
+internal: [[15, 25], [15, 26]]
+render: {shape: offboard, label: Arduino Uno}

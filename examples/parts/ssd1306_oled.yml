@@ -1,0 +1,17 @@
+id: ssd1306_oled
+category: module
+placement: offboard
+pins:
+  - num: 1
+    name: GND
+    type: ground
+  - num: 2
+    name: VCC
+    type: power
+  - num: 3
+    name: SCL
+    type: clock
+  - num: 4
+    name: SDA
+    type: data
+render: {shape: offboard, label: OLED}

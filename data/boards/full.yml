@@ -1,0 +1,18 @@
+id: full
+name: Full-size breadboard (830 tie points)
+terminal:
+  columns: 63
+  rows: [a, b, c, d, e, f, g, h, i, j]
+  groups: [[a, b, c, d, e], [f, g, h, i, j]]
+  ravine_between: [e, f]
+rails:
+  - {id: "T+", side: top, order: 0}
+  - {id: "T-", side: top, order: 1}
+  - {id: "B+", side: bottom, order: 1}
+  - {id: "B-", side: bottom, order: 0}
+rail_layout:
+  holes: 50
+  group_size: 5
+  start_column: 3
+  segments: [[1, 50]]
+  split_segments: [[1, 25], [26, 50]]

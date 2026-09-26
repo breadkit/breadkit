@@ -1,0 +1,9 @@
+id: led
+category: diode
+placement: leads
+pins:
+  - {num: 1, name: anode, aliases: [a, "+"]}
+  - {num: 2, name: cathode, aliases: [k, "-"]}
+polarity: {positive: anode, negative: cathode}
+flags: [needs_series_resistor]
+render: {shape: led_5mm}

@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Breadkit IR v1",
+  "type": "object",
+  "required": ["schema_version", "title", "board", "components", "wires", "supplies", "labels", "expectations"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "title": { "type": ["string", "null"] },
+    "part_definitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "pins"],
+        "properties": { "id": { "type": "string" }, "pins": { "type": "array", "items": { "type": "object" } } },
+        "additionalProperties": true
+      }
+    },
+    "board_definition": { "type": "object" },
+    "lint_disables": { "type": "array", "items": { "type": "object" } },
+    "board": {
+      "type": "object",
+      "required": ["type", "options"],
+      "properties": {
+        "type": { "type": "string" },
+        "options": { "type": "object", "properties": { "split_rails": { "type": "boolean" } } }
+      }
+    },
+    "components": { "type": "array", "items": { "$ref": "#/$defs/component" } },
+    "wires": { "type": "array", "items": { "$ref": "#/$defs/wire" } },
+    "supplies": { "type": "array", "items": { "$ref": "#/$defs/supply" } },
+    "labels": { "type": "array", "items": { "$ref": "#/$defs/label" } },
+    "expectations": { "type": "array", "items": { "$ref": "#/$defs/expectation" } },
+    "analysis": {
+      "type": "object",
+      "required": ["nets"],
+      "properties": { "nets": { "type": "array", "items": { "$ref": "#/$defs/net" } } }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["path", "line"],
+      "properties": { "path": { "type": "string" }, "line": { "type": "integer", "minimum": 1 } }
+    },
+    "nullableSource": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/source" }] },
+    "location": {
+      "type": "object",
+      "required": ["path", "line"],
+      "properties": { "path": { "type": "string" }, "line": { "type": "integer", "minimum": 1 } }
+    },
+    "component": {
+      "type": "object",
+      "required": ["ref", "part", "value", "attrs", "pins", "unused", "source"],
+      "properties": {
+        "ref": { "type": "string" },
+        "part": { "type": "string" },
+        "value": { "type": ["string", "number", "null"] },
+        "attrs": { "type": "object" },
+        "pins": { "type": "object", "additionalProperties": { "type": ["string", "null"] } },
+        "unused": { "type": "array", "items": { "type": "string" } },
+        "source": { "$ref": "#/$defs/nullableSource" }
+      }
+    },
+    "wire": {
+      "type": "object",
+      "required": ["id", "from", "to", "color", "route", "source"],
+      "properties": {
+        "id": { "type": "string" },
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "color": { "type": ["string", "null"] },
+        "route": { "type": "string" },
+        "source": { "$ref": "#/$defs/nullableSource" }
+      }
+    },
+    "supply": {
+      "type": "object",
+      "required": ["name", "voltage", "plus", "minus", "source"],
+      "properties": {
+        "name": { "type": "string" },
+        "voltage": { "type": "number" },
+        "plus": { "type": "string" },
+        "minus": { "type": "string" },
+        "source": { "$ref": "#/$defs/nullableSource" }
+      }
+    },
+    "label": {
+      "type": "object",
+      "required": ["net", "at", "source"],
+      "properties": {
+        "net": { "type": "string" },
+        "at": { "type": "string" },
+        "source": { "$ref": "#/$defs/nullableSource" }
+      }
+    },
+    "expectation": {
+      "type": "object",
+      "required": ["strict", "entries", "location"],
+      "properties": {
+        "strict": { "type": "boolean" },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "refs", "location"],
+            "properties": {
+              "kind": { "enum": ["connected", "isolated", "net"] },
+              "refs": { "type": "array", "items": { "type": "string" } },
+              "location": { "$ref": "#/$defs/location" }
+            }
+          }
+        },
+        "location": { "$ref": "#/$defs/location" }
+      }
+    },
+    "net": {
+      "type": "object",
+      "required": ["name", "members", "holes", "potential"],
+      "properties": {
+        "name": { "type": "string" },
+        "members": { "type": "array", "items": { "type": "string" } },
+        "holes": { "type": "array", "items": { "type": "string" } },
+        "potential": { "type": ["number", "null"] }
+      }
+    }
+  }
+}

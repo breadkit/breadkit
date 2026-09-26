@@ -1,0 +1,62 @@
+# Breadkit DSL
+
+Breadkit evaluates a Ruby file into a breadboard circuit, resolves pin and wire locations, and exposes the result as nets and JSON IR. DSL files are executable Ruby; only load files you trust. Use IR JSON when the input must remain data-only.
+
+## A small circuit
+
+```ruby
+title "Button controlled LED"
+board :half
+supply :USB, voltage: 5, plus: "B+1", minus: "B-1"
+net :VCC, at: "B+1"
+net :GND, at: "B-1"
+
+button :SW1, at: "e10"
+resistor :R1, "330", pins: %w[a12 a16]
+led :D1, color: :red, anode: "b16", cathode: "b17"
+wire "a10", "B+", color: :red
+wire "a17", "B-", color: :black
+
+expect do
+  connected "SW1.1", :VCC
+  isolated :VCC, :GND
+end
+```
+
+## Declarations
+
+| Method | Purpose |
+| --- | --- |
+| `title(text)` | Diagram title. |
+| `board(id, split_rails: false)` | Select `:full`, `:half`, `:mini`, or a custom board ID. |
+| `use_parts(path)` / `use_boards(path)` | Load additional YAML definitions relative to the DSL file. Paths may use globs. |
+| `supply(name, voltage:, plus:, minus:)` | Add a DC source. Both terminals occupy board holes. |
+| `net(name, at:)` | Label a hole or component pin. |
+| `part(ref, type, value = nil, pins: ..., at: ..., **attrs)` | Place a defined part. `pins:` accepts pin order arrays or pin-name hashes. |
+| `wire(from, to, color: nil, id: nil, route: :straight, layer: nil, electrical: true, dashed: false)` | Connect two holes or pin references. `route: :arc` curves the wire; `route: :edge` routes around an outer board edge or from an external module along its terminal row. `layer:` groups wires in interactive SVG output; `electrical: false` draws a visual alternative without changing circuit connectivity. |
+| `offboard(name, type, side: :left, at: nil, unused: [], **attrs)` | Place a module beside the board; `at:` aligns its first pin to a board position, and attrs such as `address:` are shown on the module. |
+| `expect { ... }` | Declare `connected`, `isolated`, or named `net` expectations. `strict: true` also rejects unlisted pins on declared nets. |
+| `lint_disable(rule, on: nil, reason: nil)` | Suppress a lint rule, optionally for one target. |
+
+Short forms are available for `resistor`, `capacitor`, `electrolytic`, `diode`, `led`, `transistor`, `pot`, `button`, and `ic`.
+
+## Hole and pin references
+
+- Terminal holes use rows `a` through `j` and 1-based columns, such as `a10` or `J30`.
+- Rail holes use `T+`, `T-`, `B+`, and `B-`, optionally followed by a 1-based index. A rail without an index selects the nearest free hole.
+- A custom board may define other row and rail IDs in its YAML. For example, rows `u` and `v` use `u1` and `v1`; a rail with `id: PWR` uses `PWR1` or the unindexed `PWR`. Set each rail's `polarity:` to `+` or `-` for polarity-aware rendering.
+- Component pins use `R1.1`, `D1.anode`, `U1.8`, or `U1.VCC`. A wire endpoint naming a placed pin selects a free hole in that pin's conductive strip.
+- The built-in `ne555` and generic `dip` definitions must straddle the center gap. For a generic package, set `pin_count`, for example `part :U2, :dip, pin_count: 14, at: "e20"`.
+- A generic pin header can be sized with `part :J1, :pin_header, pin_count: 4, pins: %w[a1 a2 a3 a4]`.
+
+Values accept SI suffixes and RKM notation such as `4.7k`, `4k7`, `1M`, `100n`, `10uF`, and `4.7kΩ`.
+
+## Switch states and IR
+
+`circuit.states("none")`, `circuit.states("single")`, and `circuit.states("all")` control switch contact simulation. `Breadkit.load(path)` reads `.bk.rb` DSL or `.json` IR. `circuit.to_ir` returns the resolved circuit representation; automatically selected holes are fixed in IR and are not selected again when loaded.
+
+The core CLI provides `breadkit nets`, `breadkit parts`, and `breadkit ir`.
+
+Custom module pins can declare their kind with `type:` in the part YAML, for example `power`, `ground`, `clock`, `data`, `address`, or `interrupt`. The renderer colors typed pin markers and dims pins without a wire connection.
+
+Assign the same `layer:` to wires and components to make them appear together in the interactive SVG layer controls. A layer may be a string or a list of strings when an item belongs to multiple views. Components without a layer remain visible in every view. Use `electrical: false, dashed: true` for an alternate connection that must not affect connectivity analysis.
