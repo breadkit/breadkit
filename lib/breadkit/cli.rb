@@ -9,6 +9,7 @@ module Breadkit
         ir [--force] [--timeout SECONDS] FILE
         nets [--state SWITCH] [--timeout SECONDS] FILE
         where HOLE FILE | explain PART FILE | bom FILE | diff OLD NEW
+        export --format kicad|spice|wokwi|pins FILE
         parts [FILE] | parts show PART [FILE] | check-part YAML
         new [FILE] --template led|555|arduino | doctor | console FILE
         --version | --help
@@ -116,6 +117,13 @@ module Breadkit
         new_path = required!(args, "diff OLD NEW")
         raise ArgumentError, "usage: breadkit diff OLD NEW" unless old_path
         show_diff(Breadkit.load(old_path), Breadkit.load(new_path))
+        0
+      when "export"
+        format = nil
+        OptionParser.new { |opts| opts.on("--format NAME") { |value| format = value } }.parse!(args)
+        raise ArgumentError, "choose --format #{Exporters::FORMATS.join('|')}" unless Exporters::FORMATS.include?(format)
+        path = required!(args, "export --format FORMAT FILE")
+        puts Exporters.call(Breadkit.load(path), format: format)
         0
       when "console"
         path = required!(args, "console FILE")

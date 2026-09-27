@@ -71,6 +71,7 @@ breadkit parts
 breadkit where a10 circuit.bk.rb
 breadkit explain R1 circuit.bk.rb
 breadkit bom circuit.bk.rb
+breadkit export --format kicad circuit.bk.rb > circuit.xml
 ```
 
 The [complete button and LED example](examples/01_led_button.bk.rb) also

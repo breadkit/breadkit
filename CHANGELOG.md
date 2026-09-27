@@ -10,6 +10,8 @@
 - Allow `breadkit ir --force` to export circuits with diagnostics.
 - Add CLI commands for templates, part inspection, circuit lookup, BOM, diff, and an interactive console.
 - Support isolated supplies and inclusive voltage ranges in circuit descriptions.
+- Export resolved circuits as KiCad XML, passive SPICE netlists, Wokwi diagrams, or firmware pin constants.
+- Parse component tolerance, power ratings, and voltage ratings when provided.
 
 ## 0.1.0 — 2026-09-27
 

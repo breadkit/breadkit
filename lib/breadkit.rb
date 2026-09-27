@@ -15,6 +15,7 @@ require_relative "breadkit/dsl"
 require_relative "breadkit/resolver"
 require_relative "breadkit/analysis"
 require_relative "breadkit/ir"
+require_relative "breadkit/exporters"
 require_relative "breadkit/cli"
 
 module Breadkit
