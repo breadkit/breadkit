@@ -22,6 +22,7 @@ require_relative "breadkit/jumper_kit"
 require_relative "breadkit/dc_analysis"
 require_relative "breadkit/ir"
 require_relative "breadkit/exporters"
+require_relative "breadkit/fritzing_export"
 require_relative "breadkit/cli"
 
 module Breadkit

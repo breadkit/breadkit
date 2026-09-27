@@ -16,7 +16,7 @@ part definitions are not circuit inputs.
 | `breadkit explain REF FILE` | Show a component's pins, resolved nets, and constrained potentials. |
 | `breadkit bom FILE` | Count parts by type and value, plus jumper wires. |
 | `breadkit diff OLD NEW` | List changed board, supplies, labels, components, and wires. |
-| `breadkit export --format FORMAT FILE` | Export `kicad`, `spice`, `wokwi`, or `pins` data. |
+| `breadkit export --format FORMAT FILE` | Export `kicad`, `spice`, `wokwi`, `pins`, or `fritzing` data. |
 | `breadkit fmt FILE` | Print a normalized declarative YAML or TOML circuit file. |
 | `breadkit lock FILE` | Record the local part and board definition files used by a circuit in `breadkit.lock`. |
 | `breadkit suggest FILE` | Print JSON candidates for unmet connection intent between placed pins. Each candidate names two free board holes; nothing is changed. |
@@ -54,9 +54,15 @@ also include tolerance or ratings, such as `4.7k 5%`, `330 1/4W`, and
 | `spice` | [ngspice](https://ngspice.sourceforge.io/docs/ngspice-46-manual.pdf) operating-point netlist for fixed voltage supplies, resistors, and capacitors. Part references must begin with `R` or `C`. Other components and ranged supplies are rejected. |
 | `wokwi` | [diagram.json](https://docs.wokwi.com/diagram-format) for Arduino Uno, resistors, and LEDs. Breadboard connections are flattened into wires between part pins. Standalone supplies and unsupported parts are rejected. Add a sketch to simulate it. |
 | `pins` | Arduino C header constants for a connected Uno, or MicroPython constants for a connected Pico W / RP2040 board. Label nets to give constants stable signal names. |
+| `fritzing` | Native, uncompressed Fritzing `.fz` sketch for the exact built-in 830-hole `full` breadboard and straight electrical jumpers between its holes. The 50-hole power rails must be unsplit. Components, supplies, labels, other boards, and styled wires are rejected with an error because this exporter cannot represent them faithfully. |
 
 Export stops when the circuit has error diagnostics. `kicad` preserves physical
 pin numbers but leaves library and footprint assignment to the KiCad project.
+
+For a board-only wiring sketch, run `breadkit export --format fritzing
+board.bk.rb > board.fz` and open `board.fz` in Fritzing. The exporter uses
+Fritzing's `Breadboard-RSR03MB102-ModuleID` part and `WireModuleID` connectors;
+it does not generate a `.fzz` archive or import custom Fritzing parts.
 
 See the [declarative circuit guide](DECLARATIVE.md) for complete YAML and TOML
 examples. The same commands work with any supported circuit input format.

@@ -4,7 +4,7 @@ require "cgi/escape"
 
 module Breadkit
   module Exporters
-    FORMATS = %w[kicad spice wokwi pins].freeze
+    FORMATS = %w[kicad spice wokwi pins fritzing].freeze
 
     module_function
 
@@ -17,6 +17,7 @@ module Breadkit
       when "spice" then spice(circuit)
       when "wokwi" then JSON.pretty_generate(wokwi(circuit))
       when "pins" then pins(circuit)
+      when "fritzing" then FritzingExport.call(circuit)
       else raise ArgumentError, "unknown export format #{format}; choose #{FORMATS.join(', ')}"
       end
     end

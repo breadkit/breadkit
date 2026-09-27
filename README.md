@@ -85,6 +85,9 @@ breadkit fmt examples/06_declarative_led.bk.yml > formatted.bk.yml
 The `pins` export writes an Arduino header for a connected Uno or Nano, or
 MicroPython constants for a connected Pico or RP2040 board. It requires exactly
 one supported controller. Add net labels when inferred constant names collide.
+For an unsplit full-board sketch containing only straight electrical jumpers,
+`breadkit export --format fritzing board.bk.rb > board.fz` writes native
+Fritzing XML. Other parts and board sizes are rejected explicitly.
 
 The [complete button and LED example](examples/01_led_button.bk.rb) also
 declares the connections it expects.
