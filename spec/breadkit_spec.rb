@@ -81,6 +81,12 @@ RSpec.describe Breadkit do
       expect(schema.valid?(original)).to be(true)
       expect(Breadkit::IR::Reader.new.read(original).to_ir).to eq(original)
     end
+
+    it "evaluates source against a virtual file path" do
+      document = Breadkit::DSL.load_file("virtual.bk.rb", source: "board :half\n")
+      expect(document.board[:type]).to eq("half")
+      expect(document.source_root).to eq(Dir.pwd)
+    end
   end
 
   it "assigns DIP pins on either side of the ravine" do

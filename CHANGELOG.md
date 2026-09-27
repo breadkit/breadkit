@@ -15,6 +15,7 @@
 - Estimate DC node voltages, resistor power, and LED/diode currents for supported circuits.
 - Add model-specific logic ICs, microcontrollers, sensors, switches, displays, power connectors, and breadboard-mounted boards.
 - Preserve switch-state expectations in the DSL and IR.
+- Evaluate in-memory DSL source against a virtual path for editor integrations.
 
 ## 0.1.0 — 2026-09-27
 

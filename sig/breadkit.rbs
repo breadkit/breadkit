@@ -199,7 +199,7 @@ module Breadkit
   end
 
   module DSL
-    def self.load_file: (String path, ?timeout: Numeric) -> Document
+    def self.load_file: (String path, ?timeout: Numeric, ?source: String?) -> Document
   end
 
   module IR

@@ -184,12 +184,12 @@ module Breadkit
       end
     end
 
-    def self.load_file(path, timeout: 10)
+    def self.load_file(path, timeout: 10, source: nil)
       raise ArgumentError, "timeout must be positive" unless timeout.is_a?(Numeric) && timeout.finite? && timeout.positive?
       absolute = File.expand_path(path)
       builder = Builder.new(base_dir: File.dirname(absolute))
       builder.document.source_root = File.dirname(absolute)
-      Timeout.timeout(timeout) { builder.instance_eval(File.read(absolute, encoding: "UTF-8"), absolute, 1) }
+      Timeout.timeout(timeout) { builder.instance_eval(source || File.read(absolute, encoding: "UTF-8"), absolute, 1) }
       builder.document
     rescue DSLError, ScriptError, StandardError, SystemExit, SystemStackError => e
       line = e.backtrace_locations&.find { |frame| frame.path == absolute }&.lineno
