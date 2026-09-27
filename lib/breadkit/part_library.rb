@@ -4,7 +4,7 @@ module Breadkit
   class PartDef
     attr_reader :data
 
-    KEYS = %w[id aliases category placement pins polarity footprint internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current].freeze
+    KEYS = %w[id aliases category placement pins polarity footprint internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current max_lead_span_mm].freeze
     PIN_KEYS = %w[num name aliases type role label max_voltage output_capable].freeze
 
     def initialize(data)
@@ -61,6 +61,12 @@ module Breadkit
         end
       end
       raise ArgumentError, "part #{id} has invalid placement" unless %w[leads dip footprint offboard].include?(placement)
+      if data.key?("max_lead_span_mm")
+        limit = data["max_lead_span_mm"]
+        unless placement == "leads" && pins.length == 2 && limit.is_a?(Numeric) && limit.real? && limit.finite? && limit.positive?
+          raise ArgumentError, "part #{id} has invalid max_lead_span_mm"
+        end
+      end
       if data["render"]
         render = data["render"]
         unknown_render = render.is_a?(Hash) ? render.keys - %w[shape label size_mm body_offset_mm fill stroke text_color] : []
@@ -127,6 +133,10 @@ module Breadkit
 
     def placement
       data.fetch("placement", "leads")
+    end
+
+    def max_lead_span_mm
+      data["max_lead_span_mm"]&.to_f
     end
 
     def pin(value)

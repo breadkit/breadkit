@@ -160,6 +160,7 @@ module Breadkit
     def id: () -> String
     def pins: () -> Array[Hash[String, untyped]]
     def placement: () -> String
+    def max_lead_span_mm: () -> Float?
     def pin: (String | Symbol | Integer value) -> Hash[String, untyped]?
   end
 

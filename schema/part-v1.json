@@ -17,6 +17,7 @@
     "forward_voltage": { "type": "number", "exclusiveMinimum": 0 },
     "on_resistance": { "type": "number", "exclusiveMinimum": 0 },
     "max_forward_current": { "type": "number", "exclusiveMinimum": 0 },
+    "max_lead_span_mm": { "type": "number", "exclusiveMinimum": 0 },
     "package": { "type": "object", "properties": { "pins": { "type": "integer", "minimum": 1 } }, "additionalProperties": false },
     "attributes": { "type": "object", "additionalProperties": { "oneOf": [{ "const": "css_color" }, { "type": "array", "minItems": 1, "items": { "type": ["string", "number"] } }] } },
     "provides": {

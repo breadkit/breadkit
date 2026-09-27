@@ -39,6 +39,7 @@
         "pins": { "type": "array", "items": { "type": "object", "required": ["num"],
           "properties": { "num": { "type": ["string", "integer"] }, "name": { "type": "string" }, "type": { "type": "string" }, "role": { "type": "string" } } } },
         "placement": { "enum": ["leads", "dip", "footprint", "offboard"] },
+        "max_lead_span_mm": { "type": "number", "exclusiveMinimum": 0 },
         "polarity": { "type": "object" }, "footprint": { "type": "object" },
         "provides": { "type": "array", "items": { "type": "object", "required": ["positive", "negative", "voltage"],
           "properties": { "positive": { "type": "string" }, "negative": { "type": "string" }, "voltage": { "type": "number", "exclusiveMinimum": 0 } } } }

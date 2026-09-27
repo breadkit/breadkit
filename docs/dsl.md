@@ -116,6 +116,7 @@ remain valid.
 - A generic pin header can be sized with `part :J1, :pin_header, pin_count: 4, pins: %w[a1 a2 a3 a4]`.
 - Footprint parts accept `rotate: 0|90|180|270` and `mirror: true|false`, for example `part :J1, :pin_header, pin_count: 3, at: "c10", rotate: 90`. Rotation is clockwise on the board; mirroring reflects left to right before rotation. The same orientation is checked when pins are placed explicitly.
 - A placed part with `render.size_mm` exposes its physical rectangle as `component.body_bounds(circuit.board)`, in board hole pitch units (`[x, y, width, height]`).
+- A custom two-pin part with `placement: leads` may set `max_lead_span_mm` to a positive number. This is the maximum supported distance between the two occupied hole centers after bending its leads. Set it from the actual package and usable lead length; generic built-in parts leave it unspecified. The linter can check placed parts that provide this limit.
 
 Values accept SI suffixes and RKM notation such as `4.7k`, `4k7`, `1M`, `100n`, `10uF`, and `4.7kΩ`.
 
