@@ -107,6 +107,7 @@ electrical, and wiring-intent problems. Each gem is released separately.
 ## Documentation
 
 - [User guide](https://breadkit.github.io/breadkit/guide/) — write a circuit and see its output.
+- [Circuit gallery](https://breadkit.github.io/breadkit/gallery/) — five complete recipes with generated diagrams.
 - [Component catalog](https://breadkit.github.io/breadkit/guide/components/) — boards, built-in parts, and custom modules.
 - [DSL reference](https://breadkit.github.io/breadkit/guide/dsl/) — methods, pins, nets, and custom definitions.
 - [Browser Playground](https://breadkit.github.io/breadkit/playground/) — edit a Ruby circuit and preview its diagram, nets, and lint results.
