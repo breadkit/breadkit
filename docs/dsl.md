@@ -57,6 +57,8 @@ Values accept SI suffixes and RKM notation such as `4.7k`, `4k7`, `1M`, `100n`, 
 
 `circuit.states("none")`, `circuit.states("single")`, and `circuit.states("all")` control switch contact simulation. `Breadkit.load(path)` reads `.bk.rb` DSL or `.json` IR. `circuit.to_ir` returns the resolved circuit representation; automatically selected holes are fixed in IR and are not selected again when loaded.
 
+`old_circuit.diff(new_circuit)` returns a hash of changed board, supply, component, label, and wire entries. Each value is `[before, after]`, with `nil` for an added or removed entry. The CLI `breadkit diff OLD NEW` prints the same changes.
+
 The core CLI provides `breadkit nets`, `breadkit parts`, and `breadkit ir`.
 
 Custom module pins can declare their kind with `type:` in the part YAML, for example `power`, `ground`, `clock`, `data`, `address`, or `interrupt`. The renderer colors typed pin markers and dims pins without a wire connection.

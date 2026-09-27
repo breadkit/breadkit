@@ -222,38 +222,10 @@ module Breadkit
     end
 
     def show_diff(old_circuit, new_circuit)
-      old_items = diff_items(old_circuit)
-      new_items = diff_items(new_circuit)
-      (old_items.keys | new_items.keys).sort.each do |key|
-        before, after = old_items[key], new_items[key]
-        next if before == after
+      old_circuit.diff(new_circuit).each do |key, (before, after)|
         puts "- #{key}: #{before}" if before
         puts "+ #{key}: #{after}" if after
       end
-    end
-
-    def diff_items(circuit)
-      items = { "board" => "#{circuit.board.definition.id}#{' (split rails)' if circuit.board.split_rails}" }
-      circuit.supplies.each do |supply|
-        voltage = supply.voltage_range ? supply.voltage_range.join("..") : supply.voltage
-        limit = supply.current_limit ? ", #{supply.current_limit} A limit" : ""
-        items["supply #{supply.name}"] = "#{voltage} V, #{supply.plus} to #{supply.minus}#{limit}"
-      end
-      circuit.labels.each { |label| items["label #{label.name}@#{label.at}"] = true }
-      circuit.components.each_value do |component|
-        pins = component.pins.values.map { |pin| "#{pin.name}=#{pin.hole_id || '-'}" }.join(", ")
-        attrs = component.attrs.map { |key, value| [key.to_s, value] }.sort_by(&:first).to_h
-        details = [component.part.id, component.value, pins]
-        details << "attrs=#{attrs.inspect}" unless attrs.empty?
-        details << "unused=#{component.unused.inspect}" unless component.unused.empty?
-        items["component #{component.ref}"] = details.compact.join(" ")
-      end
-      circuit.wires.each do |wire|
-        options = [wire.color, wire.route, wire.layer, wire.electrical, wire.dashed]
-        key = "wire #{[wire.from, wire.to].sort.join(' ↔ ')} #{options.inspect}"
-        items[key] = items.fetch(key, 0) + 1
-      end
-      items
     end
   end
 end

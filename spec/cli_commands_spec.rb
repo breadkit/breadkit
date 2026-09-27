@@ -53,6 +53,18 @@ RSpec.describe Breadkit::CLI do
     end
   end
 
+  it "exposes structured circuit changes for integrations" do
+    Dir.mktmpdir do |dir|
+      first = File.join(dir, "first.bk.rb")
+      second = File.join(dir, "second.bk.rb")
+      File.write(first, 'board :mini; supply :BAT, voltage: 5, plus: "a1", minus: "a2", current_limit: 0.02')
+      File.write(second, 'board :mini; supply :BAT, voltage: 5, plus: "a1", minus: "a2", current_limit: 0.05')
+      before, after = Breadkit.load(first), Breadkit.load(second)
+      expect(before.diff(before)).to eq({})
+      expect(before.diff(after)).to eq("supply BAT" => ["5.0 V, a1 to a2, 0.02 A limit", "5.0 V, a1 to a2, 0.05 A limit"])
+    end
+  end
+
   it "creates each packaged template and refuses to overwrite it" do
     Dir.mktmpdir do |dir|
       %w[led 555 arduino].each do |name|

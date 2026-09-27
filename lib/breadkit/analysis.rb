@@ -113,6 +113,43 @@ module Breadkit
       IR::Writer.new.write(self)
     end
 
+    def diff(other)
+      raise ArgumentError, "expected a Breadkit::Circuit" unless other.is_a?(Circuit)
+
+      before, after = diff_items, other.diff_items
+      (before.keys | after.keys).sort.each_with_object({}) do |key, changes|
+        changes[key] = [before[key], after[key]] unless before[key] == after[key]
+      end
+    end
+
+    protected
+
+    def diff_items
+      items = { "board" => "#{board.definition.id}#{' (split rails)' if board.split_rails}" }
+      supplies.each do |supply|
+        voltage = supply.voltage_range ? supply.voltage_range.join("..") : supply.voltage
+        limit = supply.current_limit ? ", #{supply.current_limit} A limit" : ""
+        items["supply #{supply.name}"] = "#{voltage} V, #{supply.plus} to #{supply.minus}#{limit}"
+      end
+      labels.each { |label| items["label #{label.name}@#{label.at}"] = true }
+      components.each_value do |component|
+        pins = component.pins.values.map { |pin| "#{pin.name}=#{pin.hole_id || '-'}" }.join(", ")
+        attrs = component.attrs.map { |key, value| [key.to_s, value] }.sort_by(&:first).to_h
+        details = [component.part.id, component.value, pins]
+        details << "attrs=#{attrs.inspect}" unless attrs.empty?
+        details << "unused=#{component.unused.inspect}" unless component.unused.empty?
+        items["component #{component.ref}"] = details.compact.join(" ")
+      end
+      wires.each do |wire|
+        options = [wire.color, wire.route, wire.layer, wire.electrical, wire.dashed]
+        key = "wire #{[wire.from, wire.to].sort.join(' ↔ ')} #{options.inspect}"
+        items[key] = items.fetch(key, 0) + 1
+      end
+      items
+    end
+
+    public
+
     def shortest_path(terminal_a, terminal_b, state = nil)
       start, finish = hole_for_reference(terminal_a.to_s), hole_for_reference(terminal_b.to_s)
       return [] unless start && finish

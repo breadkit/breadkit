@@ -113,6 +113,7 @@ module Breadkit
     def net_of: (String reference, ?State? state) -> Net?
     def shortest_path: (String a, String b, ?State? state) -> Array[untyped]
     def to_ir: () -> Hash[String, untyped]
+    def diff: (Circuit other) -> Hash[String, [untyped, untyped]]
   end
 
   class BoardDef
