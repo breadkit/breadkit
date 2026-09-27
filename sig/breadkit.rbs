@@ -54,6 +54,8 @@ module Breadkit
     attr_reader plus: String
     attr_reader minus: String
     attr_reader location: SourceLocation?
+    attr_reader isolated: bool
+    attr_reader voltage_range: Array[Float]?
   end
 
   class Label

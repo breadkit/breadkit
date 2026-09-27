@@ -96,7 +96,8 @@ module Breadkit
         Array(component.part.data["provides"]).map do |source|
           Supply.new(name: "#{component.ref}.#{source.fetch('positive')}", voltage: Value.parse(source.fetch("voltage")),
                      plus: "#{component.ref}.#{source.fetch('positive')}",
-                     minus: "#{component.ref}.#{source.fetch('negative')}", location: component.location)
+                     minus: "#{component.ref}.#{source.fetch('negative')}", location: component.location,
+                     isolated: false, voltage_range: nil)
         end
       end
     end

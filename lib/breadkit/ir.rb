@@ -18,7 +18,9 @@ module Breadkit
           title: circuit.title,
           board: { type: circuit.board.definition.id, options: { split_rails: circuit.board.split_rails } },
           board_definition: circuit.board.definition.data,
-          supplies: circuit.supplies.map { |item| { name: item.name, voltage: item.voltage, plus: item.plus, minus: item.minus, source: source(item.location) } },
+          supplies: circuit.supplies.map { |item| { name: item.name, voltage: item.voltage, plus: item.plus, minus: item.minus,
+                                                   isolated: item.isolated == true, voltage_range: item.voltage_range,
+                                                   source: source(item.location) } },
           labels: circuit.labels.map { |item| { net: item.name, at: item.at, source: source(item.location) } },
           components: circuit.components.values.map do |component|
             { ref: component.ref, part: component.part.id, value: component.value,
@@ -75,7 +77,9 @@ module Breadkit
         doc.board = { type: data.dig("board", "type") || "full", options: (data.dig("board", "options") || {}).transform_keys(&:to_sym) }
         doc.board_definitions = [data["board_definition"]] if data["board_definition"]
         doc.supplies = Array(data["supplies"]).map do |item|
-          { name: item.fetch("name"), voltage: Value.parse(item.fetch("voltage")), plus: item.fetch("plus"), minus: item.fetch("minus"), location: location(item["source"]) }
+          { name: item.fetch("name"), voltage: Value.parse(item.fetch("voltage")), plus: item.fetch("plus"),
+            minus: item.fetch("minus"), isolated: item["isolated"] == true,
+            voltage_range: item["voltage_range"], location: location(item["source"]) }
         end
         doc.labels = Array(data["labels"]).map do |item|
           { name: item.fetch("net"), at: item.fetch("at"), location: location(item["source"]) }
@@ -116,6 +120,22 @@ module Breadkit
         end
         validate_board_definition(data["board_definition"]) if data.key?("board_definition")
         validate_records(data, "supplies", %w[name plus minus], %w[voltage])
+        data.fetch("supplies").each_with_index do |item, index|
+          voltage = item["voltage"]
+          unless voltage.is_a?(Numeric) && voltage.finite? && voltage.positive?
+            raise DSLError, "invalid IR: supplies[#{index}].voltage must be positive"
+          end
+          unless !item.key?("isolated") || [true, false].include?(item["isolated"])
+            raise DSLError, "invalid IR: supplies[#{index}].isolated must be boolean"
+          end
+          range = item["voltage_range"]
+          unless range.nil? || (range.is_a?(Array) && range.length == 2 && range.all? { |value| value.is_a?(Numeric) && value.finite? && value.positive? } && range[0] <= range[1])
+            raise DSLError, "invalid IR: supplies[#{index}].voltage_range must be two ascending positive numbers"
+          end
+          if range && (voltage < range[0] || voltage > range[1])
+            raise DSLError, "invalid IR: supplies[#{index}].voltage must be within voltage_range"
+          end
+        end
         validate_records(data, "labels", %w[net at])
         validate_records(data, "components", %w[ref part])
         validate_records(data, "wires", %w[id from to])

@@ -415,7 +415,8 @@ module Breadkit
         end
       end
       @document.supplies.map do |item|
-        Supply.new(name: item[:name], voltage: item[:voltage], plus: item[:plus], minus: item[:minus], location: item[:location])
+        Supply.new(name: item[:name], voltage: item[:voltage], plus: item[:plus], minus: item[:minus],
+                   location: item[:location], isolated: item[:isolated] == true, voltage_range: item[:voltage_range])
       end
     end
 

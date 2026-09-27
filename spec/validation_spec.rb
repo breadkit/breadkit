@@ -92,6 +92,19 @@ RSpec.describe "circuit input validation" do
     expect(result.potentials.conflicts.first[:supply].name).to eq("UNO.5V")
   end
 
+  it "preserves isolated ranged supplies through IR" do
+    result = circuit("board :mini\nsupply :CELL, voltage: 3.0..4.2, plus: 'a1', minus: 'a2', isolated: true")
+    source = result.supplies.first
+    expect(source.voltage).to eq(3.6)
+    expect(source.voltage_range).to eq([3.0, 4.2])
+    expect(source.isolated).to be(true)
+    restored = Breadkit::IR::Reader.new.read(result.to_ir)
+    expect(restored.supplies.first.voltage_range).to eq([3.0, 4.2])
+    expect(restored.supplies.first.isolated).to be(true)
+    expect { circuit("supply :CELL, voltage: 4.2...3.0, plus: 'a1', minus: 'a2'") }
+      .to raise_error(Breadkit::DSLError, /inclusive and ascending/)
+  end
+
   it "keeps IR source paths stable across working directories" do
     path = File.expand_path("../examples/01_led_button.bk.rb", __dir__)
     ir = Breadkit.load(path).to_ir
