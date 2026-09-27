@@ -130,6 +130,7 @@ end</code></pre>
 bklint 01_led_button.bk.rb
 breadkit nets 01_led_button.bk.rb</code></pre>
           <p class="mt-4 text-pretty text-sm leading-6 text-muted"><code class="font-mono text-paper">expect</code> records the intended connections. bklint compares them with the resolved circuit. <a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit/blob/main/examples/01_led_button.bk.rb">View the original file</a>.</p>
+          <p class="mt-3 text-pretty text-sm leading-6 text-muted">For executable connection tests, <a class="rounded-sm text-paper underline decoration-line underline-offset-4 hover:decoration-copper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit-rspec">breadkit-rspec</a> provides assertions such as <code class="font-mono text-paper">expect(circuit).to connect("R1.2", "D1.anode")</code>.</p>
         </section>
 
         <section id="holes" class="scroll-mt-8 border-t border-line pt-10 mt-12">

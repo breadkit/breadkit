@@ -45,13 +45,14 @@ For a whole workspace, add this to `.vscode/settings.json`:
     "https://breadkit.github.io/breadkit/schema/board-v1.json": "*.bkboard.yml"
   },
   "json.schemas": [
-    { "fileMatch": ["*.bkir.json"], "url": "https://breadkit.github.io/breadkit/schema/ir-v1.json" }
+    { "fileMatch": ["*.bkir.json"], "url": "https://breadkit.github.io/breadkit/schema/ir-v1.json" },
+    { "fileMatch": ["*.bkir-v2.json"], "url": "https://breadkit.github.io/breadkit/schema/ir-v2.json" }
   ]
 }
 ```
 
-Use `ir-v2.json` for named-board IR. `.bkir.json` is an optional filename;
-`Breadkit.load` accepts any `.json` circuit IR file.
+Use `ir-v2.json` for named-board IR. `.bkir.json` and `.bkir-v2.json` are
+optional filenames; `Breadkit.load` accepts any `.json` circuit IR file.
 
 Before a 1.0 release, changes to a public schema or documented DSL form need
 round-trip coverage and an entry in the relevant gem's changelog. The published

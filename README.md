@@ -112,6 +112,9 @@ pins before wiring a physical component.
 
 The renderer creates SVG, PNG, and JPEG diagrams. The linter reports layout,
 electrical, and wiring-intent problems. Each gem is released separately.
+The separate [breadkit-rspec](https://github.com/breadkit/breadkit-rspec)
+gem checks resolved connections in tests, for example
+`expect(circuit).to connect("R1.2", "D1.anode")`.
 
 ## Documentation
 
