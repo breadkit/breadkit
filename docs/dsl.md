@@ -28,7 +28,7 @@ end
 | Method | Purpose |
 | --- | --- |
 | `title(text)` | Diagram title. |
-| `board(id, split_rails: false, as: nil)` | Select `:full`, `:half`, `:mini`, or a custom board ID. Name each board with `as:` when using multiple boards. |
+| `board(id, split_rails: false, as: nil)` | Select `:double_full` (1660 holes), `:full`, `:half`, `:mini`, or a custom board ID. Name each board with `as:` when using multiple boards. |
 | `use_parts(path)` / `use_boards(path)` | Load additional YAML definitions relative to the DSL file. Paths may use globs. |
 | `include(path)` | Evaluate another trusted DSL file in the same circuit. Relative paths resolve from the including file; circular includes are rejected. |
 | `block(name) { ... }` / `use_block(name, *args, **kwargs)` | Define and expand a reusable group of DSL declarations. Each name is unique within the circuit. |

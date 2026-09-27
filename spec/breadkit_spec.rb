@@ -41,6 +41,11 @@ RSpec.describe Breadkit do
       expect(half.hole("B+8").x).to eq(9.0)
       expect(half.hole("B-14").x).to eq(16.0)
       expect(described_class.new(Breadkit::BoardDef.load("mini")).holes.size).to eq(170)
+      double = described_class.new(Breadkit::BoardDef.load("double_full"))
+      expect(double.holes.size).to eq(1660)
+      expect(double.hole("T+50").strip_id).not_to eq(double.hole("T+51").strip_id)
+      expect(double.hole("a63").strip_id).not_to eq(double.hole("a64").strip_id)
+      expect(double.hole("a126")).not_to be_nil
       split = described_class.new(Breadkit::BoardDef.load("full"), split_rails: true)
       expect(split.hole("T+25").strip_id).not_to eq(split.hole("T+26").strip_id)
     end
