@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "timeout"
+
 module Breadkit
   module DSL
     METHODS = %w[title board use_parts use_boards supply net part wire offboard expect lint_disable resistor capacitor electrolytic diode led transistor pot button ic connected isolated].freeze
@@ -30,7 +32,11 @@ module Breadkit
       end
 
       def use_parts(path)
-        document.part_paths.concat(Dir.glob(resolve_path(path)))
+        matches = Dir.glob(resolve_path(path))
+        document.diagnostics << Diagnostic.new(code: "unmatched_parts", severity: "warning",
+                                               message: "no part definitions match #{path}", location: source_location,
+                                               targets: []) if matches.empty?
+        document.part_paths.concat(matches)
       end
 
       def use_boards(path)
@@ -38,7 +44,9 @@ module Breadkit
       end
 
       def supply(name, voltage:, plus:, minus:)
-        document.supplies << { name: name.to_s, voltage: Value.parse(voltage), plus: plus.to_s,
+        parsed = Value.parse(voltage)
+        raise DSLError, "supply voltage must be positive" unless parsed.finite? && parsed.positive?
+        document.supplies << { name: name.to_s, voltage: parsed, plus: plus.to_s,
                                minus: minus.to_s, location: source_location }
       end
 
@@ -166,17 +174,24 @@ module Breadkit
       end
     end
 
-    def self.load_file(path)
+    def self.load_file(path, timeout: 10)
+      raise ArgumentError, "timeout must be positive" unless timeout.is_a?(Numeric) && timeout.finite? && timeout.positive?
       absolute = File.expand_path(path)
       builder = Builder.new(base_dir: File.dirname(absolute))
-      builder.instance_eval(File.read(absolute, encoding: "UTF-8"), absolute, 1)
+      builder.document.source_root = File.dirname(absolute)
+      Timeout.timeout(timeout) { builder.instance_eval(File.read(absolute, encoding: "UTF-8"), absolute, 1) }
       builder.document
-    rescue DSLError
-      raise
-    rescue ScriptError, StandardError => e
+    rescue DSLError, ScriptError, StandardError, SystemExit, SystemStackError => e
       line = e.backtrace_locations&.find { |frame| frame.path == absolute }&.lineno
-      location = line ? "#{path}:#{line}" : path
-      raise DSLError, "#{location}: #{e.message}"
+      location = e.is_a?(DSLError) && e.location || SourceLocation.new(path: path, line: line)
+      detail = if e.is_a?(SystemExit)
+        "exit is not allowed in a circuit file"
+      elsif e.is_a?(Timeout::Error)
+        "circuit evaluation timed out after #{timeout} seconds"
+      else
+        e.message
+      end
+      raise DSLError.new("#{location.path}#{":#{location.line}" if location.line}: #{detail}", location: location)
     end
   end
 end

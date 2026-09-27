@@ -4,7 +4,7 @@ require "optparse"
 
 module Breadkit
   class CLI
-    USAGE = "Usage: breadkit ir FILE | nets [--state SWITCH] FILE | parts [FILE] | --version".freeze
+    USAGE = "Usage: breadkit ir [--force] [--timeout SECONDS] FILE | nets [--state SWITCH] [--timeout SECONDS] FILE | parts [FILE] | --version".freeze
 
     def run(argv)
       args = argv.dup
@@ -12,18 +12,28 @@ module Breadkit
       case command
       when "ir", "nets"
         state_name = nil
+        force = false
+        timeout = 10.0
         if command == "nets"
-          OptionParser.new { |opts| opts.on("--state SWITCH") { |value| state_name = value } }.parse!(args)
+          OptionParser.new do |opts|
+            opts.on("--state SWITCH") { |value| state_name = value }
+            opts.on("--timeout SECONDS", Float) { |value| timeout = value }
+          end.parse!(args)
+        else
+          OptionParser.new do |opts|
+            opts.on("--force") { force = true }
+            opts.on("--timeout SECONDS", Float) { |value| timeout = value }
+          end.parse!(args)
         end
         path = args.shift
         raise ArgumentError, "usage: breadkit #{command} FILE" unless path
         raise ArgumentError, "unexpected arguments: #{args.join(' ')}" unless args.empty?
 
-        circuit = Breadkit.load(path)
+        circuit = Breadkit.load(path, timeout: timeout)
         if command == "ir"
           errors = circuit.diagnostics.select { |item| item.severity == "error" }
           errors.each { |item| warn "breadkit: #{item.code}: #{item.message}" }
-          return 1 unless errors.empty?
+          return 1 unless errors.empty? || force
 
           puts JSON.pretty_generate(circuit.to_ir)
           0

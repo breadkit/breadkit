@@ -19,13 +19,14 @@ module Breadkit
 
   class Document
     attr_accessor :title, :board, :supplies, :labels, :components, :wires, :expectations,
-                  :lint_disables, :part_paths, :part_definitions, :board_paths, :board_definitions
+                  :lint_disables, :part_paths, :part_definitions, :board_paths, :board_definitions, :diagnostics, :source_root
 
     def initialize
       @title = nil
       @board = { type: "full", options: {} }
       @supplies, @labels, @components, @wires = [], [], [], []
       @expectations, @lint_disables, @part_paths, @part_definitions, @board_paths, @board_definitions = [], [], [], [], [], []
+      @diagnostics = []
     end
   end
 end

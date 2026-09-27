@@ -5,9 +5,15 @@ module Breadkit
   end
 
   class DSLError < Error
+    attr_reader location: SourceLocation?
   end
 
-  def self.load: (String path) -> Circuit
+  def self.load: (String path, ?timeout: Numeric) -> Circuit
+
+  module Color
+    NAMES: Array[String]
+    def self.valid?: (untyped value) -> bool
+  end
 
   class SourceLocation
     attr_reader path: String
@@ -83,6 +89,8 @@ module Breadkit
     attr_reader expectations: Array[Hash[Symbol, untyped]]
     attr_reader lint_disables: Array[Hash[Symbol, untyped]]
     attr_reader diagnostics: Array[Diagnostic]
+    attr_reader source_root: String?
+    def voltage_sources: () -> Array[Supply]
     def states: (?String mode) -> Array[State]
     def nets: (?State? state) -> Array[Net]
     def potentials: (?State? state) -> PotentialResult
@@ -133,6 +141,7 @@ module Breadkit
   end
 
   class PartLibrary
+    attr_reader warnings: Array[String]
     def initialize: (?extra_paths: Array[String], ?extra_definitions: Array[Hash[String, untyped]]) -> void
     def find: (String | Symbol name, ?pin_count: Integer?) -> PartDef?
     def all: () -> Array[PartDef]
@@ -141,7 +150,7 @@ module Breadkit
   class Value
     attr_reader value: Float
     attr_reader unit: String
-    def initialize: (String | Numeric value) -> void
+    def initialize: (String | Numeric value, ?category: Symbol?) -> void
     def self.parse: (String | Numeric input) -> Float
     def to_s: () -> String
   end
@@ -161,10 +170,12 @@ module Breadkit
     attr_accessor board_definitions: Array[Hash[String, untyped]]
     attr_accessor part_paths: Array[String]
     attr_accessor part_definitions: Array[Hash[String, untyped]]
+    attr_accessor diagnostics: Array[Diagnostic]
+    attr_accessor source_root: String?
   end
 
   module DSL
-    def self.load_file: (String path) -> Document
+    def self.load_file: (String path, ?timeout: Numeric) -> Document
   end
 
   module IR

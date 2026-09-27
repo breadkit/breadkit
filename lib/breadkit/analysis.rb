@@ -32,11 +32,12 @@ module Breadkit
 
   class Circuit
     attr_reader :title, :board, :components, :wires, :supplies, :labels, :expectations,
-                :lint_disables, :diagnostics
+                :lint_disables, :diagnostics, :source_root
 
-    def initialize(title:, board:, components:, wires:, supplies:, labels:, expectations:, lint_disables:, diagnostics:)
+    def initialize(title:, board:, components:, wires:, supplies:, labels:, expectations:, lint_disables:, diagnostics:, source_root: nil)
       @title, @board, @components, @wires, @supplies, @labels = title, board, components, wires, supplies, labels
       @expectations, @lint_disables, @diagnostics = expectations, lint_disables, diagnostics
+      @source_root = source_root
       @net_cache, @net_index, @potential_cache = {}, {}, {}
     end
 
@@ -88,6 +89,16 @@ module Breadkit
       state ||= State.new(name: nil, closed_switches: [])
       nets(state)
       @potential_cache.fetch(state_key(state))
+    end
+
+    def voltage_sources
+      supplies + components.values.flat_map do |component|
+        Array(component.part.data["provides"]).map do |source|
+          Supply.new(name: "#{component.ref}.#{source.fetch('positive')}", voltage: Value.parse(source.fetch("voltage")),
+                     plus: "#{component.ref}.#{source.fetch('positive')}",
+                     minus: "#{component.ref}.#{source.fetch('negative')}", location: component.location)
+        end
+      end
     end
 
     def net_of(reference, state = nil)
@@ -323,18 +334,19 @@ module Breadkit
     end
 
     def solve(state)
-      edges = circuit.supplies.map do |supply|
-        [supply, circuit.net_of("#{supply.name}.-", state), circuit.net_of("#{supply.name}.+", state)]
+      edges = circuit.voltage_sources.map do |supply|
+        [supply, circuit.net_of(supply.minus, state), circuit.net_of(supply.plus, state)]
       end
       values, conflicts = {}, []
       adjacency = Hash.new { |hash, key| hash[key] = [] }
       edges.each do |supply, from, to|
         next unless from && to
-        adjacency[from.name] << [supply, to.name, supply.voltage, "#{supply.name}.+"]
-        adjacency[to.name] << [supply, from.name, -supply.voltage, "#{supply.name}.-"]
+        adjacency[from.name] << [supply, to.name, supply.voltage, terminal_for(supply, "+")]
+        adjacency[to.name] << [supply, from.name, -supply.voltage, terminal_for(supply, "-")]
       end
-      ground = circuit.nets(state).find { |net| net.labels.include?("GND") }&.name
-      components, witnesses, seen_conflicts = [], {}, {}
+      ground_labels = Array(circuit.board.definition.data["ground_labels"] || %w[GND 0V VSS GROUND]).map(&:upcase)
+      ground = circuit.nets(state).find { |net| net.labels.any? { |label| ground_labels.include?(label.upcase) } }&.name
+      components, witnesses, witness_sources, seen_conflicts = [], {}, {}, {}
       starts = adjacency.keys
       starts = [ground, *(starts - [ground])] if starts.include?(ground)
       starts.each do |start|
@@ -343,29 +355,34 @@ module Breadkit
         values[start] = 0.0
         witnesses[start] = edges.lazy.filter_map do |supply, from, to|
           if from&.name == start
-            "#{supply.name}.-"
+            terminal_for(supply, "-")
           elsif to&.name == start
-            "#{supply.name}.+"
+            terminal_for(supply, "+")
           end
         end.first
+        witness_sources[start] = edges.find { |_supply, from, to| from&.name == start || to&.name == start }&.first&.name
         queue = [start]
         until queue.empty?
           current = queue.shift
           adjacency[current].each do |supply, target, delta, terminal|
             proposed = values[current] + delta
             if values.key?(target)
-              next if (values[target] - proposed).abs <= 1e-9 || seen_conflicts[supply.name]
+              next if (values[target] - proposed).abs <= 1e-9
 
               first, second = witnesses[target], terminal
+              next if first == second
+              pair = [witness_sources[target] || supply.name, supply.name].sort
+              next if seen_conflicts[pair]
               path = circuit.shortest_path(first, second, state)
               path_wires = circuit.wires.select { |wire| path.include?(wire.id) }
               conflicts << { supply: supply, net: target, expected: values[target], actual: proposed,
                              terminal_a: first, terminal_b: second, path: path,
                              wires: path_wires.map(&:id), location: path_wires.max_by { |wire| wire.location&.line.to_i }&.location || supply.location }
-              seen_conflicts[supply.name] = true
+              seen_conflicts[pair] = true
             else
               values[target] = proposed
               witnesses[target] = terminal
+              witness_sources[target] = supply.name
               queue << target
             end
           end
@@ -378,5 +395,9 @@ module Breadkit
     private
 
     attr_reader :circuit
+
+    def terminal_for(supply, side)
+      circuit.supplies.include?(supply) ? "#{supply.name}.#{side}" : (side == "+" ? supply.plus : supply.minus)
+    end
   end
 end

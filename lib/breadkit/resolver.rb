@@ -4,10 +4,11 @@ module Breadkit
   class Resolver
     def call(document)
       @document = document
-      @diagnostics = []
+      @diagnostics = document.diagnostics.dup
       @board = load_board
       @terminal_positions = @board.holes.values.select { |hole| hole.kind == :terminal }.to_h { |hole| [[hole.x, hole.y], hole] }
       @library = PartLibrary.new(extra_paths: document.part_paths, extra_definitions: document.part_definitions)
+      @library.warnings.each { |message| @diagnostics << diagnostic(:part_override, "warning", message, nil) }
       components = resolve_components
       wires = resolve_wires(components)
       supplies = resolve_supplies
@@ -16,7 +17,8 @@ module Breadkit
       validate_references(components, supplies, labels)
       circuit = Circuit.new(title: document.title, board: @board, components: components, wires: wires,
                             supplies: supplies, labels: labels, expectations: document.expectations,
-                            lint_disables: document.lint_disables, diagnostics: @diagnostics)
+                            lint_disables: document.lint_disables, diagnostics: @diagnostics,
+                            source_root: document.source_root)
       validate_split_labels(circuit) if labels.length > 1
       circuit
     end
@@ -54,6 +56,14 @@ module Breadkit
           @diagnostics << diagnostic(:unknown_part, "error", "unknown part #{item[:type]}", item[:location], [ref])
           next
         end
+        if %w[resistor capacitor electrolytic pot].include?(part.id) && item[:value]
+          begin
+            value = Value.parse(item[:value])
+            raise ArgumentError unless value.finite? && value >= 0
+          rescue ArgumentError, TypeError
+            @diagnostics << diagnostic(:invalid_value, "error", "invalid #{part.id} value #{item[:value].inspect}", item[:location], [ref])
+          end
+        end
         pins = resolve_pins(item, part)
         result[ref] = Component.new(ref: ref, part: part, value: item[:value], attrs: item[:attrs] || {},
                                     pins: pins, unused: Array(item[:unused]).map(&:to_s), location: item[:location])
@@ -70,7 +80,17 @@ module Breadkit
       end
       attrs = item[:attrs] || {}
       pin_names = part.pins.flat_map { |pin| [pin["num"], pin["name"], *Array(pin["aliases"])] }.compact.map(&:to_s)
-      attrs.each_key do |key|
+      attrs.each do |key, value|
+        if key.to_s == "color" && !Color.valid?(value)
+          @diagnostics << diagnostic(:invalid_color, "error", "invalid #{item[:ref]} color #{value.inspect}", item[:location], [item[:ref]])
+          next
+        end
+        schema = (part.data["attributes"] || {})[key.to_s]
+        if schema
+          valid = schema == "css_color" ? Color.valid?(value) : Array(schema).any? { |allowed| allowed.to_s == value.to_s }
+          @diagnostics << diagnostic(:invalid_option, "error", "invalid #{item[:ref]}.#{key}: #{value.inspect}", item[:location], [item[:ref]]) unless valid
+          next
+        end
         next if part.pin(key) || %w[pin_count color layer address label side at].include?(key.to_s)
 
         suggestion = DidYouMean::SpellChecker.new(dictionary: pin_names).correct(key.to_s).first
@@ -258,6 +278,15 @@ module Breadkit
         end
         wire_id = item[:id] || "W#{next_id}"
         next_id += 1 unless item[:id]
+        if item[:id] && hole_like_id?(wire_id)
+          @diagnostics << diagnostic(:invalid_wire_id, "error", "wire ID #{wire_id} looks like a board hole", item[:location], [wire_id])
+        end
+        unless %w[straight arc edge].include?(item[:route].to_s)
+          @diagnostics << diagnostic(:invalid_route, "error", "invalid wire route #{item[:route].inspect}", item[:location], [wire_id])
+        end
+        if item[:color] && !Color.valid?(item[:color])
+          @diagnostics << diagnostic(:invalid_color, "error", "invalid wire color #{item[:color].inspect}", item[:location], [wire_id])
+        end
         if ids[wire_id]
           @diagnostics << diagnostic(:duplicate_ref, "error", "duplicate wire ID #{wire_id}", item[:location], [wire_id])
           next
@@ -341,6 +370,12 @@ module Breadkit
     def explicit_x(endpoint, components)
       id = endpoint_hole(endpoint, components)
       @board.hole(id)&.x if id
+    end
+
+    def hole_like_id?(value)
+      %i[terminal rail].include?(HoleId.parse(value, board: @board).kind)
+    rescue ArgumentError
+      false
     end
 
     def endpoint_hole(endpoint, components)

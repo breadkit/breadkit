@@ -7,3 +7,4 @@ pins:
 polarity: {positive: anode, negative: cathode}
 flags: [needs_series_resistor]
 render: {shape: led_5mm}
+attributes: {color: css_color, bias: [forward, reverse]}

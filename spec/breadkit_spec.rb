@@ -8,7 +8,8 @@ RSpec.describe Breadkit do
       expect(described_class.parse("4.7k")).to eq(4700.0)
       expect(described_class.parse("4k7")).to eq(4700.0)
       expect(described_class.parse("10uF")).to be_within(1e-12).of(10e-6)
-      expect(described_class.new("4.7k").to_s).to eq("4.7kΩ")
+      expect(described_class.new("4.7k").to_s).to eq("4.7k")
+      expect(described_class.new("4.7k", category: :resistor).to_s).to eq("4.7kΩ")
       expect { described_class.parse("k") }.to raise_error(ArgumentError)
     end
   end
@@ -298,8 +299,9 @@ RSpec.describe "resolver and DSL regressions" do
       expect(Breadkit::Value.parse(source)).to be_within(expected.abs * 1e-9).of(expected)
     end
     expect(Breadkit::Value.new("100nF").to_s).to eq("100nF")
-    expect(Breadkit::Value.new("999.9").to_s).to eq("1kΩ")
-    expect(Breadkit::Value.new("1p").to_s).to eq("1pΩ")
+    expect(Breadkit::Value.new("999.9").to_s).to eq("1k")
+    expect(Breadkit::Value.new("1p").to_s).to eq("1p")
+    expect(Breadkit::Value.new("100n", category: :capacitor).to_s).to eq("100nF")
   end
 
   it "keeps Ruby reflection honest and wraps ScriptError with the DSL location" do

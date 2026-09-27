@@ -6,7 +6,14 @@ module Breadkit
 
     def initialize(data)
       @data = data
+      unknown = data.keys - %w[id name terminal rails rail_layout ground_labels]
+      raise ArgumentError, "unknown board keys: #{unknown.join(', ')}" unless unknown.empty?
       terminal = data["terminal"] || {}
+      unknown_terminal = terminal.keys - %w[columns rows groups ravine_between]
+      raise ArgumentError, "unknown terminal keys: #{unknown_terminal.join(', ')}" unless unknown_terminal.empty?
+      if data["ground_labels"] && (!data["ground_labels"].is_a?(Array) || !data["ground_labels"].all? { |label| label.is_a?(String) && !label.empty? })
+        raise ArgumentError, "ground_labels must be a list of names"
+      end
       unless data["id"] && terminal["columns"].to_i.positive? && terminal["rows"].is_a?(Array) && terminal["groups"].is_a?(Array)
         raise ArgumentError, "invalid board definition: #{data['id'] || '(missing id)'}"
       end

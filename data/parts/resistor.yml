@@ -5,3 +5,4 @@ pins:
   - {num: 1, name: "1"}
   - {num: 2, name: "2"}
 render: {shape: resistor}
+attributes: {bands: [4, 5]}

@@ -5,17 +5,10 @@
   "required": ["schema_version", "title", "board", "components", "wires", "supplies", "labels", "expectations"],
   "properties": {
     "schema_version": { "const": 1 },
+    "source_root": { "type": "string" },
     "title": { "type": ["string", "null"] },
-    "part_definitions": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["id", "pins"],
-        "properties": { "id": { "type": "string" }, "pins": { "type": "array", "items": { "type": "object" } } },
-        "additionalProperties": true
-      }
-    },
-    "board_definition": { "type": "object" },
+    "part_definitions": { "type": "array", "items": { "$ref": "#/$defs/partDefinition" } },
+    "board_definition": { "$ref": "#/$defs/boardDefinition" },
     "lint_disables": { "type": "array", "items": { "type": "object" } },
     "board": {
       "type": "object",
@@ -38,6 +31,34 @@
   },
   "additionalProperties": true,
   "$defs": {
+    "partDefinition": {
+      "type": "object", "required": ["id", "pins"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "pins": { "type": "array", "items": { "type": "object", "required": ["num"],
+          "properties": { "num": { "type": ["string", "integer"] }, "name": { "type": "string" }, "type": { "type": "string" }, "role": { "type": "string" } } } },
+        "placement": { "enum": ["leads", "dip", "footprint", "offboard"] },
+        "polarity": { "type": "object" }, "footprint": { "type": "object" },
+        "provides": { "type": "array", "items": { "type": "object", "required": ["positive", "negative", "voltage"],
+          "properties": { "positive": { "type": "string" }, "negative": { "type": "string" }, "voltage": { "type": "number", "exclusiveMinimum": 0 } } } }
+      }
+    },
+    "boardDefinition": {
+      "type": "object", "required": ["id", "terminal"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "terminal": { "type": "object", "required": ["columns", "rows", "groups"],
+          "properties": {
+            "columns": { "type": "integer", "minimum": 1 },
+            "rows": { "type": "array", "items": { "type": "string" } },
+            "groups": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } },
+            "ravine_between": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 2 }
+          } },
+        "rails": { "type": "array", "items": { "type": "object", "required": ["id"],
+          "properties": { "id": { "type": "string" }, "side": { "type": "string" }, "order": { "type": "integer" }, "polarity": { "enum": ["+", "-"] } } } },
+        "rail_layout": { "type": "object", "properties": { "segments": { "type": "array" }, "split_segments": { "type": "array" } } }
+      }
+    },
     "source": {
       "type": "object",
       "required": ["path", "line"],

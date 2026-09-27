@@ -230,7 +230,7 @@ end
 | `led` | `led :D1, color: :red, anode: "b16", cathode: "b17"` | リード（有極性） |
 | `transistor` | `transistor :Q1, "2N3904", e: "a30", b: "a31", c: "a32"` | リード（ピン順はパーツ定義） |
 | `pot` | `pot :VR1, "10k", at: "a40"` | フットプリント |
-| `button` | `button :SW1, at: "e10", rotate: 0` | フットプリント（中央溝をまたぐ） |
+| `button` | `button :SW1, at: "e10"` | フットプリント（中央溝をまたぐ） |
 | `ic` | `ic :U1, "NE555", at: "e20", unused: [5]` | DIP（1番ピンの穴を指定） |
 
 共通オプション：`pins:` は配列（ピン番号順）またはハッシュ（`{ anode: "b16", cathode: "b17" }`）。有極性部品はピン名のキーワード引数でも指定できる。`unused:` に列挙したピンは未接続でも警告しない。
@@ -650,7 +650,7 @@ SVG は次の順に `<g>` を重ねる。各要素には `data-ref`、`data-net`
 | 2 | `holes` | 穴（空き穴と使用穴で濃さを変える） |
 | 3 | `labels` | 列番号、行記号、レール記号 |
 | 4 | `components` | 部品本体とリード |
-| 5 | `wires` | ジャンパワイヤ（既定で部品の上。`wire_layer: below` で下に） |
+| 5 | `wires` | ジャンパワイヤ（部品の上） |
 | 6 | `offboard` | ボード外モジュールと引き出し線 |
 | 7 | `nets` | ネット名ラベル（`--show-nets`） |
 | 8 | `annotations` | リント結果のマーカー（`--annotations`） |

@@ -2,25 +2,25 @@ id: rp2040_clone
 category: module
 placement: footprint
 pins:
-  - {num: 1, name: GP0, type: data, label: true}
-  - {num: 2, name: GP1, type: clock, label: true}
-  - {num: 3, name: GP2, type: data, label: true}
-  - {num: 4, name: GP3, type: data, label: true}
-  - {num: 5, name: GP4, type: data, label: true}
+  - {num: 1, name: GP0, type: data, label: true, max_voltage: 3.3, output_capable: true}
+  - {num: 2, name: GP1, type: clock, label: true, max_voltage: 3.3, output_capable: true}
+  - {num: 3, name: GP2, type: data, label: true, max_voltage: 3.3, output_capable: true}
+  - {num: 4, name: GP3, type: data, label: true, max_voltage: 3.3, output_capable: true}
+  - {num: 5, name: GP4, type: data, label: true, max_voltage: 3.3, output_capable: true}
   - {num: 6, name: GND, type: ground, label: true}
-  - {num: 7, name: GP5}
-  - {num: 8, name: GP6}
-  - {num: 9, name: GP7}
-  - {num: 10, name: GP8}
-  - {num: 11, name: GP9}
-  - {num: 12, name: GP10}
-  - {num: 13, name: GP11}
-  - {num: 14, name: GP12}
-  - {num: 15, name: GP13}
-  - {num: 16, name: GP14}
-  - {num: 17, name: GP15}
-  - {num: 18, name: GP16}
-  - {num: 19, name: GP17}
+  - {num: 7, name: GP5, max_voltage: 3.3, output_capable: true}
+  - {num: 8, name: GP6, max_voltage: 3.3, output_capable: true}
+  - {num: 9, name: GP7, max_voltage: 3.3, output_capable: true}
+  - {num: 10, name: GP8, max_voltage: 3.3, output_capable: true}
+  - {num: 11, name: GP9, max_voltage: 3.3, output_capable: true}
+  - {num: 12, name: GP10, max_voltage: 3.3, output_capable: true}
+  - {num: 13, name: GP11, max_voltage: 3.3, output_capable: true}
+  - {num: 14, name: GP12, max_voltage: 3.3, output_capable: true}
+  - {num: 15, name: GP13, max_voltage: 3.3, output_capable: true}
+  - {num: 16, name: GP14, max_voltage: 3.3, output_capable: true}
+  - {num: 17, name: GP15, max_voltage: 3.3, output_capable: true}
+  - {num: 18, name: GP16, max_voltage: 3.3, output_capable: true}
+  - {num: 19, name: GP17, max_voltage: 3.3, output_capable: true}
   - {num: 20}
   - {num: 21}
   - {num: 22}

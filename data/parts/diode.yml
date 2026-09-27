@@ -6,3 +6,4 @@ pins:
   - {num: 2, name: cathode, aliases: [k]}
 polarity: {positive: anode, negative: cathode}
 render: {shape: diode}
+attributes: {bias: [forward, reverse]}

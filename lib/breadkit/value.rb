@@ -24,8 +24,10 @@ module Breadkit
       match[1].to_f * MULTIPLIERS.fetch(match[2], 1.0)
     end
 
-    def initialize(value)
-      @unit = value.to_s.strip[/\A.*?(Ω|Ω|ohm|[FfHhVv])\z/i, 1]&.then { |suffix| %w[Ω Ω ohm].include?(suffix.downcase) ? "Ω" : suffix.upcase } || "Ω"
+    def initialize(value, category: nil)
+      explicit = value.to_s.strip[/\A.*?(Ω|Ω|ohm|[FfHhVv])\z/i, 1]
+      @unit = explicit&.then { |suffix| %w[Ω Ω ohm].include?(suffix.downcase) ? "Ω" : suffix.upcase } ||
+              { resistor: "Ω", capacitor: "F", electrolytic: "F", inductor: "H", supply: "V" }.fetch(category&.to_sym, "")
       @value = self.class.parse(value)
       freeze
     end

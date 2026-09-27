@@ -3,40 +3,40 @@ aliases: [raspberry_pi_pico_w]
 category: module
 placement: footprint
 pins:
-  - {num: 1, name: GP0, type: data}
-  - {num: 2, name: GP1, type: clock}
+  - {num: 1, name: GP0, type: data, max_voltage: 3.3, output_capable: true}
+  - {num: 2, name: GP1, type: clock, max_voltage: 3.3, output_capable: true}
   - {num: 3, name: GND, type: ground}
-  - {num: 4, name: GP2}
-  - {num: 5, name: GP3}
-  - {num: 6, name: GP4}
-  - {num: 7, name: GP5}
+  - {num: 4, name: GP2, max_voltage: 3.3, output_capable: true}
+  - {num: 5, name: GP3, max_voltage: 3.3, output_capable: true}
+  - {num: 6, name: GP4, max_voltage: 3.3, output_capable: true}
+  - {num: 7, name: GP5, max_voltage: 3.3, output_capable: true}
   - {num: 8, name: GND2}
-  - {num: 9, name: GP6}
-  - {num: 10, name: GP7}
-  - {num: 11, name: GP8}
-  - {num: 12, name: GP9}
+  - {num: 9, name: GP6, max_voltage: 3.3, output_capable: true}
+  - {num: 10, name: GP7, max_voltage: 3.3, output_capable: true}
+  - {num: 11, name: GP8, max_voltage: 3.3, output_capable: true}
+  - {num: 12, name: GP9, max_voltage: 3.3, output_capable: true}
   - {num: 13, name: GND3}
-  - {num: 14, name: GP10}
-  - {num: 15, name: GP11}
-  - {num: 16, name: GP12}
-  - {num: 17, name: GP13}
+  - {num: 14, name: GP10, max_voltage: 3.3, output_capable: true}
+  - {num: 15, name: GP11, max_voltage: 3.3, output_capable: true}
+  - {num: 16, name: GP12, max_voltage: 3.3, output_capable: true}
+  - {num: 17, name: GP13, max_voltage: 3.3, output_capable: true}
   - {num: 18, name: GND4}
-  - {num: 19, name: GP14}
-  - {num: 20, name: GP15}
-  - {num: 21, name: GP16}
-  - {num: 22, name: GP17}
+  - {num: 19, name: GP14, max_voltage: 3.3, output_capable: true}
+  - {num: 20, name: GP15, max_voltage: 3.3, output_capable: true}
+  - {num: 21, name: GP16, max_voltage: 3.3, output_capable: true}
+  - {num: 22, name: GP17, max_voltage: 3.3, output_capable: true}
   - {num: 23, name: GND5}
-  - {num: 24, name: GP18}
-  - {num: 25, name: GP19}
-  - {num: 26, name: GP20}
-  - {num: 27, name: GP21}
+  - {num: 24, name: GP18, max_voltage: 3.3, output_capable: true}
+  - {num: 25, name: GP19, max_voltage: 3.3, output_capable: true}
+  - {num: 26, name: GP20, max_voltage: 3.3, output_capable: true}
+  - {num: 27, name: GP21, max_voltage: 3.3, output_capable: true}
   - {num: 28, name: GND6}
-  - {num: 29, name: GP22}
+  - {num: 29, name: GP22, max_voltage: 3.3, output_capable: true}
   - {num: 30, name: RUN}
-  - {num: 31, name: GP26}
-  - {num: 32, name: GP27}
+  - {num: 31, name: GP26, max_voltage: 3.3, output_capable: true}
+  - {num: 32, name: GP27, max_voltage: 3.3, output_capable: true}
   - {num: 33, name: GND7}
-  - {num: 34, name: GP28}
+  - {num: 34, name: GP28, max_voltage: 3.3, output_capable: true}
   - {num: 35, name: ADC_VREF}
   - {num: 36, name: 3V3_OUT, type: power}
   - {num: 37, name: 3V3_EN}

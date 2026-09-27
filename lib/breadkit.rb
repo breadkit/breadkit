@@ -6,6 +6,7 @@ require "did_you_mean"
 
 require_relative "breadkit/version"
 require_relative "breadkit/value"
+require_relative "breadkit/color"
 require_relative "breadkit/hole_id"
 require_relative "breadkit/model"
 require_relative "breadkit/board"
@@ -18,9 +19,16 @@ require_relative "breadkit/cli"
 
 module Breadkit
   class Error < StandardError; end
-  class DSLError < Error; end
+  class DSLError < Error
+    attr_reader :location
 
-  def self.load(path)
-    path.end_with?(".json") ? IR::Reader.new.read_file(path) : Resolver.new.call(DSL.load_file(path))
+    def initialize(message, location: nil)
+      super(message)
+      @location = location
+    end
+  end
+
+  def self.load(path, timeout: 10)
+    path.end_with?(".json") ? IR::Reader.new.read_file(path) : Resolver.new.call(DSL.load_file(path, timeout: timeout))
   end
 end

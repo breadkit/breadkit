@@ -6,6 +6,7 @@ module Breadkit
   module IR
     class Writer
       def write(circuit)
+        @source_root = circuit.source_root || Dir.pwd
         library = PartLibrary.new
         part_definitions = circuit.components.values.map(&:part).uniq.filter_map do |part|
           standard = library.find(part.id, pin_count: part.pins.length)
@@ -13,6 +14,7 @@ module Breadkit
         end
         result = {
           schema_version: 1,
+          source_root: @source_root,
           title: circuit.title,
           board: { type: circuit.board.definition.id, options: { split_rails: circuit.board.split_rails } },
           board_definition: circuit.board.definition.data,
@@ -40,7 +42,7 @@ module Breadkit
         return nil unless location && location.path && location.line
 
         path = Pathname.new(location.path)
-        path = path.relative_path_from(Pathname.pwd) if path.absolute?
+        path = path.relative_path_from(Pathname.new(@source_root)) if path.absolute?
         { path: path.to_s, line: location.line }
       end
 
@@ -66,7 +68,9 @@ module Breadkit
       def read(data)
         data = stringify_keys(data)
         validate!(data)
+        @source_root = data["source_root"]
         doc = Document.new
+        doc.source_root = @source_root
         doc.title = data["title"]
         doc.board = { type: data.dig("board", "type") || "full", options: (data.dig("board", "options") || {}).transform_keys(&:to_sym) }
         doc.board_definitions = [data["board_definition"]] if data["board_definition"]
@@ -102,6 +106,7 @@ module Breadkit
         require_hash(data, "root")
         raise DSLError, "unsupported IR schema_version" unless data["schema_version"] == 1
         raise DSLError, "invalid IR: title must be text or null" unless data["title"].nil? || data["title"].is_a?(String)
+        raise DSLError, "invalid IR: source_root must be text" if data.key?("source_root") && !data["source_root"].is_a?(String)
 
         board = require_hash(data["board"], "board")
         require_string(board["type"], "board.type")
@@ -200,7 +205,9 @@ module Breadkit
 
       def location(source)
         return nil unless source
-        SourceLocation.new(path: source["path"], line: source["line"])
+        path = source["path"]
+        path = File.expand_path(path, @source_root) if @source_root && !Pathname.new(path).absolute?
+        SourceLocation.new(path: path, line: source["line"])
       end
 
       def stringify_keys(value)

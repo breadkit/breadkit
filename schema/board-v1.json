@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Breadkit board definition v1",
+  "type": "object",
+  "required": ["id", "terminal"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "name": { "type": "string" },
+    "ground_labels": { "type": "array", "items": { "type": "string" } },
+    "terminal": {
+      "type": "object", "required": ["columns", "rows", "groups"],
+      "properties": {
+        "columns": { "type": "integer", "minimum": 1 },
+        "rows": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "groups": { "type": "array", "items": { "type": "array", "minItems": 1, "items": { "type": "string" } } },
+        "ravine_between": { "type": "array", "prefixItems": [{ "type": "string" }, { "type": "string" }], "minItems": 2, "maxItems": 2 }
+      }, "additionalProperties": false
+    },
+    "rails": {
+      "type": "array", "items": { "type": "object", "required": ["id", "side", "order"],
+        "properties": { "id": { "type": "string" }, "side": { "enum": ["top", "bottom", "left", "right"] }, "order": { "type": "integer" }, "polarity": { "enum": ["+", "-"] } },
+        "additionalProperties": false }
+    },
+    "rail_layout": {
+      "type": "object", "required": ["segments"],
+      "properties": {
+        "holes": { "type": "integer", "minimum": 1 }, "group_size": { "type": "integer", "minimum": 1 },
+        "start_column": { "type": "integer", "minimum": 1 },
+        "segments": { "$ref": "#/$defs/segments" }, "split_segments": { "$ref": "#/$defs/segments" }
+      }, "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": { "segments": { "type": "array", "items": { "type": "array", "prefixItems": [{ "type": "integer" }, { "type": "integer" }], "minItems": 2, "maxItems": 2 } } }
+}
