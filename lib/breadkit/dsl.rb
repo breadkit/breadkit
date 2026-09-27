@@ -131,7 +131,21 @@ module Breadkit
         @current_step = nil if active
       end
 
-      def supply(name, voltage:, plus:, minus:, isolated: false, current_limit: nil)
+      def supply(name = nil, voltage: nil, plus: nil, minus: nil, from: nil, isolated: false, current_limit: nil)
+        if from
+          raise DSLError, "supply from: cannot mix standalone supply options" if name || voltage || isolated != false || current_limit
+          raise DSLError, "supply from: requires plus and minus destinations" unless plus && minus
+          unless [from, plus, minus].all? { |value| value.is_a?(String) && !value.empty? }
+            raise DSLError, "supply from:, plus:, and minus: must be nonempty text"
+          end
+
+          document.wires << { supply_from: from, plus: plus, minus: minus,
+                              location: source_location, step: @current_step }
+          return
+        end
+
+        raise DSLError, "supply requires name, voltage, plus, and minus" unless name && voltage && plus && minus
+
         range = voltage.is_a?(Range) ? [Value.parse(voltage.begin), Value.parse(voltage.end)] : nil
         raise DSLError, "supply voltage range must be inclusive and ascending" if range && (voltage.exclude_end? || range[0] > range[1])
         parsed = range ? (range[0] + range[1]) / 2.0 : Value.parse(voltage)

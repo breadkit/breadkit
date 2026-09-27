@@ -80,6 +80,14 @@ module Breadkit
 
     def load_supply(value, context)
       item = mapping(value, context)
+      if item.key?("from")
+        allowed!(item, %w[from plus minus], context)
+        @builder.supply(from: string(item["from"], "#{context}.from"),
+                        plus: string(item["plus"], "#{context}.plus"),
+                        minus: string(item["minus"], "#{context}.minus"))
+        return
+      end
+
       allowed!(item, %w[name voltage plus minus isolated current_limit], context)
       options = { voltage: number_or_range(item["voltage"], "#{context}.voltage"),
                   plus: string(item["plus"], "#{context}.plus"),

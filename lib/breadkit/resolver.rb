@@ -10,6 +10,7 @@ module Breadkit
       @library = PartLibrary.new(extra_paths: document.part_paths, extra_definitions: document.part_definitions)
       @library.warnings.each { |message| @diagnostics << diagnostic(:part_override, "warning", message, nil) }
       components = resolve_components
+      @wire_items = expand_source_supplies(components)
       wires = resolve_wires(components)
       supplies = resolve_supplies
       validate_names(components, wires, supplies)
@@ -91,6 +92,44 @@ module Breadkit
         result[ref] = Component.new(ref: ref, part: part, value: item[:value], attrs: item[:attrs] || {},
                                     pins: pins, unused: Array(item[:unused]).map(&:to_s), location: item[:location], step: item[:step])
       end
+    end
+
+    def expand_source_supplies(components)
+      @document.wires.flat_map do |item|
+        next item unless item[:supply_from]
+
+        reference = item[:supply_from]
+        parsed = HoleId.parse(reference, board: @board)
+        component = components[parsed.ref] if parsed.kind == :pin
+        source_pin = component&.part&.pin(parsed.pin)
+        matches = if component&.part&.placement == "offboard" && source_pin
+          Array(component.part.data["provides"]).select do |entry|
+            component.part.pin(entry.fetch("positive"))["num"].to_s == source_pin["num"].to_s
+          end
+        else
+          []
+        end
+        if matches.empty?
+          @diagnostics << diagnostic(:unknown_supply_source, "error", "#{reference} is not a provided offboard power output", item[:location], [reference])
+          next []
+        end
+        if matches.length > 1
+          @diagnostics << diagnostic(:ambiguous_supply_source, "error", "#{reference} matches multiple provided power outputs", item[:location], [reference])
+          next []
+        end
+
+        source = matches.first
+        [source_wire(item, "#{parsed.ref}.#{source.fetch('positive')}", item[:plus]),
+         source_wire(item, "#{parsed.ref}.#{source.fetch('negative')}", item[:minus])]
+      rescue ArgumentError
+        @diagnostics << diagnostic(:unknown_supply_source, "error", "#{reference} is not a provided offboard power output", item[:location], [reference])
+        []
+      end
+    end
+
+    def source_wire(item, from, to)
+      { id: nil, from: from, to: to, color: nil, route: "straight", layer: nil,
+        electrical: true, dashed: false, location: item[:location], step: item[:step] }
     end
 
     def resolve_pins(item, part)
@@ -297,7 +336,7 @@ module Breadkit
         end
       end
       reserved = {}
-      @document.wires.each do |item|
+      @wire_items.each do |item|
         next if item[:electrical] == false
 
         [item[:from], item[:to]].each do |endpoint|
@@ -307,9 +346,9 @@ module Breadkit
         end
       end
       ids = {}
-      reserved_ids = components.keys + @document.supplies.map { |item| item[:name] } + @document.wires.filter_map { |item| item[:id] }
+      reserved_ids = components.keys + @document.supplies.map { |item| item[:name] } + @wire_items.filter_map { |item| item[:id] }
       next_id = 1
-      @document.wires.each do |item|
+      @wire_items.each do |item|
         unless item[:id]
           next_id += 1 while reserved_ids.include?("W#{next_id}") || ids["W#{next_id}"]
         end

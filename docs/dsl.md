@@ -35,6 +35,7 @@ end
 | `bus(name, **lines)` | Label the explicit reference for each line as `NAME_LINE`, for example `I2C_SCL`. |
 | `step(number, title: nil) { ... }` | Group assembly declarations under a numbered step. Numbers start at 1 and increase by 1. |
 | `supply(name, voltage:, plus:, minus:, current_limit: nil)` | Add a DC source. Both terminals occupy board holes. Optional `current_limit:` is the supply's positive output limit in amperes. |
+| `supply(from:, plus:, minus:)` | Route a defined offboard power output and its return pin to board holes or rails. |
 | `net(name, at:)` | Label a hole or component pin. |
 | `part(ref, type, value = nil, pins: ..., at: ..., **attrs)` | Place a defined part. `pins:` accepts pin order arrays or pin-name hashes. |
 | `wire(from, to, color: nil, id: nil, route: :straight, layer: nil, electrical: true, dashed: false)` | Connect two holes or pin references. `route: :arc` curves the wire; `route: :edge` routes around an outer board edge or from an external module along its terminal row. `layer:` groups wires in interactive SVG output; `electrical: false` draws a visual alternative without changing circuit connectivity. |
@@ -44,6 +45,24 @@ end
 | `lint_disable(rule, on: nil, reason: nil)` | Suppress a lint rule, optionally for one target. |
 
 Short forms are available for `resistor`, `capacitor`, `electrolytic`, `diode`, `led`, `transistor`, `pot`, `button`, and `ic`.
+
+## Power from an offboard module
+
+The Arduino Uno definition declares 5 V and 3.3 V outputs relative to GND.
+Connect one output and its return to breadboard rails with:
+
+```ruby
+board :half
+offboard :UNO, :arduino_uno
+supply from: "UNO.5V", plus: "T+", minus: "T-"
+```
+
+`T+` and `T-` each select a free rail hole. The call expands to wires from
+`UNO.5V` and `UNO.GND`; it does not add another voltage source. Use
+`from: "UNO.3V3"` for the 3.3 V output. The source must match a `provides`
+entry on the placed offboard part, and both destinations are required. For
+named boards, qualify the destinations, for example `B1.T+` and `B1.T-`.
+The resolved IR stores the two ordinary wires.
 
 ## Reusable blocks and buses
 

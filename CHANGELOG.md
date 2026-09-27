@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Route a defined offboard power output and its return to rails with `supply from:`.
 - Resolve circuits across named breadboards and preserve board identities in IR v2.
 - Accept an optional physical lead-span limit on specific two-pin lead parts.
 - Record numbered assembly steps in the Ruby DSL and JSON IR.

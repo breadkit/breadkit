@@ -41,7 +41,7 @@ expectations:
 | `board` | text or mapping | Board type, optionally `{type: full, split_rails: true}`. |
 | `boards` | list of mappings | Named boards with `name`, `type`, and optional `split_rails`; use instead of `board`. Qualify holes as `B1.a1`. |
 | `use_parts`, `use_boards` | path or list of paths | Load definitions relative to the circuit file. Globs are accepted. |
-| `supplies` | list of mappings | `name`, `voltage`, `plus`, `minus`; optional `isolated` and numeric `current_limit`. |
+| `supplies` | list of mappings | Either `name`, `voltage`, `plus`, `minus` for a standalone source, or `from`, `plus`, `minus` to route a defined offboard output. Standalone sources also accept `isolated` and numeric `current_limit`. |
 | `labels` | list of mappings | `name` and `at` for a named net. |
 | `parts` | list of mappings | `ref`, `type`; optional `value`, `pins`, `at`, `attrs`, `unused`. |
 | `offboard` | list of mappings | `ref`, `type`; optional `side`, `at`, `attrs`, `unused`. `offboard: true` also works in a `parts` entry. |
@@ -103,6 +103,19 @@ wires:
 
 This produces version 2 IR. See the [DSL reference](dsl.md#multiple-boards)
 for board identity and connection rules.
+
+An offboard output can feed rails without declaring a duplicate voltage source:
+
+```yaml
+board: half
+offboard:
+  - {ref: UNO, type: arduino_uno}
+supplies:
+  - {from: UNO.5V, plus: T+, minus: T-}
+```
+
+The output voltage and return pin come from the part's `provides` definition.
+Both rail destinations are required, and the resolved IR contains two wires.
 
 `breadkit fmt FILE` prints canonical YAML or TOML without modifying the input.
 It validates the circuit fields first and keeps the original format. Formatting
