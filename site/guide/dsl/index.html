@@ -72,18 +72,20 @@ end</code></pre>
               <thead class="bg-board"><tr><th class="px-4 py-3 font-semibold">Method</th><th class="px-4 py-3 font-semibold">Purpose</th></tr></thead>
               <tbody class="text-muted">
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">title(text)</th><td class="px-4 py-4">Set the diagram title.</td></tr>
-                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">board(id, split_rails: false)</th><td class="px-4 py-4">Select <code>:full</code>, <code>:half</code>, <code>:mini</code>, or a custom board ID.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">board(id, split_rails: false, as: nil)</th><td class="px-4 py-4">Select <code>:double_full</code> (1660 holes), <code>:full</code>, <code>:half</code>, <code>:mini</code>, or a custom board. Use <code>as:</code> to name each board in a multi-board circuit.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">use_parts(path) / use_boards(path)</th><td class="px-4 py-4">Load YAML definitions relative to the DSL file. Globs are supported.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">include(path)</th><td class="px-4 py-4">Load another trusted Ruby circuit file relative to this file.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">block(name) { ... } / use_block(name, ...)</th><td class="px-4 py-4">Define and expand reusable circuit declarations with explicit arguments.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">bus(name, **lines)</th><td class="px-4 py-4">Label related nets at explicit holes or pin references. Add wires separately.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">step(number, title:) { ... }</th><td class="px-4 py-4">Tag declarations with a numbered assembly stage. Start at 1 and continue in order.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">supply(name, voltage:, plus:, minus:)</th><td class="px-4 py-4">Add a DC source. Both terminals occupy board holes.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">supply(from:, plus:, minus:)</th><td class="px-4 py-4">Wire a modeled offboard power output to the positive and negative rails without adding a second voltage source.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">net(name, at:)</th><td class="px-4 py-4">Label a hole or component pin.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">part(ref, type, value = nil, pins: ..., at: ..., **attrs)</th><td class="px-4 py-4">Place a defined part. <code>pins:</code> accepts an ordered array or a pin-name hash.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">wire(from, to, color: nil, route: :straight, layer: nil)</th><td class="px-4 py-4">Connect holes or pins. Use <code>route: :arc</code> for a curve or <code>route: :edge</code> around the board edge. Options also include <code>id:</code>, <code>electrical:</code>, and <code>dashed:</code>.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">offboard(name, type, side: :left, at: nil, unused: [])</th><td class="px-4 py-4">Place a module beside the board. <code>at:</code> aligns its first pin; extra attributes such as <code>address:</code> appear on the module.</td></tr>
-                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">expect(strict: false) { ... }</th><td class="px-4 py-4">Declare <code>connected</code>, <code>isolated</code>, or named <code>net</code> expectations. Strict mode also rejects unlisted pins on declared nets.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">expect(strict: false, when: nil) { ... }</th><td class="px-4 py-4">Declare <code>connected</code>, <code>isolated</code>, or named <code>net</code> expectations. Use <code>when:</code> for a switch state; strict mode rejects unlisted pins.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">expect_voltage(ref, range) / expect_current(ref, range)</th><td class="px-4 py-4">Check an inclusive DC voltage or current range when the operating point is known.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">lint_disable(rule, on: nil, reason: nil)</th><td class="px-4 py-4">Suppress a lint rule, optionally for one target.</td></tr>
               </tbody>
             </table>
@@ -110,6 +112,20 @@ end</code></pre>
           <p class="mt-4 text-pretty leading-7 text-muted">Custom YAML definitions can mark module pins with <code class="font-mono text-paper">type:</code> values such as <code class="font-mono text-paper">power</code>, <code class="font-mono text-paper">ground</code>, <code class="font-mono text-paper">clock</code>, <code class="font-mono text-paper">data</code>, <code class="font-mono text-paper">address</code>, or <code class="font-mono text-paper">interrupt</code>. The renderer colors those markers and dims unwired pins.</p>
         </section>
 
+        <section id="multiple-boards" class="scroll-mt-8 mt-12 border-t border-line pt-10">
+          <h2 class="text-balance text-2xl font-semibold">Connect two breadboards</h2>
+          <p class="mt-4 text-pretty leading-7 text-muted">Name each board, then prefix every physical hole and rail with that name. The two boards have separate conductive strips until a wire joins them.</p>
+          <pre class="mt-5 overflow-x-auto rounded-lg border border-line bg-board p-5 font-mono text-sm leading-6"><code>board :half, as: :B1
+board :half, as: :B2
+supply :BAT, voltage: 5, plus: "B1.T+1", minus: "B2.B-1"
+resistor :R1, "330", pins: %w[B1.a1 B1.a3]
+led :D1, color: :red, anode: "B2.a1", cathode: "B2.a2"
+wire "B1.b1", "B1.T+2", color: :red
+wire "B1.b3", "B2.b1", color: :red
+wire "B2.b2", "B2.B-2", color: :black</code></pre>
+          <p class="mt-4 text-pretty leading-7 text-muted">This path runs from the battery through the resistor and LED, then back to the battery. <code class="font-mono text-paper">breadkit nets</code> reports three nets: <code class="font-mono text-paper">BAT+</code>, <code class="font-mono text-paper">N1</code>, and <code class="font-mono text-paper">BAT-</code>. Named-board circuits use <a class="text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit/blob/main/schema/ir-v2.json">JSON IR v2</a>; unnamed single-board circuits keep IR v1.</p>
+        </section>
+
         <section id="cli" class="scroll-mt-8 mt-12 border-t border-line pt-10 pb-16">
           <h2 class="text-balance text-2xl font-semibold">Switch states, IR, and CLI</h2>
           <p class="mt-4 text-pretty leading-7 text-muted"><code class="font-mono text-paper">circuit.states("none")</code>, <code class="font-mono text-paper">circuit.states("single")</code>, and <code class="font-mono text-paper">circuit.states("all")</code> control switch contact simulation. <code class="font-mono text-paper">Breadkit.load(path)</code> reads Ruby DSL, declarative YAML or TOML, or JSON IR. <code class="font-mono text-paper">circuit.to_ir</code> returns the resolved circuit data, including selected hole positions and assembly steps.</p>
@@ -128,6 +144,7 @@ breadkit fmt circuit.bk.yml &gt; formatted.bk.yml</code></pre>
           <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#declarations">Declarations</a></li>
           <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#references">References</a></li>
           <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#layers">Layers and pins</a></li>
+          <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#multiple-boards">Multiple boards</a></li>
           <li><a class="hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="#cli">CLI and IR</a></li>
         </ul>
       </nav>
