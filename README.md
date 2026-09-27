@@ -116,6 +116,7 @@ electrical, and wiring-intent problems. Each gem is released separately.
 - [YAML and TOML circuit guide](docs/DECLARATIVE.md) — data-only circuit files and examples.
 - [MCP server](docs/MCP.md) — configure the read-only stdio tools for a project.
 - [LSP and VS Code](docs/LSP.md) — editor diagnostics, completion, hover, and SVG preview.
+- [Compatibility policy](docs/COMPATIBILITY.md) — independent gem releases and versioned data formats.
 
 Ruby DSL files execute code. Load only Ruby files you trust. YAML (`.bk.yml`,
 `.bk.yaml`) and TOML (`.bk.toml`) circuit files are parsed as data without Ruby
