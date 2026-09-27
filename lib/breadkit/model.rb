@@ -25,6 +25,15 @@ module Breadkit
       pins[(definition["name"] || definition["num"]).to_s] if definition
     end
 
+    def provided_sources
+      Array(part.data["provides"]).select do |source|
+        (source["when"] || {}).all? do |key, expected|
+          actual = attrs.key?(key.to_sym) ? attrs[key.to_sym] : attrs[key]
+          !actual.nil? && actual.to_s == expected.to_s
+        end
+      end
+    end
+
     def body_bounds(board)
       render = part.data["render"] || {}
       return unless render["size_mm"]

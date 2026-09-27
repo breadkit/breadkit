@@ -107,7 +107,7 @@ module Breadkit
 
     def voltage_sources
       supplies + components.values.flat_map do |component|
-        Array(component.part.data["provides"]).map do |source|
+        component.provided_sources.map do |source|
           Supply.new(name: "#{component.ref}.#{source.fetch('positive')}", voltage: Value.parse(source.fetch("voltage")),
                      plus: "#{component.ref}.#{source.fetch('positive')}",
                      minus: "#{component.ref}.#{source.fetch('negative')}", location: component.location,

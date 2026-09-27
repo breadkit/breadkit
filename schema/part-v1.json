@@ -22,10 +22,12 @@
     "max_lead_span_mm": { "type": "number", "exclusiveMinimum": 0 },
     "package": { "type": "object", "properties": { "pins": { "type": "integer", "minimum": 1 } }, "additionalProperties": false },
     "attributes": { "type": "object", "additionalProperties": { "oneOf": [{ "const": "css_color" }, { "type": "array", "minItems": 1, "items": { "type": ["string", "number"] } }] } },
+    "required_attributes": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
     "provides": {
       "type": "array",
       "items": { "type": "object", "required": ["positive", "negative", "voltage"],
-        "properties": { "positive": { "type": "string" }, "negative": { "type": "string" }, "voltage": { "type": "number", "exclusiveMinimum": 0 } },
+        "properties": { "positive": { "type": "string" }, "negative": { "type": "string" }, "voltage": { "type": "number", "exclusiveMinimum": 0 },
+          "when": { "type": "object", "minProperties": 1, "additionalProperties": { "type": ["string", "number"] } } },
         "additionalProperties": false }
     },
     "render": {
@@ -53,7 +55,8 @@
           "label": { "type": ["boolean", "string"] },
           "max_voltage": { "type": "number", "exclusiveMinimum": 0 },
           "max_current": { "type": "number", "exclusiveMinimum": 0 },
-          "output_capable": { "type": "boolean" }
+          "output_capable": { "type": "boolean" },
+          "mount": { "const": "rail" }
         },
         "not": { "required": ["type", "role"] },
         "additionalProperties": false

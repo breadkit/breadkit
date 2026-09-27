@@ -131,6 +131,7 @@ gem checks resolved connections in tests, for example
 - [Rake task](docs/RAKE.md) — check selected circuit files during a build.
 - [Jumper kit allocation](docs/JUMPER_KIT.md) — match measured wire stock to circuit jumpers.
 - [YAML and TOML circuit guide](docs/DECLARATIVE.md) — data-only circuit files and examples.
+- [ShillehTek MB102 power module](docs/MB102_POWER.md) — four explicitly placed rail contacts and independent output selectors.
 - [MCP server](docs/MCP.md) — configure the read-only stdio tools for a project.
 - [LSP and VS Code](docs/LSP.md) — editor diagnostics, completion, hover, and SVG preview.
 - [Compatibility policy](docs/COMPATIBILITY.md) — independent gem releases and versioned data formats.

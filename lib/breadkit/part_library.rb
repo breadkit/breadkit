@@ -6,8 +6,8 @@ module Breadkit
   class PartDef
     attr_reader :data
 
-    KEYS = %w[id aliases category placement pins polarity footprint internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current max_lead_span_mm datasheet_url].freeze
-    PIN_KEYS = %w[num name aliases type role label max_voltage max_current output_capable].freeze
+    KEYS = %w[id aliases category placement pins polarity footprint internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes required_attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current max_lead_span_mm datasheet_url].freeze
+    PIN_KEYS = %w[num name aliases type role label max_voltage max_current output_capable mount].freeze
 
     def initialize(data)
       if data["pins"].is_a?(Array)
@@ -39,6 +39,13 @@ module Breadkit
           raise ArgumentError, "part #{id} has invalid attributes schema"
         end
       end
+      if data.key?("required_attributes")
+        required = data["required_attributes"]
+        unless required.is_a?(Array) && required.uniq.length == required.length &&
+               required.all? { |key| key.is_a?(String) && data.fetch("attributes", {}).key?(key) }
+          raise ArgumentError, "part #{id} has invalid required_attributes"
+        end
+      end
       identities = {}
       pins.each_with_index do |pin, index|
         raise ArgumentError, "part #{id} has invalid pin" unless pin.is_a?(Hash) && pin["num"]
@@ -48,6 +55,7 @@ module Breadkit
         if role && !%w[input output gpio power ground data clock interrupt address nc passive analog reset open_drain].include?(role.to_s)
           raise ArgumentError, "part #{id} pin #{pin['num']} has invalid type #{role}"
         end
+        raise ArgumentError, "part #{id} pin #{pin['num']} has invalid mount" if pin.key?("mount") && pin["mount"] != "rail"
         unless !pin.key?("label") || pin["label"].is_a?(String) || [true, false].include?(pin["label"])
           raise ArgumentError, "part #{id} pin #{pin['num']} has invalid label"
         end
@@ -119,12 +127,18 @@ module Breadkit
       end
       Array(data["provides"]).each do |source|
         unless source.is_a?(Hash) && %w[positive negative voltage].all? { |key| source.key?(key) } &&
+               (source.keys - %w[positive negative voltage when]).empty? &&
                %w[positive negative].all? { |key| identities.key?(source[key].to_s.downcase) } &&
                source["voltage"].is_a?(Numeric) && source["voltage"].finite? && source["voltage"].positive?
           raise ArgumentError, "part #{id} has invalid voltage source"
         end
-      rescue ArgumentError, TypeError
-        raise ArgumentError, "part #{id} has invalid voltage source"
+        conditions = source["when"]
+        if conditions && (!conditions.is_a?(Hash) || conditions.empty? || conditions.any? do |key, value|
+          choices = data.fetch("attributes", {})[key]
+          !choices.is_a?(Array) || !choices.include?(value)
+        end)
+          raise ArgumentError, "part #{id} has invalid voltage source condition"
+        end
       end
       if data["footprint"]
         numbers = pins.map { |pin| pin.fetch("num").to_s }

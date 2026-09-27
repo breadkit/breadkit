@@ -1,0 +1,23 @@
+# ShillehTek four-contact underside variant only. Other MB102 modules can differ.
+# No fixed footprint: the four rail holes must be supplied from the actual module and breadboard.
+id: shillehtek_mb102_4pin
+category: power
+placement: footprint
+datasheet_url: https://shillehtek.com/blogs/shillehtek-product-manuals/mb102-breadboard-power-supply-3-3v-5v
+pins:
+  - {num: LP, name: LEFT_POS, type: power, mount: rail}
+  - {num: LG, name: LEFT_GND, type: ground, mount: rail}
+  - {num: RP, name: RIGHT_POS, type: power, mount: rail}
+  - {num: RG, name: RIGHT_GND, type: ground, mount: rail}
+internal: [[LEFT_GND, RIGHT_GND]]
+attributes:
+  master: ["on", "off"]
+  left: ["v5", "v3_3", "off"]
+  right: ["v5", "v3_3", "off"]
+required_attributes: [master, left, right]
+provides:
+  - {positive: LEFT_POS, negative: LEFT_GND, voltage: 5, when: {master: "on", left: "v5"}}
+  - {positive: LEFT_POS, negative: LEFT_GND, voltage: 3.3, when: {master: "on", left: "v3_3"}}
+  - {positive: RIGHT_POS, negative: RIGHT_GND, voltage: 5, when: {master: "on", right: "v5"}}
+  - {positive: RIGHT_POS, negative: RIGHT_GND, voltage: 3.3, when: {master: "on", right: "v3_3"}}
+render: {shape: generic, label: ShillehTek MB102 (logical)}

@@ -103,7 +103,7 @@ module Breadkit
         component = components[parsed.ref] if parsed.kind == :pin
         source_pin = component&.part&.pin(parsed.pin)
         matches = if component&.part&.placement == "offboard" && source_pin
-          Array(component.part.data["provides"]).select do |entry|
+          component.provided_sources.select do |entry|
             component.part.pin(entry.fetch("positive"))["num"].to_s == source_pin["num"].to_s
           end
         else
@@ -141,6 +141,11 @@ module Breadkit
         end
       end
       attrs = item[:attrs] || {}
+      Array(part.data["required_attributes"]).each do |name|
+        next if attrs.key?(name) || attrs.key?(name.to_sym)
+
+        @diagnostics << diagnostic(:invalid_option, "error", "missing required component option #{item[:ref]}.#{name}", item[:location], [item[:ref]])
+      end
       if attrs.key?(:rotate) || attrs.key?(:mirror)
         placement_error(item, "#{item[:ref]} orientation requires a footprint") unless part.placement == "footprint"
       end
@@ -182,6 +187,12 @@ module Breadkit
               placement_error(item, "DIP #{item[:ref]} extends beyond the board")
             else
               @diagnostics << diagnostic(:invalid_hole, "error", "invalid hole #{anchor.inspect}", item[:location], [item[:ref], anchor])
+            end
+          end
+          if hole && definition["mount"] == "rail"
+            expected_polarity = { "power" => "+", "ground" => "-" }[definition["type"]]
+            if hole.kind != :rail || (expected_polarity && @board.rail_polarity(hole.rail) != expected_polarity)
+              placement_error(item, "#{item[:ref]}.#{name} needs a #{expected_polarity || 'matching'} rail hole")
             end
           end
           result[name.to_s] = Pin.new(name: name.to_s, number: number, hole_id: hole&.id,
