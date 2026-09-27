@@ -402,20 +402,16 @@ module Breadkit
       end
       ground_labels = Array(circuit.board.definition.data["ground_labels"] || %w[GND 0V VSS GROUND]).map(&:upcase)
       ground = circuit.nets(state).find { |net| net.labels.any? { |label| ground_labels.include?(label.upcase) } }&.name
-      components, witnesses, seen_conflicts = [], {}, {}
+      components, witnesses, witness_sources, seen_conflicts = [], {}, {}, {}
       starts = adjacency.keys
       starts = [ground, *(starts - [ground])] if starts.include?(ground)
       starts.each do |start|
         next if values.key?(start)
         components << start
         values[start] = 0.0
-        witnesses[start] = edges.lazy.filter_map do |supply, from, to|
-          if from&.name == start
-            terminal_for(supply, "-")
-          elsif to&.name == start
-            terminal_for(supply, "+")
-          end
-        end.first
+        origin, from = edges.find { |_supply, negative, positive| negative&.name == start || positive&.name == start }
+        witnesses[start] = terminal_for(origin, from&.name == start ? "-" : "+")
+        witness_sources[start] = origin
         queue = [start]
         until queue.empty?
           current = queue.shift
@@ -432,16 +428,22 @@ module Breadkit
               path_wires = circuit.wires.select { |wire| path.include?(wire.id) }
               conflicts << { supply: supply, net: target, expected: values[target], actual: proposed,
                              terminal_a: first, terminal_b: second, path: path,
-                             wires: path_wires.map(&:id), location: path_wires.max_by { |wire| wire.location&.line.to_i }&.location || supply.location }
+                             wires: path_wires.map(&:id), location: path_wires.max_by { |wire| wire.location&.line.to_i }&.location || supply.location,
+                             source_pair: [witness_sources[target].name, supply.name].sort }
               seen_conflicts[pair] = true
             else
               values[target] = proposed
               witnesses[target] = terminal
+              witness_sources[target] = supply
               queue << target
             end
           end
         end
       end
+      # A wired short can be seen again on an already shared return or series junction.
+      wired_pairs = conflicts.filter_map { |item| item[:source_pair] unless item[:wires].empty? }
+      conflicts.reject! { |item| item[:wires].empty? && wired_pairs.include?(item[:source_pair]) }
+      conflicts.each { |item| item.delete(:source_pair) }
       values[ground] = 0.0 if ground && !values.key?(ground)
       PotentialResult.new(values: values, conflicts: conflicts, components: components)
     end

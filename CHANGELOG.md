@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Report a wired power short at its bridge without a duplicate finding on the existing shared return.
 - Attach wires to occupied solder pads on universal and stripboard layouts while retaining socket occupancy checks.
 - Pin local part and board definition files with SHA-256 checksums in `breadkit.lock`.
 - Add isolated-pad universal perfboard and continuous-row stripboard models.
