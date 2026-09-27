@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add a read-only MCP stdio server for data-only circuit resolution, net inspection, and IR export.
 - Route a defined offboard power output and its return to rails with `supply from:`.
 - Resolve circuits across named breadboards and preserve board identities in IR v2.
 - Accept an optional physical lead-span limit on specific two-pin lead parts.

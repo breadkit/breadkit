@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "breadkit/mcp_server"
+
+unless ARGV.empty? || (ARGV.length == 2 && ARGV.first == "--root")
+  warn "Usage: breadkit-mcp [--root DIRECTORY]"
+  exit 2
+end
+
+root = ARGV.empty? ? Dir.pwd : ARGV.last
+Breadkit::MCPServer.new(root: root).run

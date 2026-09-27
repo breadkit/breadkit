@@ -204,6 +204,12 @@ module Breadkit
     def run: (Array[String] argv) -> Integer
   end
 
+  class MCPServer
+    def initialize: (?root: String) -> void
+    def server: () -> untyped
+    def run: () -> untyped
+  end
+
   module Exporters
     FORMATS: Array[String]
     def self.call: (Circuit circuit, format: String | Symbol) -> String
