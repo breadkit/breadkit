@@ -76,3 +76,18 @@ jobs:
           bundler: default
       - run: gem install rbs --no-document # zizmor: ignore[adhoc-packages]
       - run: rbs -I sig validate
+
+  vscode:
+    name: VS Code extension
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+      - run: node --test vscode/extension.test.js
+      - run: npx --yes @vscode/vsce@4.0.0 package --no-dependencies --out /tmp/breadkit.vsix
+        working-directory: vscode

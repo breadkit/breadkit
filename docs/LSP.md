@@ -36,7 +36,7 @@ To make a local VSIX with the [VS Code extension packaging tool](https://code.vi
 
 ```sh
 cd vscode
-vsce package
+npx --yes @vscode/vsce@4.0.0 package --no-dependencies
 code --install-extension breadkit-0.1.0.vsix
 ```
 

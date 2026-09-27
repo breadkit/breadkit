@@ -22,6 +22,7 @@ class LanguageServer {
     this.opened = new Set();
     this.nextId = 1;
     this.ready = false;
+    this.exited = false;
     const config = vscode.workspace.getConfiguration("breadkit");
     const folders = vscode.workspace.workspaceFolders || [];
     const root = folders.length === 1 ? folders[0].uri.fsPath : undefined;
@@ -33,6 +34,7 @@ class LanguageServer {
     this.process.stderr.on("data", chunk => output.append(chunk.toString()));
     this.process.on("error", error => output.appendLine(`Language server failed: ${error.message}`));
     this.process.on("exit", () => {
+      this.exited = true;
       for (const callback of this.pending.values()) callback({ error: { message: "Language server exited" } });
       this.pending.clear();
       this.ready = false;
@@ -165,7 +167,7 @@ async function activate(context) {
   const diagnostics = vscode.languages.createDiagnosticCollection("breadkit");
   context.subscriptions.push(output, diagnostics, vscode.commands.registerCommand("breadkit.preview", preview));
   async function ensureServer() {
-    if (server) return;
+    if (server && !server.exited) return;
     server = new LanguageServer(output, diagnostics);
     try {
       await server.start();
