@@ -134,11 +134,13 @@ gem checks resolved connections in tests, for example
 - [Community part pack](https://github.com/breadkit/breadkit-parts) — verified model-specific definitions with Git submodule and lockfile instructions.
 - [DSL reference](https://breadkit.github.io/breadkit/guide/dsl/) — methods, pins, nets, and custom definitions.
 - [Browser Playground](https://breadkit.github.io/breadkit/playground/) — edit a Ruby circuit and preview its diagram, nets, and lint results.
-- [Project design](docs/DESIGN.md) — the data model and resolution rules.
+- [JSON IR](docs/IR.md) — a valid JSON circuit example and the versioned schemas.
 - [CLI reference](docs/CLI.md) — templates, part validation, circuit inspection, and diff.
+- [Ruby DSL reference](docs/dsl.md) — circuit declarations, pins, and switch states.
 - [Rake task](docs/RAKE.md) — check selected circuit files during a build.
 - [Jumper kit allocation](docs/JUMPER_KIT.md) — match measured wire stock to circuit jumpers.
 - [YAML and TOML circuit guide](docs/DECLARATIVE.md) — data-only circuit files and examples.
+- [Locking local definitions](docs/LOCK.md) — pin local part and board definitions.
 - [ShillehTek MB102 power module](docs/MB102_POWER.md) — four explicitly placed rail contacts and independent output selectors.
 - [MCP server](docs/MCP.md) — configure the read-only stdio tools for a project.
 - [LSP and VS Code](docs/LSP.md) — editor diagnostics, completion, hover, and SVG preview.
@@ -176,6 +178,13 @@ bundle exec bklint ../breadkit/examples/01_led_button.bk.rb
 To build the Playground locally, keep `breadkit-lint` and `breadkit-render`
 beside this repository, then run `npm ci`, `npm run build`, and
 `node scripts/build-playground.mjs`. Serve `_site` over HTTP to open it.
+
+`Breadkit.load` in `lib/breadkit.rb` selects the Ruby DSL, YAML/TOML parser, or
+JSON IR reader. All three routes pass declarations to `Resolver`, which builds
+the resolved `Circuit`. `lib/breadkit/ir.rb` handles the JSON contract; the
+versioned schemas live in `schema/`. Run `bundle exec rake` for lint and specs
+after changing the resolver or a public format. See the
+[compatibility policy](docs/COMPATIBILITY.md) before changing a schema.
 
 ## License
 
