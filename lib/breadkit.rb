@@ -12,6 +12,7 @@ require_relative "breadkit/model"
 require_relative "breadkit/board"
 require_relative "breadkit/part_library"
 require_relative "breadkit/dsl"
+require_relative "breadkit/structured_input"
 require_relative "breadkit/resolver"
 require_relative "breadkit/analysis"
 require_relative "breadkit/dc_analysis"
@@ -31,6 +32,13 @@ module Breadkit
   end
 
   def self.load(path, timeout: 10)
-    path.end_with?(".json") ? IR::Reader.new.read_file(path) : Resolver.new.call(DSL.load_file(path, timeout: timeout))
+    return IR::Reader.new.read_file(path) if path.end_with?(".json")
+
+    document = if path.end_with?(".bk.yml", ".bk.yaml", ".bk.toml")
+      StructuredInput.load_file(path)
+    else
+      DSL.load_file(path, timeout: timeout)
+    end
+    Resolver.new.call(document)
   end
 end

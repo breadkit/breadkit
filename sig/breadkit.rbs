@@ -205,6 +205,10 @@ module Breadkit
     def self.load_file: (String path, ?timeout: Numeric, ?source: String?) -> Document
   end
 
+  class StructuredInput
+    def self.load_file: (String path) -> Document
+  end
+
   module IR
     class Writer
       def write: (Circuit circuit) -> Hash[String, untyped]

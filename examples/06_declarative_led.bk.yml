@@ -1,0 +1,14 @@
+title: LED circuit
+board: mini
+supplies:
+  - {name: USB, voltage: 5, plus: a1, minus: a2}
+labels:
+  - {name: VCC, at: a1}
+  - {name: GND, at: a2}
+parts:
+  - {ref: R1, type: resistor, value: "330", pins: [b1, b3]}
+  - {ref: D1, type: led, pins: {anode: c3, cathode: c4}, attrs: {color: red}}
+wires:
+  - {from: d4, to: b2, color: black}
+expectations:
+  - connected: [[VCC, R1.1], [R1.2, D1.anode], [D1.cathode, GND]]

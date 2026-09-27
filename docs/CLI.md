@@ -1,8 +1,10 @@
 # CLI reference
 
-`breadkit` accepts Ruby circuit files (`.bk.rb`) and JSON IR files where a
-circuit input is required. Ruby circuit files execute code; load only files you
-trust.
+`breadkit` accepts Ruby circuit files (`.bk.rb`), declarative YAML
+(`.bk.yml`, `.bk.yaml`) and TOML (`.bk.toml`) circuit files, and JSON IR files
+where a circuit input is required. Ruby circuit files execute code; load only
+files you trust. YAML and TOML circuit files are parsed as data. Ordinary `.yml`
+part definitions are not circuit inputs.
 
 | Command | Purpose |
 | --- | --- |
@@ -43,3 +45,6 @@ also include tolerance or ratings, such as `4.7k 5%`, `330 1/4W`, and
 
 Export stops when the circuit has error diagnostics. `kicad` preserves physical
 pin numbers but leaves library and footprint assignment to the KiCad project.
+
+See the [declarative circuit guide](DECLARATIVE.md) for complete YAML and TOML
+examples. The same commands work with any supported circuit input format.

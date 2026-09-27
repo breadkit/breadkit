@@ -5,7 +5,7 @@
 <h1 align="center">breadkit</h1>
 
 <p align="center">
-  <strong>Describe breadboard circuits in Ruby. See how every connection fits together.</strong>
+  <strong>Describe breadboard circuits in Ruby, YAML, or TOML. See how every connection fits together.</strong>
 </p>
 
 <p align="center">
@@ -77,11 +77,15 @@ breadkit export --format kicad circuit.bk.rb > circuit.xml
 The [complete button and LED example](examples/01_led_button.bk.rb) also
 declares the connections it expects.
 
+Prefer a data-only circuit file? The same LED circuit is available in
+[YAML](examples/06_declarative_led.bk.yml) and
+[TOML](examples/07_declarative_led.bk.toml).
+
 ## What Breadkit provides
 
 | Capability | What it does |
 | --- | --- |
-| Ruby DSL | Place boards, parts, supplies, wires, and connection expectations. |
+| Circuit inputs | Place boards, parts, supplies, wires, and expectations with the Ruby DSL or declarative YAML and TOML. |
 | Board and part definitions | Start with full, half, and mini boards or load your own YAML definitions. |
 | Connectivity analysis | Resolve conductive strips, pins, and switch states into named nets. |
 | JSON IR | Pass resolved circuits to the renderer, linter, or another tool. |
@@ -101,9 +105,11 @@ electrical, and wiring-intent problems. Each gem is released separately.
 - [DSL reference](https://breadkit.github.io/breadkit/guide/dsl/) — methods, pins, nets, and custom definitions.
 - [Project design](docs/DESIGN.md) — the data model and resolution rules.
 - [CLI reference](docs/CLI.md) — templates, part validation, circuit inspection, and diff.
+- [YAML and TOML circuit guide](docs/DECLARATIVE.md) — data-only circuit files and examples.
 
-DSL files execute Ruby code. Load only files you trust; use JSON IR when the
-input must be data-only.
+Ruby DSL files execute code. Load only Ruby files you trust. YAML (`.bk.yml`,
+`.bk.yaml`) and TOML (`.bk.toml`) circuit files are parsed as data without Ruby
+evaluation; JSON IR is also data-only.
 
 ## Development
 

@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors = ["Yudai Takada"]
   spec.email = ["t.yudai92@gmail.com"]
 
-  spec.summary = "Describe and analyze breadboard circuits with a Ruby DSL."
-  spec.description = "Breadkit resolves breadboard wiring DSL files into deterministic circuit connectivity and JSON IR."
+  spec.summary = "Describe and analyze breadboard circuits in Ruby, YAML, or TOML."
+  spec.description = "Breadkit resolves breadboard wiring descriptions into deterministic circuit connectivity and JSON IR."
   spec.homepage = "https://github.com/breadkit/breadkit"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.3"
