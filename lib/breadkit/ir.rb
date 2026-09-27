@@ -137,7 +137,7 @@ module Breadkit
             raise DSLError, "invalid IR: supplies[#{index}].voltage must be within voltage_range"
           end
           limit = item["current_limit"]
-          unless limit.nil? || (limit.is_a?(Numeric) && limit.finite? && limit.positive?)
+          unless limit.nil? || (limit.is_a?(Numeric) && limit.real? && limit.finite? && limit.positive?)
             raise DSLError, "invalid IR: supplies[#{index}].current_limit must be positive"
           end
         end

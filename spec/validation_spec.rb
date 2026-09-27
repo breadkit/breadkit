@@ -117,6 +117,8 @@ RSpec.describe "circuit input validation" do
       .to raise_error(Breadkit::DSLError, /current_limit/)
     expect { circuit("board :mini\nsupply :CELL, voltage: 3.7, current_limit: false, plus: 'a1', minus: 'a2'") }
       .to raise_error(Breadkit::DSLError, /current_limit/)
+    expect { circuit("board :mini\nsupply :CELL, voltage: 3.7, current_limit: 1+1i, plus: 'a1', minus: 'a2'") }
+      .to raise_error(Breadkit::DSLError, /current_limit/)
   end
 
   it "keeps IR source paths stable across working directories" do

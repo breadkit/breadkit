@@ -50,7 +50,7 @@ module Breadkit
         raise DSLError, "supply voltage must be positive" unless parsed.finite? && parsed.positive?
         raise DSLError, "supply voltage range must be positive" if range && range.any? { |value| !value.finite? || !value.positive? }
         raise DSLError, "isolated must be boolean" unless [true, false].include?(isolated)
-        if !current_limit.nil? && (!current_limit.is_a?(Numeric) || !current_limit.finite? || !current_limit.positive?)
+        if !current_limit.nil? && (!current_limit.is_a?(Numeric) || !current_limit.real? || !current_limit.finite? || !current_limit.positive?)
           raise DSLError, "current_limit must be a positive current in amperes"
         end
         document.supplies << { name: name.to_s, voltage: parsed, plus: plus.to_s,
