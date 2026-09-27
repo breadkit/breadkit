@@ -38,3 +38,20 @@ The lockfile pins only local YAML definitions loaded by `use_parts` and
 Ruby DSL files loaded with `include`, other gems, or external tools. Ruby DSL
 files are executable and should only be loaded when trusted. Declarative YAML
 and TOML circuit files remain data-only.
+
+## Vendored part packs
+
+To share a versioned pack today, keep its YAML files under your project, for
+example as a Git submodule pinned to a commit under `vendor/parts/`. Point
+`use_parts` at those local files and commit both the Git revision and
+`breadkit.lock`. The lock checks the exact YAML bytes even if a submodule or
+checkout changes unexpectedly:
+
+```yaml
+board: mini
+use_parts: [vendor/parts/*.yml]
+```
+
+Breadkit does not download packs, resolve remote versions, or authenticate a
+Git source. Those steps remain with your existing Git or package manager
+workflow. Avoid loading unpinned remote files directly into a circuit.
