@@ -124,4 +124,16 @@ RSpec.describe "MCP stdio server" do
       expect(result.content.first.fetch(:text)).to include("outside the MCP root")
     end
   end
+
+  it "resolves a named switch combination beyond the legacy exhaustive state limit" do
+    Dir.mktmpdir do |root|
+      source = "board: full\nparts:\n" + (1..9).map { |number| "  - {ref: SW#{number}, type: button, at: e#{number * 4 - 3}}\n" }.join
+      File.write(File.join(root, "switches.bk.yml"), source)
+      service = Breadkit::MCPServer.new(root: root).server
+      result = service.tools.fetch("breadkit_nets").call(path: "switches.bk.yml", state: "SW1,SW3,SW9")
+      expect(result.error?).to be(false), result.content.inspect
+      expect(result.structured_content.fetch(:state)).to eq("SW1,SW3,SW9")
+      expect(service.tools.fetch("breadkit_nets").call(path: "switches.bk.yml", state: "SW1,SW1").error?).to be(true)
+    end
+  end
 end

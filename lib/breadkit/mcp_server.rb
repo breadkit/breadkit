@@ -67,8 +67,14 @@ module Breadkit
       circuit = valid_circuit(path)
       state = nil
       if state_name && state_name != "base"
-        state = circuit.states("all").find { |item| item.name == state_name }
-        raise ArgumentError, "unknown switch state #{state_name}" unless state
+        names = state_name.split(",", -1)
+        switches = names.map { |name| circuit.components[name] }
+        if names.uniq.length != names.length || switches.any? { |item| !item || Array(item.part.data["switch"]).empty? }
+          raise ArgumentError, "unknown switch state #{state_name}"
+        end
+
+        closed = switches.flat_map { |component| Array(component.part.data["switch"]).map { |pair| [component, pair] } }
+        state = State.new(name: state_name, closed_switches: closed)
       end
       { state: state_name || "base", nets: circuit.nets(state).map do |net|
         { name: net.name, members: net.members, holes: net.holes, potential: net.potential }
