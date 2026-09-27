@@ -59,4 +59,8 @@ RSpec.describe "Fritzing sketch export" do
         .to output(/Breadboard-RSR03MB102-ModuleID/).to_stdout
     end
   end
+
+  it "lists Fritzing in the CLI usage" do
+    expect(Breadkit::CLI::USAGE).to include("export --format kicad|spice|wokwi|pins|fritzing FILE")
+  end
 end

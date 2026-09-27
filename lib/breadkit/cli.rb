@@ -11,7 +11,7 @@ module Breadkit
         where HOLE FILE | explain PART FILE | bom FILE | diff OLD NEW
         suggest FILE (show free-hole wire candidates for unmet connection intent)
         kit --inventory KIT.yml FILE (allocate measured jumpers to straight board wires)
-        export --format kicad|spice|wokwi|pins FILE
+        export --format kicad|spice|wokwi|pins|fritzing FILE
         fmt FILE (declarative YAML or TOML; prints formatted source)
         lock FILE (pin local part and board definitions in breadkit.lock)
         parts [FILE] | parts show PART [FILE] | check-part YAML
