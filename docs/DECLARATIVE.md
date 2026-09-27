@@ -46,6 +46,7 @@ expectations:
 | `parts` | list of mappings | `ref`, `type`; optional `value`, `pins`, `at`, `attrs`, `unused`. |
 | `offboard` | list of mappings | `ref`, `type`; optional `side`, `at`, `attrs`, `unused`. `offboard: true` also works in a `parts` entry. |
 | `wires` | list of mappings | `from`, `to`; optional `color`, `id`, `route`, `layer`, `electrical`, `dashed`. |
+| `connections` | list of mappings | Intent assertions with `from`, `to`, and optional `when` switch state. They do not place wires. |
 | `expectations` | list of mappings | Optional `strict`, `when`, and connection, isolation, net, voltage, or current checks. |
 | `lint_disables` | list of mappings | `rule`; optional `on` and `reason`. |
 
@@ -58,6 +59,19 @@ such as `color`, `rotate`, or `mirror`. Supply voltage can be a number, a value
 string such as `3.3V`, or an inclusive range string such as `3.0..4.2`. Part
 values accept the same notation as the Ruby DSL, including `4.7k 5%`,
 `330 1/4W`, and `10u 16V`.
+
+Declare expected connectivity separately from physical wiring:
+
+```yaml
+connections:
+  - {from: R1.1, to: D1.anode}
+wires:
+  - {from: b1, to: a5}
+```
+
+The connection records the same IR expectation as Ruby `connect`; only the
+wire changes connectivity. Run `bklint` to report a mismatch or an unknown
+reference. TOML uses `[[connections]]` with `from` and `to` fields.
 
 An expectation can contain `connected` or `isolated` as lists of reference
 lists, `nets` as a list of `{name, refs}` mappings, and `voltage` or `current`

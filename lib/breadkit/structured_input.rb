@@ -2,7 +2,7 @@
 
 module Breadkit
   class StructuredInput
-    ROOT_KEYS = %w[title board boards use_parts use_boards supplies labels parts offboard wires expectations lint_disables].freeze
+    ROOT_KEYS = %w[title board boards use_parts use_boards supplies labels parts offboard wires connections expectations lint_disables].freeze
 
     def self.load_file(path)
       new(File.expand_path(path)).load_file
@@ -40,6 +40,7 @@ module Breadkit
       records(data, "parts").each_with_index { |item, index| load_part(item, "parts[#{index}]", offboard: false) }
       records(data, "offboard").each_with_index { |item, index| load_part(item, "offboard[#{index}]", offboard: true) }
       records(data, "wires").each_with_index { |item, index| load_wire(item, "wires[#{index}]") }
+      records(data, "connections").each_with_index { |item, index| load_connection(item, "connections[#{index}]") }
       records(data, "expectations").each_with_index { |item, index| load_expectation(item, "expectations[#{index}]") }
       records(data, "lint_disables").each_with_index { |item, index| load_disable(item, "lint_disables[#{index}]") }
       document = @builder.document
@@ -155,6 +156,14 @@ module Breadkit
         options[key.to_sym] = boolean(item[key], "#{context}.#{key}") if item.key?(key)
       end
       @builder.wire(string(item["from"], "#{context}.from"), string(item["to"], "#{context}.to"), **options)
+    end
+
+    def load_connection(value, context)
+      item = mapping(value, context)
+      allowed!(item, %w[from to when], context)
+      options = {}
+      options[:when] = string(item["when"], "#{context}.when") if item.key?("when")
+      @builder.connect(string(item["from"], "#{context}.from"), string(item["to"], "#{context}.to"), **options)
     end
 
     def load_expectation(value, context)

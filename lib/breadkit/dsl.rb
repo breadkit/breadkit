@@ -4,7 +4,7 @@ require "timeout"
 
 module Breadkit
   module DSL
-    METHODS = %w[title board use_parts use_boards include block use_block bus step supply net part wire offboard expect expect_voltage expect_current lint_disable resistor capacitor electrolytic diode led transistor pot button ic connected isolated].freeze
+    METHODS = %w[title board use_parts use_boards include block use_block bus step supply net part wire connect offboard expect expect_voltage expect_current lint_disable resistor capacitor electrolytic diode led transistor pot button ic connected isolated].freeze
 
     class Builder
       attr_reader :document
@@ -252,6 +252,22 @@ module Breadkit
         raise DSLError, "connected must be inside expect" unless @expected
 
         @expected << { kind: "connected", refs: refs.map(&:to_s), location: source_location }
+      end
+
+      def connect(*refs, **options)
+        raise DSLError, "connect is an intent assertion; use connected inside expect" if @expected
+        raise DSLError, "connect requires exactly two references and does not place a wire" unless refs.length == 2
+        raise DSLError, "connect references must be nonempty text" unless refs.all? { |ref| (ref.is_a?(String) || ref.is_a?(Symbol)) && !ref.to_s.empty? }
+        unknown = options.keys - [:when]
+        raise DSLError, "unknown connect option #{unknown.first}" unless unknown.empty?
+
+        at_state = options[:when]&.to_s
+        raise DSLError, "connect when: must name a switch state" if options.key?(:when) && at_state.to_s.empty?
+
+        location = source_location
+        expectation = { strict: false, entries: [{ kind: "connected", refs: refs.map(&:to_s), location: location }], location: location }
+        expectation[:when] = at_state if at_state
+        document.expectations << expectation
       end
 
       def isolated(*refs)

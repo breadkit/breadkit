@@ -39,6 +39,7 @@ end
 | `net(name, at:)` | Label a hole or component pin. |
 | `part(ref, type, value = nil, pins: ..., at: ..., **attrs)` | Place a defined part. `pins:` accepts pin order arrays or pin-name hashes. |
 | `wire(from, to, color: nil, id: nil, route: :straight, layer: nil, electrical: true, dashed: false)` | Connect two holes or pin references. `route: :arc` curves the wire; `route: :edge` routes around an outer board edge or from an external module along its terminal row. `layer:` groups wires in interactive SVG output; `electrical: false` draws a visual alternative without changing circuit connectivity. |
+| `connect(from, to, when: nil)` | Declare that two references should be connected. This is an intent assertion; it does not place a wire. |
 | `offboard(name, type, side: :left, at: nil, unused: [], **attrs)` | Place a module beside the board; `at:` aligns its first pin to a board position, and attrs such as `address:` are shown on the module. |
 | `expect { ... }` | Declare `connected`, `isolated`, or named `net` expectations. `strict: true` also rejects unlisted pins on declared nets. Use `when: "SW1"` to check a selected switch state. |
 | `expect_voltage(ref, range)` / `expect_current(ref, range)` | Declare inclusive DC ranges for a net or component. Current is compared by magnitude in amperes. These methods also work inside `expect(when: "SW1")`. |
@@ -51,6 +52,26 @@ terminal positions to express polarity; an inclusive voltage range must have
 two positive, ascending limits. By default, net labels `GND`, `0V`, `VSS`, and
 `GROUND` anchor the potential calculation at 0 V regardless of case. A custom
 board definition can replace that list with `ground_labels: [RETURN, AGND]`.
+
+## Connection intent before placement
+
+Declare an intended connection before placing parts:
+
+```ruby
+connect "R1.1", "D1.anode"
+board :mini
+resistor :R1, "330", pins: %w[a1 a3]
+led :D1, color: :red, anode: "b5", cathode: "b6"
+wire "b1", "a5"
+```
+
+`connect` records an expectation and does not add a physical wire or change
+the resolved nets. Run `bklint` to find an `Intent/ConnectionMismatch` when
+the placed circuit fails to join the references. Add or correct a `wire`
+declaration to satisfy it. The references may be declared before their parts;
+unknown pins are reported after resolution. Use `when: "SW1"` to check a
+selected switch state. This declaration uses the existing `connected`
+expectation in JSON IR; automatic wire or hole suggestions are not generated.
 
 ## Power from an offboard module
 
