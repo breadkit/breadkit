@@ -7,12 +7,20 @@ on:
       - ".github/workflows/pages.yml"
       - "package.json"
       - "package-lock.json"
+      - "lib/**"
+      - "data/**"
+      - "scripts/*.mjs"
+      - "scripts/playground-vendor/**"
       - "site/**"
   pull_request:
     paths:
       - ".github/workflows/pages.yml"
       - "package.json"
       - "package-lock.json"
+      - "lib/**"
+      - "data/**"
+      - "scripts/*.mjs"
+      - "scripts/playground-vendor/**"
       - "site/**"
   workflow_dispatch:
 
@@ -30,6 +38,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: breadkit/breadkit-lint
+          path: .playground/breadkit-lint
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: breadkit/breadkit-render
+          path: .playground/breadkit-render
+          persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 22
@@ -37,6 +55,8 @@ jobs:
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
       - run: npm ci
       - run: npm run build
+      - run: node scripts/build-playground.mjs .playground/breadkit-lint .playground/breadkit-render
+      - run: node scripts/check-playground.mjs
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
           path: _site

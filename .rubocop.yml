@@ -3,6 +3,8 @@ AllCops:
   DisabledByDefault: true
   TargetRubyVersion: 3.3
   SuggestExtensions: false
+  Exclude:
+    - scripts/playground-vendor/**/*
 
 Lint:
   Enabled: true

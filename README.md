@@ -109,6 +109,7 @@ electrical, and wiring-intent problems. Each gem is released separately.
 - [User guide](https://breadkit.github.io/breadkit/guide/) — write a circuit and see its output.
 - [Component catalog](https://breadkit.github.io/breadkit/guide/components/) — boards, built-in parts, and custom modules.
 - [DSL reference](https://breadkit.github.io/breadkit/guide/dsl/) — methods, pins, nets, and custom definitions.
+- [Browser Playground](https://breadkit.github.io/breadkit/playground/) — edit a Ruby circuit and preview its diagram, nets, and lint results.
 - [Project design](docs/DESIGN.md) — the data model and resolution rules.
 - [CLI reference](docs/CLI.md) — templates, part validation, circuit inspection, and diff.
 - [YAML and TOML circuit guide](docs/DECLARATIVE.md) — data-only circuit files and examples.
@@ -127,6 +128,10 @@ cd breadkit
 bundle install
 bundle exec rake
 ```
+
+To build the Playground locally, keep `breadkit-lint` and `breadkit-render`
+beside this repository, then run `npm ci`, `npm run build`, and
+`node scripts/build-playground.mjs`. Serve `_site` over HTTP to open it.
 
 ## License
 
