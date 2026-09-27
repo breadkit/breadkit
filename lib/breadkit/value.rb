@@ -55,7 +55,7 @@ module Breadkit
       qualifiers.each do |item|
         quantity = item[0...-1]
         numbers = quantity.split("/").map(&:to_f)
-        invalid = numbers.any? { |number| !number.finite? || !number.positive? } || (item.end_with?("%") && numbers.first > 100)
+        invalid = numbers.any? { |number| !number.finite? || !number.positive? } || (item.end_with?("%") && numbers.first >= 100)
         raise ArgumentError, "invalid value qualifier: #{item}" if invalid
       end
       [base, qualifiers]

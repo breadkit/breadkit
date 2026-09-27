@@ -17,6 +17,7 @@ RSpec.describe Breadkit do
       expect(described_class.voltage_rating("10u 16V")).to eq(16.0)
       expect(described_class.new("10u 16V", category: :electrolytic).to_s).to eq("10uF")
       expect { described_class.parse("330 1/0W") }.to raise_error(ArgumentError, /qualifier/)
+      expect { described_class.parse("330 100%") }.to raise_error(ArgumentError, /qualifier/)
       expect { described_class.parse("330 5% 10%") }.to raise_error(ArgumentError, /duplicate/)
       expect { described_class.parse("k") }.to raise_error(ArgumentError)
     end
