@@ -1,0 +1,37 @@
+{
+  "name": "breadkit",
+  "displayName": "Breadkit",
+  "description": "Circuit diagnostics, completion, net hover, and breadboard preview for Breadkit files.",
+  "version": "0.1.0",
+  "publisher": "breadkit",
+  "repository": { "type": "git", "url": "https://github.com/breadkit/breadkit.git" },
+  "license": "MIT",
+  "private": true,
+  "engines": { "vscode": "^1.100.0" },
+  "categories": ["Programming Languages"],
+  "extensionKind": ["workspace"],
+  "activationEvents": ["onStartupFinished", "onCommand:breadkit.preview"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "breadkit.preview", "title": "Breadkit: Preview Circuit" }
+    ],
+    "configuration": {
+      "title": "Breadkit",
+      "properties": {
+        "breadkit.serverCommand": {
+          "type": "string", "default": "breadkit-lsp",
+          "description": "Command used to start the Breadkit language server."
+        },
+        "breadkit.renderCommand": {
+          "type": "string", "default": "bkrender",
+          "description": "Command used to render a saved circuit as SVG."
+        },
+        "breadkit.evaluateRubyDsl": {
+          "type": "boolean", "default": false,
+          "description": "Evaluate Ruby DSL files for diagnostics and net hover in a trusted workspace. Ruby code can run arbitrary commands."
+        }
+      }
+    }
+  }
+}

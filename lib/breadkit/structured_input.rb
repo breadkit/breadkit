@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "tomlrb"
-
 module Breadkit
   class StructuredInput
     ROOT_KEYS = %w[title board boards use_parts use_boards supplies labels parts offboard wires expectations lint_disables].freeze
@@ -10,15 +8,20 @@ module Breadkit
       new(File.expand_path(path)).load_file
     end
 
-    def initialize(path)
+    def self.load_source(path, source)
+      new(File.expand_path(path), source: source).load_file
+    end
+
+    def initialize(path, source: nil)
       @path = path
+      @source = source
       @location = SourceLocation.new(path: path, line: 1)
       @builder = DSL::Builder.new(base_dir: File.dirname(path))
     end
 
     def load_file
-      source = File.read(@path, encoding: "UTF-8")
-      raw = @path.end_with?(".toml") ? Tomlrb.parse(source) : YAML.safe_load(source, aliases: false)
+      source = @source || File.read(@path, encoding: "UTF-8")
+      raw = @path.end_with?(".toml") ? parse_toml(source) : YAML.safe_load(source, aliases: false)
       data = mapping(raw, "root")
       allowed!(data, ROOT_KEYS, "root")
       @builder.document.source_root = File.dirname(@path)
@@ -52,11 +55,18 @@ module Breadkit
                        location: @location, targets: item.targets)
       end
       document
-    rescue Psych::Exception, Tomlrb::ParseError, DSLError, ArgumentError, TypeError => e
+    rescue Psych::Exception, DSLError, ArgumentError, TypeError => e
       raise DSLError.new("#{@path}: #{e.message}", location: @location)
     end
 
     private
+
+    def parse_toml(source)
+      require "tomlrb"
+      Tomlrb.parse(source)
+    rescue Tomlrb::ParseError => e
+      raise DSLError, e.message
+    end
 
     def load_board(value)
       if value.is_a?(String)

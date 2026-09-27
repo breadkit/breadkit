@@ -94,6 +94,7 @@ Prefer a data-only circuit file? The same LED circuit is available in
 | Connectivity analysis | Resolve conductive strips, pins, and switch states into named nets. |
 | JSON IR | Pass resolved circuits to the renderer, linter, or another tool. |
 | MCP server | Inspect data-only circuits, nets, and IR from an MCP client over stdio. |
+| Language server | Get live diagnostics, hole and pin completion, and net hover in an LSP editor. |
 
 The built-in part catalog includes 74HC logic, common DIP ICs, switches,
 displays, power connectors, and model-specific Pico, Nano, Pro Micro, XIAO,
@@ -112,6 +113,7 @@ electrical, and wiring-intent problems. Each gem is released separately.
 - [CLI reference](docs/CLI.md) — templates, part validation, circuit inspection, and diff.
 - [YAML and TOML circuit guide](docs/DECLARATIVE.md) — data-only circuit files and examples.
 - [MCP server](docs/MCP.md) — configure the read-only stdio tools for a project.
+- [LSP and VS Code](docs/LSP.md) — editor diagnostics, completion, hover, and SVG preview.
 
 Ruby DSL files execute code. Load only Ruby files you trust. YAML (`.bk.yml`,
 `.bk.yaml`) and TOML (`.bk.toml`) circuit files are parsed as data without Ruby

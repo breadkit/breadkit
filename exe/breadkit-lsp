@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "optparse"
+require "breadkit/lsp_server"
+
+options = { trusted_ruby: false }
+OptionParser.new do |parser|
+  parser.banner = "Usage: breadkit-lsp [--root DIRECTORY] [--trusted-ruby]"
+  parser.on("--root DIRECTORY") { |value| options[:root] = value }
+  parser.on("--trusted-ruby") { options[:trusted_ruby] = true }
+end.parse!
+Breadkit::LSPServer.new(**options).run

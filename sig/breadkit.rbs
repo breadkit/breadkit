@@ -234,6 +234,12 @@ module Breadkit
 
   class StructuredInput
     def self.load_file: (String path) -> Document
+    def self.load_source: (String path, String source) -> Document
+  end
+
+  class LSPServer
+    def initialize: (?input: IO, ?output: IO, ?root: String?, ?trusted_ruby: bool) -> void
+    def run: () -> void
   end
 
   module Formatter
