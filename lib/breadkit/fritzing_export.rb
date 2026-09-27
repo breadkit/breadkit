@@ -14,6 +14,13 @@ module Breadkit
                "orange" => "#ffa500" }.freeze
     RAILS = { "T+" => ["Y", 14.4], "T-" => ["Z", 7.2],
               "B+" => ["W", 144.0], "B-" => ["X", 136.8] }.freeze
+    # The official breadboard2.svg uses Illustrator's 72 dpi pixel dimensions.
+    # Fritzing's scene uses 90 dpi, unlike the SVG's own coordinate system.
+    BOARD_SCALE = 90.0 / 72
+    RED_LED_PART = "LED-genedb611bf8177f41ac9c325217070f0c62ColorLEDModuleID"
+    PARTS = { "resistor" => ["ResistorModuleID", "resistor.fzp"],
+              "led" => [RED_LED_PART, "LED-generic-5mm_6852162_005.fzp"],
+              "tact_switch_6mm" => ["20A9BBEE34_ST", "pushbutton_4_horizontal.fzp"] }.freeze
 
     def self.call(circuit)
       new(circuit).call
@@ -26,10 +33,19 @@ module Breadkit
     def call
       validate!
       links = Hash.new { |hash, key| hash[key] = [] }
+      components = circuit.components.values.each_with_index.map do |component, offset|
+        index = offset + 2
+        plan = part_plan(component)
+        plan.fetch(:pins).each do |connector, location|
+          links[location.first] << [index, connector, :part]
+        end
+        part_instance(component, index, plan)
+      end
       wires = circuit.wires.each_with_index.map do |wire, index|
         endpoints = [wire.from, wire.to].map { |reference| terminal(reference) }
-        endpoints.each_with_index { |(pin, _x, _y), side| links[pin] << [index + 2, side] }
-        wire_instance(wire, index + 2, endpoints)
+        model_index = index + components.length + 2
+        endpoints.each_with_index { |(pin, _x, _y), side| links[pin] << [model_index, "connector#{side}", :wire] }
+        wire_instance(wire, model_index, endpoints)
       end
       <<~XML
         <?xml version="1.0" encoding="UTF-8"?>
@@ -41,6 +57,7 @@ module Breadkit
           </views>
           <instances>
         #{board_instance(links)}
+        #{components.join("\n")}
         #{wires.join("\n")}
           </instances>
         </module>
@@ -59,8 +76,7 @@ module Breadkit
       raise ArgumentError, "Fritzing export does not support standalone supplies" unless circuit.supplies.empty?
       raise ArgumentError, "Fritzing export does not support net labels" unless circuit.labels.empty?
 
-      unsupported = circuit.components.values.first
-      raise ArgumentError, "Fritzing export has unsupported part #{unsupported.ref} (#{unsupported.part.id})" if unsupported
+      circuit.components.each_value { |component| part_plan(component) }
 
       circuit.wires.each do |wire|
         unless wire.electrical && wire.route == "straight" && Array(wire.layer).empty? && !wire.dashed
@@ -75,19 +91,130 @@ module Breadkit
       raise ArgumentError, "Fritzing export requires a board hole, got #{reference}" unless hole
 
       if hole.kind == :terminal
-        ["pin#{hole.col}#{hole.row.upcase}", 10.92 + (hole.col - 1) * 7.2, 115.2 - hole.y * 7.2]
+        ["pin#{hole.col}#{hole.row.upcase}", (10.92 + (hole.col - 1) * 7.2) * BOARD_SCALE,
+         (115.2 - hole.y * 7.2) * BOARD_SCALE]
       else
         rail, y = RAILS.fetch(hole.rail) { raise ArgumentError, "Fritzing export does not support rail #{hole.rail}" }
         number = 3 + hole.col - 1 + ((hole.col - 1) / 5)
-        ["pin#{number}#{rail}", 10.92 + (number - 1) * 7.2, y]
+        ["pin#{number}#{rail}", (10.92 + (number - 1) * 7.2) * BOARD_SCALE, y * BOARD_SCALE]
+      end
+    end
+
+    def part_plan(component)
+      id = component.part.id
+      part = PARTS[id]
+      raise ArgumentError, "Fritzing export has unsupported part #{component.ref} (#{id})" unless part
+      if component.attrs[:rotate].to_i != 0 || component.attrs[:mirror]
+        raise ArgumentError, "Fritzing export does not support rotated or mirrored #{component.ref}"
+      end
+
+      names = case id
+      when "resistor" then { "connector0" => "1", "connector1" => "2" }
+      when "led" then { "connector0" => "cathode", "connector1" => "anode" }
+      else { "connector0" => "2", "connector1" => "1", "connector2" => "4", "connector3" => "3" }
+      end
+      pins = names.to_h do |connector, name|
+        pin = component.pin(name)
+        hole = pin && circuit.board.hole(pin.hole_id)
+        unless hole&.kind == :terminal
+          raise ArgumentError, "Fritzing export needs #{component.ref}.#{name} in a terminal hole"
+        end
+        [connector, terminal(hole.id)]
+      end
+      case id
+      when "resistor"
+        if pins.fetch("connector0")[2] != pins.fetch("connector1")[2] ||
+           pins.fetch("connector0")[1] >= pins.fetch("connector1")[1]
+          raise ArgumentError, "Fritzing export requires #{component.ref} pins 1 and 2 left-to-right in one row"
+        end
+        unless component.value.to_s.match?(/\A\d+(?:\.\d+)?(?:[kMmunp])?\z/)
+          raise ArgumentError, "Fritzing export needs a plain resistance value for #{component.ref}"
+        end
+      when "led"
+        unless component.attrs.fetch(:color, "red").to_s.casecmp?("red")
+          raise ArgumentError, "Fritzing export currently supports only a red LED (#{component.ref})"
+        end
+        if pins.fetch("connector0")[2] != pins.fetch("connector1")[2]
+          raise ArgumentError, "Fritzing export requires #{component.ref} leads in one row"
+        end
+      else
+        top_left, bottom_left, top_right, bottom_right = pins.values_at(*%w[connector0 connector1 connector2 connector3])
+        unless (top_right[1] - top_left[1] - 18).abs < 0.001 && bottom_right[1] == top_right[1] &&
+               bottom_left[1] == top_left[1] && top_left[2] == top_right[2] &&
+               (bottom_left[2] - top_left[2] - 27).abs < 0.001 && bottom_right[2] == bottom_left[2]
+          raise ArgumentError, "Fritzing export requires #{component.ref} to straddle the gap on a 2-by-3 hole footprint"
+        end
+      end
+      { id: part[0], path: part[1], type: id, pins: pins }
+    end
+
+    def part_instance(component, index, plan)
+      pins = plan.fetch(:pins)
+      x, y, anchors, mirror_width = part_geometry(plan)
+      properties = case plan.fetch(:type)
+      when "resistor"
+        %(<property name="resistance" value="#{CGI.escapeHTML(component.value.to_s)}"/>) +
+          %(<property name="pin spacing" value="400 mil"/>)
+      when "led" then %(<property name="color" value="Red (633nm)"/>)
+      else ""
+      end
+      views = VIEWS.map do |view, _board_layer, _wire_layer|
+        layer = part_layer(view)
+        transform = mirror_width ? %(<transform m11="-1" m12="0" m13="0" m21="0" m22="1" m23="0" m31="#{point(mirror_width)}" m32="0" m33="1"/>) : ""
+        geometry = %(<geometry z="2.5" x="#{point(x)}" y="#{point(y)}">#{transform}</geometry>)
+        connectors = pins.map do |connector, (pin, target_x, target_y)|
+          anchor_x, anchor_y = anchors.fetch(connector)
+          tip_x = target_x - x - (mirror_width ? mirror_width - anchor_x : anchor_x)
+          tip_x = -tip_x if mirror_width
+          tip_y = target_y - y - anchor_y
+          leg = if view == "breadboardView" && plan.fetch(:type) != "tact_switch_6mm"
+            %(<leg><point x="0" y="0"/><bezier/><point x="#{point(tip_x)}" y="#{point(tip_y)}"/><bezier/></leg>)
+          else
+            ""
+          end
+          %(<connector connectorId="#{connector}" layer="#{layer}"><geometry x="#{point(anchor_x)}" y="#{point(anchor_y)}"/>) +
+            %(#{leg}<connects><connect connectorId="#{pin}" modelIndex="1" layer="breadboardbreadboard"/></connects></connector>)
+        end.join
+        %(<#{view} layer="#{layer}">#{geometry}<connectors>#{connectors}</connectors></#{view}>)
+      end.join
+      %(<instance moduleIdRef="#{plan.fetch(:id)}" modelIndex="#{index}" path="#{plan.fetch(:path)}">) +
+        %(#{properties}<title>#{CGI.escapeHTML(component.ref)}</title><views>#{views}</views></instance>)
+    end
+
+    def part_geometry(plan)
+      pins = plan.fetch(:pins)
+      case plan.fetch(:type)
+      when "resistor"
+        left, right = pins.values_at("connector0", "connector1")
+        [(left[1] + right[1]) / 2 - 19.313, left[2] - 4.541,
+         { "connector0" => [2.619, 4.541], "connector1" => [36.006, 4.541] }, false]
+      when "led"
+        cathode, anode = pins.values_at("connector0", "connector1")
+        [(cathode[1] + anode[1]) / 2 - 9.660, cathode[2] - 55,
+         { "connector0" => [5.658, 36.509], "connector1" => [14.661, 36.509] },
+         anode[1] < cathode[1] ? 19.320 : nil]
+      else
+        top_left, bottom_left = pins.values_at("connector0", "connector1")
+        [top_left[1] - 2.171, (top_left[2] + bottom_left[2]) / 2 - 14.852,
+         { "connector0" => [19.895, 1.914], "connector1" => [19.895, 27.789],
+           "connector2" => [1.895, 1.914], "connector3" => [1.895, 27.789] }, 22.066]
+      end
+    end
+
+    def part_layer(view)
+      case view
+      when "breadboardView" then "breadboard"
+      when "schematicView" then "schematic"
+      else "copper0"
       end
     end
 
     def board_instance(links)
       views = VIEWS.map do |view, board_layer, wire_layer|
         connectors = links.sort.map do |pin, wires|
-          connects = wires.map do |index, side|
-            %(<connect connectorId="connector#{side}" modelIndex="#{index}" layer="#{wire_layer}"/>)
+          connects = wires.map do |index, connector, type|
+            layer = type == :wire ? wire_layer : part_layer(view)
+            %(<connect connectorId="#{connector}" modelIndex="#{index}" layer="#{layer}"/>)
           end.join
           %(<connector connectorId="#{pin}" layer="#{board_layer}"><geometry x="0" y="0"/><connects>#{connects}</connects></connector>)
         end.join

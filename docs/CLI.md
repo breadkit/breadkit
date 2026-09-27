@@ -54,15 +54,20 @@ also include tolerance or ratings, such as `4.7k 5%`, `330 1/4W`, and
 | `spice` | [ngspice](https://ngspice.sourceforge.io/docs/ngspice-46-manual.pdf) operating-point netlist for fixed voltage supplies, resistors, and capacitors. Part references must begin with `R` or `C`. Other components and ranged supplies are rejected. |
 | `wokwi` | [diagram.json](https://docs.wokwi.com/diagram-format) for Arduino Uno, resistors, and LEDs. Breadboard connections are flattened into wires between part pins. Standalone supplies and unsupported parts are rejected. Add a sketch to simulate it. |
 | `pins` | Arduino C header constants for a connected Uno, or MicroPython constants for a connected Pico W / RP2040 board. Label nets to give constants stable signal names. |
-| `fritzing` | Native, uncompressed Fritzing `.fz` sketch for the exact built-in 830-hole `full` breadboard and straight electrical jumpers between its holes. The 50-hole power rails must be unsplit. Components, supplies, labels, other boards, and styled wires are rejected with an error because this exporter cannot represent them faithfully. |
+| `fritzing` | Native, uncompressed Fritzing `.fz` sketch for the exact built-in 830-hole `full` breadboard, straight electrical jumpers, resistors, red 5 mm LEDs, and 4-pin tact switches. The 50-hole power rails must be unsplit. Resistor and LED leads must share a row; resistor pin 1 must be left of pin 2. Other parts, standalone supplies, net labels, boards, and styled wires are rejected with an error. |
 
 Export stops when the circuit has error diagnostics. `kicad` preserves physical
 pin numbers but leaves library and footprint assignment to the KiCad project.
 
-For a board-only wiring sketch, run `breadkit export --format fritzing
+For a supported full-board circuit, run `breadkit export --format fritzing
 board.bk.rb > board.fz` and open `board.fz` in Fritzing. The exporter uses
-Fritzing's `Breadboard-RSR03MB102-ModuleID` part and `WireModuleID` connectors;
-it does not generate a `.fzz` archive or import custom Fritzing parts.
+Fritzing's bundled 830-hole breadboard, resistor, red LED, 4-pin pushbutton,
+and wire parts. It does not generate a `.fzz` archive or import custom
+Fritzing parts. The Fritzing export is available only for the documented
+subset; use the renderer for a Breadkit diagram of other circuits. Resistor
+values must be plain numbers with an optional engineering suffix (for example,
+`330` or `1k`); values with a tolerance, power rating, or `Ω` suffix are
+rejected because those properties are not yet preserved in this export.
 
 See the [declarative circuit guide](DECLARATIVE.md) for complete YAML and TOML
 examples. The same commands work with any supported circuit input format.
