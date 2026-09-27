@@ -164,10 +164,17 @@ module Breadkit
           require_array(item["entries"], "expectations[#{index}].entries")
           item["entries"].each_with_index do |entry, entry_index|
             require_hash(entry, "expectations[#{index}].entries[#{entry_index}]")
-            unless %w[connected isolated net].include?(entry["kind"])
+            unless %w[connected isolated net voltage current].include?(entry["kind"])
               raise DSLError, "invalid IR: expectations[#{index}].entries[#{entry_index}].kind is unknown"
             end
-            require_array(entry["refs"], "expectations[#{index}].entries[#{entry_index}].refs")
+            refs = require_array(entry["refs"], "expectations[#{index}].entries[#{entry_index}].refs")
+            if %w[voltage current].include?(entry["kind"])
+              range = entry["range"]
+              valid_refs = refs.length == 1 && refs.first.is_a?(String) && !refs.first.empty?
+              unless valid_refs && range.is_a?(Array) && range.length == 2 && range.all? { |value| value.is_a?(Numeric) && value.finite? } && range[0] <= range[1] && (entry["kind"] != "current" || range[0] >= 0)
+                raise DSLError, "invalid IR: expectations[#{index}].entries[#{entry_index}].range is invalid"
+              end
+            end
             require_source(entry["location"], "expectations[#{index}].entries[#{entry_index}].location")
           end
         end

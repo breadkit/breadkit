@@ -453,6 +453,12 @@ module Breadkit
         entries.each do |entry|
           refs = entry[:refs] || entry["refs"] || []
           location = entry[:location] || entry["location"]
+          if (entry[:kind] || entry["kind"]) == "current"
+            Array(refs).each do |reference|
+              @diagnostics << diagnostic(:unknown_part, "error", "unknown component #{reference}", location, [reference]) unless components.key?(reference.to_s)
+            end
+            next
+          end
           Array(refs).each { |reference| validate_reference(reference, location, components, supplies, labels) }
         end
       end

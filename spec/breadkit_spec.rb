@@ -87,6 +87,18 @@ RSpec.describe Breadkit do
       expect(document.board[:type]).to eq("half")
       expect(document.source_root).to eq(Dir.pwd)
     end
+
+    it "preserves voltage and current expectations in IR" do
+      builder = Breadkit::DSL::Builder.new
+      builder.instance_eval('board :half; supply :P, voltage: 5, plus: "B+1", minus: "B-1"; resistor :R1, "330", pins: %w[a10 a11]; expect_voltage "P.+", 4.5..5.5; expect_current "R1", 0.0..0.02', "measurements.bk.rb", 1)
+      ir = Breadkit::Resolver.new.call(builder.document).to_ir
+      schema = JSONSchemer.schema(JSON.parse(File.read(File.expand_path("../schema/ir-v1.json", __dir__))))
+      expect(schema.valid?(ir)).to be(true)
+      expect(ir[:expectations].flat_map { |item| item["entries"].map { |entry| entry["kind"] } }).to eq(%w[voltage current])
+      expect(Breadkit::IR::Reader.new.read(ir).to_ir).to eq(ir)
+      expect { builder.instance_eval('expect_current "R1", 2.0..1.0', "measurements.bk.rb", 1) }
+        .to raise_error(Breadkit::DSLError, /inclusive and ascending/)
+    end
   end
 
   it "assigns DIP pins on either side of the ravine" do

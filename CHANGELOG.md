@@ -16,6 +16,7 @@
 - Add model-specific logic ICs, microcontrollers, sensors, switches, displays, power connectors, and breadboard-mounted boards.
 - Preserve switch-state expectations in the DSL and IR.
 - Evaluate in-memory DSL source against a virtual path for editor integrations.
+- Declare expected DC voltage and current ranges in the DSL and IR.
 
 ## 0.1.0 — 2026-09-27
 

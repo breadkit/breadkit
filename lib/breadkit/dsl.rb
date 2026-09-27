@@ -4,7 +4,7 @@ require "timeout"
 
 module Breadkit
   module DSL
-    METHODS = %w[title board use_parts use_boards supply net part wire offboard expect lint_disable resistor capacitor electrolytic diode led transistor pot button ic connected isolated].freeze
+    METHODS = %w[title board use_parts use_boards supply net part wire offboard expect expect_voltage expect_current lint_disable resistor capacitor electrolytic diode led transistor pot button ic connected isolated].freeze
 
     class Builder
       attr_reader :document
@@ -151,6 +151,14 @@ module Breadkit
         @expected << { kind: "isolated", refs: refs.map(&:to_s), location: source_location }
       end
 
+      def expect_voltage(reference, range)
+        measurement_expectation("voltage", reference, range)
+      end
+
+      def expect_current(reference, range)
+        measurement_expectation("current", reference, range)
+      end
+
       def lint_disable(rule_id, on: nil, reason: nil)
         document.lint_disables << { rule: rule_id.to_s, on: on&.to_s, reason: reason, location: source_location }
       end
@@ -166,6 +174,21 @@ module Breadkit
       end
 
       private
+
+      def measurement_expectation(kind, reference, range)
+        raise DSLError, "#{kind} expectation requires an inclusive range" unless range.is_a?(Range) && !range.exclude_end?
+
+        limits = [Value.parse(range.begin), Value.parse(range.end)]
+        raise DSLError, "#{kind} expectation range must be inclusive and ascending" unless limits.all?(&:finite?) && limits.first <= limits.last
+        raise DSLError, "current expectation cannot be negative" if kind == "current" && limits.first.negative?
+
+        entry = { kind: kind, refs: [reference.to_s], range: limits, location: source_location }
+        if @expected
+          @expected << entry
+        else
+          document.expectations << { strict: false, entries: [entry], location: source_location }
+        end
+      end
 
       def source_location
         loc = caller_locations(2, 12).find { |item| item.path && File.expand_path(item.path) != __FILE__ }

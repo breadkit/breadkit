@@ -129,8 +129,9 @@
             "type": "object",
             "required": ["kind", "refs", "location"],
             "properties": {
-              "kind": { "enum": ["connected", "isolated", "net"] },
+              "kind": { "enum": ["connected", "isolated", "net", "voltage", "current"] },
               "refs": { "type": "array", "items": { "type": "string" } },
+              "range": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
               "location": { "$ref": "#/$defs/location" }
             }
           }
