@@ -74,6 +74,10 @@ end</code></pre>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">title(text)</th><td class="px-4 py-4">Set the diagram title.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">board(id, split_rails: false)</th><td class="px-4 py-4">Select <code>:full</code>, <code>:half</code>, <code>:mini</code>, or a custom board ID.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">use_parts(path) / use_boards(path)</th><td class="px-4 py-4">Load YAML definitions relative to the DSL file. Globs are supported.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">include(path)</th><td class="px-4 py-4">Load another trusted Ruby circuit file relative to this file.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">block(name) { ... } / use_block(name, ...)</th><td class="px-4 py-4">Define and expand reusable circuit declarations with explicit arguments.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">bus(name, **lines)</th><td class="px-4 py-4">Label related nets at explicit holes or pin references. Add wires separately.</td></tr>
+                <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">step(number, title:) { ... }</th><td class="px-4 py-4">Tag declarations with a numbered assembly stage. Start at 1 and continue in order.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">supply(name, voltage:, plus:, minus:)</th><td class="px-4 py-4">Add a DC source. Both terminals occupy board holes.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">net(name, at:)</th><td class="px-4 py-4">Label a hole or component pin.</td></tr>
                 <tr class="border-t border-line"><th class="px-4 py-4 font-mono font-normal text-paper">part(ref, type, value = nil, pins: ..., at: ..., **attrs)</th><td class="px-4 py-4">Place a defined part. <code>pins:</code> accepts an ordered array or a pin-name hash.</td></tr>
@@ -108,11 +112,12 @@ end</code></pre>
 
         <section id="cli" class="scroll-mt-8 mt-12 border-t border-line pt-10 pb-16">
           <h2 class="text-balance text-2xl font-semibold">Switch states, IR, and CLI</h2>
-          <p class="mt-4 text-pretty leading-7 text-muted"><code class="font-mono text-paper">circuit.states("none")</code>, <code class="font-mono text-paper">circuit.states("single")</code>, and <code class="font-mono text-paper">circuit.states("all")</code> control switch contact simulation. <code class="font-mono text-paper">Breadkit.load(path)</code> reads DSL or JSON IR. <code class="font-mono text-paper">circuit.to_ir</code> returns the resolved circuit data, including selected hole positions.</p>
+          <p class="mt-4 text-pretty leading-7 text-muted"><code class="font-mono text-paper">circuit.states("none")</code>, <code class="font-mono text-paper">circuit.states("single")</code>, and <code class="font-mono text-paper">circuit.states("all")</code> control switch contact simulation. <code class="font-mono text-paper">Breadkit.load(path)</code> reads Ruby DSL, declarative YAML or TOML, or JSON IR. <code class="font-mono text-paper">circuit.to_ir</code> returns the resolved circuit data, including selected hole positions and assembly steps.</p>
           <pre class="mt-5 overflow-x-auto rounded-lg border border-line bg-board p-5 font-mono text-sm leading-7"><code>breadkit nets circuit.bk.rb
 breadkit parts
-breadkit ir circuit.bk.rb</code></pre>
-          <p class="mt-4 text-pretty leading-7 text-muted">Use <code class="font-mono text-paper">breadkit nets</code> to inspect connections, <code class="font-mono text-paper">breadkit parts</code> to list built-in definitions, and <code class="font-mono text-paper">breadkit ir</code> to print JSON IR.</p>
+breadkit ir circuit.bk.rb
+breadkit fmt circuit.bk.yml &gt; formatted.bk.yml</code></pre>
+          <p class="mt-4 text-pretty leading-7 text-muted">Use <code class="font-mono text-paper">breadkit nets</code> to inspect connections, <code class="font-mono text-paper">breadkit parts</code> to list built-in definitions, and <code class="font-mono text-paper">breadkit ir</code> to print JSON IR. <code class="font-mono text-paper">breadkit fmt</code> prints normalized declarative YAML or TOML and discards comments. See the <a class="text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../#declarative">YAML and TOML example</a>.</p>
         </section>
       </main>
 
