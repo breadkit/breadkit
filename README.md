@@ -68,6 +68,9 @@ Inspect the connected nets or export the circuit for other tools:
 breadkit nets circuit.bk.rb
 breadkit ir circuit.bk.rb > circuit.json
 breadkit parts
+breadkit where a10 circuit.bk.rb
+breadkit explain R1 circuit.bk.rb
+breadkit bom circuit.bk.rb
 ```
 
 The [complete button and LED example](examples/01_led_button.bk.rb) also
@@ -91,6 +94,7 @@ electrical, and wiring-intent problems. Each gem is released separately.
 - [Component catalog](https://breadkit.github.io/breadkit/guide/components/) — boards, built-in parts, and custom modules.
 - [DSL reference](https://breadkit.github.io/breadkit/guide/dsl/) — methods, pins, nets, and custom definitions.
 - [Project design](docs/DESIGN.md) — the data model and resolution rules.
+- [CLI reference](docs/CLI.md) — templates, part validation, circuit inspection, and diff.
 
 DSL files execute Ruby code. Load only files you trust; use JSON IR when the
 input must be data-only.
