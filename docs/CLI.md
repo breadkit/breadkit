@@ -49,23 +49,31 @@ also include tolerance or ratings, such as `4.7k 5%`, `330 1/4W`, and
 
 ## Circuit patterns
 
-`breadkit patterns FILE` currently identifies only an unloaded two-resistor
-voltage divider. It requires exactly one fixed-voltage standalone supply and
-exactly two resistors in series between the supply terminals. It uses the DC
-analysis result for the nominal midpoint voltage and reports that voltage
-relative to the supply's negative terminal. The output names the top and bottom
-resistors and the midpoint net:
+`breadkit patterns FILE` identifies an unloaded two-resistor voltage divider
+when exactly one fixed-voltage standalone supply and two resistors form a
+series path between its terminals. It uses the DC analysis result for the
+nominal midpoint voltage and reports that voltage relative to the supply's
+negative terminal. The output names the top and bottom resistors and the
+midpoint net:
 
 ```sh
 breadkit patterns divider.bk.rb
 ```
 
-The command prints `[]` for a loaded midpoint, another component or supply,
-a ranged supply, or a valid circuit the DC solver cannot resolve. Invalid
-circuits report diagnostics and exit with an error.
-This is deliberately narrow: `[]` does not mean the circuit is safe or has no
-useful topology. A 555 astable is not recognized because a DC netlist alone
-cannot establish the timer's charge/discharge operation or timing behavior.
+The command also recognizes the exact, source-backed NE555 astable wiring used
+by [the blinker example](../examples/02_555_blinker.bk.rb): a fixed supply
+within the modeled NE555 range; RESET and VCC tied to supply positive; GND tied
+to supply negative; TRIG and THR joined; a resistor from VCC to DIS; another
+from DIS to TRIG/THR; a correctly polarized timing electrolytic to ground;
+control and supply bypass capacitors; and an LED with its series resistor on
+OUT. The pin relationships follow the [TI NE555 astable circuit](https://www.ti.com/lit/ds/symlink/ne555.pdf).
+The result is labeled `ne555_astable_wiring`: it identifies a connection
+pattern, not measured oscillation. No frequency or duty cycle is estimated.
+Modified timing, reset, control, or output connections are not classified.
+
+The command prints `[]` when a valid circuit matches neither supported
+pattern. Invalid circuits report diagnostics and exit with an error. `[]` does
+not mean the circuit is safe or has no useful topology.
 
 ## Export formats
 
