@@ -1,0 +1,8 @@
+id: stripboard
+name: Stripboard (30 x 20 continuous copper rows)
+terminal:
+  columns: 30
+  rows: [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t]
+  groups: [[a], [b], [c], [d], [e], [f], [g], [h], [i], [j], [k], [l], [m], [n], [o], [p], [q], [r], [s], [t]]
+  strip_direction: row
+rails: []

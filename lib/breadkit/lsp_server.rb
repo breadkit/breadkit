@@ -115,6 +115,7 @@ module Breadkit
       else
         parsed = StructuredInput.load_source(path, source)
         (parsed.part_paths + parsed.board_paths).each { |dependency| ensure_inside_root(dependency) } if @root
+        PartLock.verify(parsed, path)
         Resolver.new.call(parsed)
       end
       document[:circuit] = circuit

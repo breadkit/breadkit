@@ -11,6 +11,7 @@ module Breadkit
         where HOLE FILE | explain PART FILE | bom FILE | diff OLD NEW
         export --format kicad|spice|wokwi|pins FILE
         fmt FILE (declarative YAML or TOML; prints formatted source)
+        lock FILE (pin local part and board definitions in breadkit.lock)
         parts [FILE] | parts show PART [FILE] | check-part YAML
         new [FILE] --template led|555|arduino | doctor | console FILE
         --version | --help
@@ -133,6 +134,10 @@ module Breadkit
       when "fmt"
         path = required!(args, "fmt FILE")
         print Formatter.call(path)
+        0
+      when "lock"
+        path = required!(args, "lock FILE")
+        puts "Wrote #{PartLock.write(path)}"
         0
       when "console"
         path = required!(args, "console FILE")

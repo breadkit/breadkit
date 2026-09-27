@@ -54,7 +54,8 @@
             "columns": { "type": "integer", "minimum": 1 },
             "rows": { "type": "array", "items": { "type": "string" } },
             "groups": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } },
-            "ravine_between": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 2 }
+            "ravine_between": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 2 },
+            "strip_direction": { "enum": ["column", "row"] }
           } },
         "rails": { "type": "array", "items": { "type": "object", "required": ["id"],
           "properties": { "id": { "type": "string" }, "side": { "type": "string" }, "order": { "type": "integer" }, "polarity": { "enum": ["+", "-"] } } } },

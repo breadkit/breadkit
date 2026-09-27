@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Pin local part and board definition files with SHA-256 checksums in `breadkit.lock`.
+- Add isolated-pad universal perfboard and continuous-row stripboard models.
 - Report each distinct conflicting power terminal pair, including multiple conflicts involving the same supplies.
 - Add an LSP stdio server and a minimal VS Code extension for circuit editing and preview.
 - Show circuit errors before printing net and inspection results.

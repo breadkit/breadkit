@@ -18,6 +18,7 @@ part definitions are not circuit inputs.
 | `breadkit diff OLD NEW` | List changed board, supplies, labels, components, and wires. |
 | `breadkit export --format FORMAT FILE` | Export `kicad`, `spice`, `wokwi`, or `pins` data. |
 | `breadkit fmt FILE` | Print a normalized declarative YAML or TOML circuit file. |
+| `breadkit lock FILE` | Record the local part and board definition files used by a circuit in `breadkit.lock`. |
 | `breadkit console FILE` | Open IRB with the loaded `circuit` variable. |
 | `breadkit doctor` | Check the Ruby version and availability of the optional linter and renderer commands. |
 
@@ -52,3 +53,4 @@ pin numbers but leaves library and footprint assignment to the KiCad project.
 
 See the [declarative circuit guide](DECLARATIVE.md) for complete YAML and TOML
 examples. The same commands work with any supported circuit input format.
+See [locking local definitions](LOCK.md) for the lockfile format and verification behavior.

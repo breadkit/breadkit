@@ -89,6 +89,7 @@ module Breadkit
 
       document = StructuredInput.load_file(file)
       (document.part_paths + document.board_paths).each { |dependency| checked_path(dependency) }
+      PartLock.verify(document, file)
       Resolver.new.call(document)
     end
 

@@ -28,8 +28,8 @@ end
 | Method | Purpose |
 | --- | --- |
 | `title(text)` | Diagram title. |
-| `board(id, split_rails: false, as: nil)` | Select `:double_full` (1660 holes), `:full`, `:half`, `:mini`, or a custom board ID. Name each board with `as:` when using multiple boards. |
-| `use_parts(path)` / `use_boards(path)` | Load additional YAML definitions relative to the DSL file. Paths may use globs. |
+| `board(id, split_rails: false, as: nil)` | Select `:double_full` (1660 holes), `:full`, `:half`, `:mini`, `:universal`, `:stripboard`, or a custom board ID. Name each board with `as:` when using multiple boards. |
+| `use_parts(path)` / `use_boards(path)` | Load additional YAML definitions relative to the DSL file. Paths may use globs. Run `breadkit lock FILE` to pin the matched local definitions. |
 | `include(path)` | Evaluate another trusted DSL file in the same circuit. Relative paths resolve from the including file; circular includes are rejected. |
 | `block(name) { ... }` / `use_block(name, *args, **kwargs)` | Define and expand a reusable group of DSL declarations. Each name is unique within the circuit. |
 | `bus(name, **lines)` | Label the explicit reference for each line as `NAME_LINE`, for example `I2C_SCL`. |
@@ -160,6 +160,16 @@ single-board circuits continue to export version 1. The version 2 schema is
 [`schema/ir-v2.json`](../schema/ir-v2.json).
 
 ## Hole and pin references
+
+The built-in `universal` model has 30 × 20 isolated pads. The built-in
+`stripboard` model has 20 continuous copper strips, one per row, with 30 holes
+per strip. The stripboard model assumes uncut tracks; cuts and custom copper
+patterns require a custom board definition or explicit layout support. These
+are example sizes, not a universal hardware standard. A custom board can set
+`terminal.strip_direction: row` to connect each terminal row across its
+columns; the default `column` connects each declared group within a column.
+No generic MB102 power-supply model is included because jumper-selected
+output voltages and pin locations vary by module.
 
 - Terminal holes use rows `a` through `j` and 1-based columns, such as `a10` or `J30`.
 - Rail holes use `T+`, `T-`, `B+`, and `B-`, optionally followed by a 1-based index. A rail without an index selects the nearest free hole.

@@ -1,0 +1,7 @@
+id: universal
+name: Universal perfboard (30 x 20 isolated pads)
+terminal:
+  columns: 30
+  rows: [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t]
+  groups: [[a], [b], [c], [d], [e], [f], [g], [h], [i], [j], [k], [l], [m], [n], [o], [p], [q], [r], [s], [t]]
+rails: []

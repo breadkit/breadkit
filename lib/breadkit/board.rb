@@ -9,8 +9,11 @@ module Breadkit
       unknown = data.keys - %w[id name terminal rails rail_layout ground_labels]
       raise ArgumentError, "unknown board keys: #{unknown.join(', ')}" unless unknown.empty?
       terminal = data["terminal"] || {}
-      unknown_terminal = terminal.keys - %w[columns rows groups ravine_between]
+      unknown_terminal = terminal.keys - %w[columns rows groups ravine_between strip_direction]
       raise ArgumentError, "unknown terminal keys: #{unknown_terminal.join(', ')}" unless unknown_terminal.empty?
+      unless %w[column row].include?(terminal.fetch("strip_direction", "column"))
+        raise ArgumentError, "terminal.strip_direction must be column or row"
+      end
       if data["ground_labels"] && (!data["ground_labels"].is_a?(Array) || !data["ground_labels"].all? { |label| label.is_a?(String) && !label.empty? })
         raise ArgumentError, "ground_labels must be a list of names"
       end
@@ -40,6 +43,9 @@ module Breadkit
       grouped_rows = groups.flat_map { |group| Array(group).map(&:to_s) }
       unless groups.all? { |group| group.is_a?(Array) && !group.empty? } && grouped_rows.sort == rows.sort
         raise ArgumentError, "terminal groups must partition rows exactly"
+      end
+      if terminal.fetch("strip_direction", "column") == "row" && groups.any? { |group| group.length != 1 }
+        raise ArgumentError, "row strips require one terminal row per group"
       end
       if terminal.key?("ravine_between")
         ravine = terminal["ravine_between"]
@@ -145,10 +151,11 @@ module Breadkit
     def build_terminal_holes
       terminal = definition.data.fetch("terminal")
       groups = terminal.fetch("groups")
+      row_strips = terminal.fetch("strip_direction", "column") == "row"
       terminal.fetch("columns").times do |col|
         groups.each_with_index do |rows, group_index|
-          strip_id = "terminal:#{col + 1}:#{group_index}"
           rows.each do |row|
+            strip_id = row_strips ? "terminal:row:#{row}" : "terminal:#{col + 1}:#{group_index}"
             add_hole(Hole.new(id: "#{row}#{col + 1}", kind: :terminal, row: row.to_s,
                               col: col + 1, x: col.to_f, y: @terminal_row_positions.fetch(row.to_s).to_f,
                               strip_id: strip_id))

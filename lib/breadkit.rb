@@ -13,6 +13,7 @@ require_relative "breadkit/board"
 require_relative "breadkit/part_library"
 require_relative "breadkit/dsl"
 require_relative "breadkit/structured_input"
+require_relative "breadkit/part_lock"
 require_relative "breadkit/formatter"
 require_relative "breadkit/resolver"
 require_relative "breadkit/analysis"
@@ -40,6 +41,7 @@ module Breadkit
     else
       DSL.load_file(path, timeout: timeout)
     end
+    PartLock.verify(document, path)
     Resolver.new.call(document)
   end
 end

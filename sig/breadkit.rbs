@@ -237,6 +237,12 @@ module Breadkit
     def self.load_source: (String path, String source) -> Document
   end
 
+  class PartLock
+    def self.write: (String path) -> String
+    def self.verify: (Document document, String path) -> void
+    def self.lock_path: (String path) -> String
+  end
+
   class LSPServer
     def initialize: (?input: IO, ?output: IO, ?root: String?, ?trusted_ruby: bool) -> void
     def run: () -> void
