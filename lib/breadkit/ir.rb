@@ -160,6 +160,7 @@ module Breadkit
         end
         data.fetch("expectations").each_with_index do |item, index|
           require_source(item["location"], "expectations[#{index}].location")
+          require_string(item["when"], "expectations[#{index}].when") if item.key?("when")
           require_array(item["entries"], "expectations[#{index}].entries")
           item["entries"].each_with_index do |entry, entry_index|
             require_hash(entry, "expectations[#{index}].entries[#{entry_index}]")

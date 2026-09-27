@@ -14,6 +14,7 @@
 - Parse component tolerance, power ratings, and voltage ratings when provided.
 - Estimate DC node voltages, resistor power, and LED/diode currents for supported circuits.
 - Add model-specific logic ICs, microcontrollers, sensors, switches, displays, power connectors, and breadboard-mounted boards.
+- Preserve switch-state expectations in the DSL and IR.
 
 ## 0.1.0 — 2026-09-27
 

@@ -35,7 +35,7 @@ end
 | `part(ref, type, value = nil, pins: ..., at: ..., **attrs)` | Place a defined part. `pins:` accepts pin order arrays or pin-name hashes. |
 | `wire(from, to, color: nil, id: nil, route: :straight, layer: nil, electrical: true, dashed: false)` | Connect two holes or pin references. `route: :arc` curves the wire; `route: :edge` routes around an outer board edge or from an external module along its terminal row. `layer:` groups wires in interactive SVG output; `electrical: false` draws a visual alternative without changing circuit connectivity. |
 | `offboard(name, type, side: :left, at: nil, unused: [], **attrs)` | Place a module beside the board; `at:` aligns its first pin to a board position, and attrs such as `address:` are shown on the module. |
-| `expect { ... }` | Declare `connected`, `isolated`, or named `net` expectations. `strict: true` also rejects unlisted pins on declared nets. |
+| `expect { ... }` | Declare `connected`, `isolated`, or named `net` expectations. `strict: true` also rejects unlisted pins on declared nets. Use `when: "SW1"` to check a selected switch state. |
 | `lint_disable(rule, on: nil, reason: nil)` | Suppress a lint rule, optionally for one target. |
 
 Short forms are available for `resistor`, `capacitor`, `electrolytic`, `diode`, `led`, `transistor`, `pot`, `button`, and `ic`.

@@ -72,6 +72,15 @@ RSpec.describe Breadkit do
       end
       expect(schemer.valid?({ "schema_version" => 1 })).to be(false)
     end
+
+    it "round-trips a switch-state expectation" do
+      builder = Breadkit::DSL::Builder.new
+      builder.instance_eval('board :half; button :SW1, at: "e10"; expect(when: "SW1") { connected "SW1.1", "SW1.3" }', "states.bk.rb", 1)
+      original = Breadkit::Resolver.new.call(builder.document).to_ir
+      schema = JSONSchemer.schema(JSON.parse(File.read(File.expand_path("../schema/ir-v1.json", __dir__))))
+      expect(schema.valid?(original)).to be(true)
+      expect(Breadkit::IR::Reader.new.read(original).to_ir).to eq(original)
+    end
   end
 
   it "assigns DIP pins on either side of the ravine" do

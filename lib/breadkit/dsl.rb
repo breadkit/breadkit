@@ -123,12 +123,18 @@ module Breadkit
                                  pins: nil, unused: Array(unused), location: source_location, offboard: true }
       end
 
-      def expect(strict: false, &block)
+      def expect(strict: false, **options, &block)
+        unknown = options.keys - [:when]
+        raise DSLError, "unknown expect option #{unknown.first}" unless unknown.empty?
+        at_state = options[:when]&.to_s
+        raise DSLError, "expect when: must name a switch state" if options.key?(:when) && at_state.to_s.empty?
         entries = []
         previous = @expected
         @expected = entries
         instance_eval(&block)
-        document.expectations << { strict: strict, entries: entries, location: source_location }
+        expectation = { strict: strict, entries: entries, location: source_location }
+        expectation[:when] = at_state if at_state
+        document.expectations << expectation
       ensure
         @expected = previous
       end
