@@ -137,9 +137,12 @@ module Breadkit
       else
         return if part.data["switch"]
         if part.data["provides"]
+          provided_outputs = Array(part.data["provides"]).filter_map { |source| part.pin(source["positive"]) }
           driven = component.pins.values.any? do |pin|
             definition = part.pin(pin.number)
             next unless %w[gpio output].include?(pin.role) || definition&.fetch("output_capable", false)
+            next if provided_outputs.include?(definition)
+
             net = circuit.net_of("#{component.ref}.#{pin.name}", @state)
             net&.members&.any? { |member| member != "#{component.ref}.#{pin.name}" }
           end

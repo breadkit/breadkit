@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Solve DC current for an explicitly declared `provides` output pin while retaining unknown GPIO state handling for other pins.
 - Allow custom part definitions to declare a validated positive `max_current` in amperes on individual pins.
 - Suggest explicit free-hole wire endpoints for unmet connection intent without changing circuit wiring.
 - Declare layout-independent `connect` intent in Ruby, YAML, and TOML without adding physical wires.

@@ -235,6 +235,9 @@ Custom module pins can declare their kind with `type:` in the part YAML, for exa
 An individual pin may also declare `max_current: 0.012` for a 12 mA limit.
 Use a verified limit from that part's datasheet; pins without this field have
 no inferred current limit. The value is preserved in JSON IR for lint tools.
+For a pin explicitly named as `provides.positive`, DC analysis reports the
+source current under `REF.PIN`. Other GPIO output states remain unknown to the
+DC solver; `max_current` alone does not assign an output voltage.
 Use `type:` for new definitions; the legacy `role:` spelling is accepted and
 normalized to `type:`. A pin cannot declare both. Unknown part and pin keys,
 and unsupported pin types, are rejected when the definition is loaded.
