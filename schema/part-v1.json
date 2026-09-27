@@ -50,6 +50,7 @@
           "role": { "$ref": "#/$defs/pinRole" },
           "label": { "type": ["boolean", "string"] },
           "max_voltage": { "type": "number", "exclusiveMinimum": 0 },
+          "max_current": { "type": "number", "exclusiveMinimum": 0 },
           "output_capable": { "type": "boolean" }
         },
         "not": { "required": ["type", "role"] },

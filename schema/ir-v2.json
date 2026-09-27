@@ -40,7 +40,7 @@
       "properties": {
         "id": { "type": "string", "minLength": 1 },
         "pins": { "type": "array", "items": { "type": "object", "required": ["num"],
-          "properties": { "num": { "type": ["string", "integer"] }, "name": { "type": "string" }, "type": { "type": "string" }, "role": { "type": "string" } } } },
+          "properties": { "num": { "type": ["string", "integer"] }, "name": { "type": "string" }, "type": { "type": "string" }, "role": { "type": "string" }, "max_current": { "type": "number", "exclusiveMinimum": 0 } } } },
         "placement": { "enum": ["leads", "dip", "footprint", "offboard"] },
         "max_lead_span_mm": { "type": "number", "exclusiveMinimum": 0 },
         "polarity": { "type": "object" }, "footprint": { "type": "object" },

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Allow custom part definitions to declare a validated positive `max_current` in amperes on individual pins.
 - Suggest explicit free-hole wire endpoints for unmet connection intent without changing circuit wiring.
 - Declare layout-independent `connect` intent in Ruby, YAML, and TOML without adding physical wires.
 - Reuse fixed circuit connectivity across switch states while keeping each state's nets independent.

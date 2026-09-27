@@ -5,7 +5,7 @@ module Breadkit
     attr_reader :data
 
     KEYS = %w[id aliases category placement pins polarity footprint internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current max_lead_span_mm].freeze
-    PIN_KEYS = %w[num name aliases type role label max_voltage output_capable].freeze
+    PIN_KEYS = %w[num name aliases type role label max_voltage max_current output_capable].freeze
 
     def initialize(data)
       if data["pins"].is_a?(Array)
@@ -42,6 +42,12 @@ module Breadkit
         if pin.key?("max_voltage")
           voltage = pin["max_voltage"]
           raise ArgumentError, "part #{id} pin #{pin['num']} has invalid max_voltage" unless voltage.is_a?(Numeric) && voltage.finite? && voltage.positive?
+        end
+        if pin.key?("max_current")
+          current = pin["max_current"]
+          unless current.is_a?(Numeric) && current.real? && current.finite? && current.positive?
+            raise ArgumentError, "part #{id} pin #{pin['num']} has invalid max_current"
+          end
         end
         if pin.key?("output_capable") && ![true, false].include?(pin["output_capable"])
           raise ArgumentError, "part #{id} pin #{pin['num']} has invalid output_capable"
