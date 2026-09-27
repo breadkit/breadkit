@@ -44,6 +44,10 @@ Install the gem with Ruby 3.3 or newer:
 gem install breadkit
 ```
 
+RubyGems currently publishes 0.1.0. This README describes the 0.2.0 main
+branch, which has not been released yet. To use the CLI commands below, follow
+the [source checkout instructions](#development).
+
 Save this as `circuit.bk.rb`:
 
 ```ruby
