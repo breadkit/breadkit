@@ -10,6 +10,7 @@ Try the complete [YAML](../examples/06_declarative_led.bk.yml) and
 ```sh
 breadkit nets examples/06_declarative_led.bk.yml
 breadkit ir examples/07_declarative_led.bk.toml > circuit.json
+breadkit fmt examples/06_declarative_led.bk.yml > formatted.bk.yml
 ```
 
 The YAML example describes a USB supply, resistor, LED, jumper wire, and three
@@ -88,3 +89,8 @@ wires:
 YAML object tags and aliases are rejected. Unknown fields and invalid field
 types produce input errors. Diagnostics from declarative files currently point
 to the file's first line rather than the individual field.
+
+`breadkit fmt FILE` prints canonical YAML or TOML without modifying the input.
+It validates the circuit fields first and keeps the original format. Formatting
+discards comments, so review the output before replacing a commented source
+file. Ruby DSL files are not supported by this formatter.

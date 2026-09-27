@@ -209,6 +209,10 @@ module Breadkit
     def self.load_file: (String path) -> Document
   end
 
+  module Formatter
+    def self.call: (String path) -> String
+  end
+
   module IR
     class Writer
       def write: (Circuit circuit) -> Hash[String, untyped]

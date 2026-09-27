@@ -72,6 +72,9 @@ breadkit where a10 circuit.bk.rb
 breadkit explain R1 circuit.bk.rb
 breadkit bom circuit.bk.rb
 breadkit export --format kicad circuit.bk.rb > circuit.xml
+
+# Declarative circuits can be normalized without executing Ruby.
+breadkit fmt examples/06_declarative_led.bk.yml > formatted.bk.yml
 ```
 
 The [complete button and LED example](examples/01_led_button.bk.rb) also

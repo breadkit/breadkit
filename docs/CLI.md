@@ -17,6 +17,7 @@ part definitions are not circuit inputs.
 | `breadkit bom FILE` | Count parts by type and value, plus jumper wires. |
 | `breadkit diff OLD NEW` | List changed board, supplies, labels, components, and wires. |
 | `breadkit export --format FORMAT FILE` | Export `kicad`, `spice`, `wokwi`, or `pins` data. |
+| `breadkit fmt FILE` | Print a normalized declarative YAML or TOML circuit file. |
 | `breadkit console FILE` | Open IRB with the loaded `circuit` variable. |
 | `breadkit doctor` | Check the Ruby version and availability of the optional linter and renderer commands. |
 

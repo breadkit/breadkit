@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Format declarative YAML and TOML circuit files with `breadkit fmt`.
 - Add reusable Ruby DSL blocks and named bus-line labels.
 - Read declarative `.bk.yml`, `.bk.yaml`, and `.bk.toml` circuits through the existing resolver without evaluating Ruby.
 - Report DSL source lines for evaluation errors and stop runaway circuit files after a timeout.
