@@ -117,6 +117,8 @@ electrical, and wiring-intent problems. Each gem is released separately.
 - [Browser Playground](https://breadkit.github.io/breadkit/playground/) — edit a Ruby circuit and preview its diagram, nets, and lint results.
 - [Project design](docs/DESIGN.md) — the data model and resolution rules.
 - [CLI reference](docs/CLI.md) — templates, part validation, circuit inspection, and diff.
+- [Rake task](docs/RAKE.md) — check selected circuit files during a build.
+- [Jumper kit allocation](docs/JUMPER_KIT.md) — match measured wire stock to circuit jumpers.
 - [YAML and TOML circuit guide](docs/DECLARATIVE.md) — data-only circuit files and examples.
 - [MCP server](docs/MCP.md) — configure the read-only stdio tools for a project.
 - [LSP and VS Code](docs/LSP.md) — editor diagnostics, completion, hover, and SVG preview.

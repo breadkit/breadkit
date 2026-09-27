@@ -211,6 +211,11 @@ module Breadkit
     def run: (Array[String] argv) -> Integer
   end
 
+  class RakeTask
+    attr_reader task: untyped
+    def initialize: (?String | Symbol name, files: Array[String]) -> void
+  end
+
   class MCPServer
     def initialize: (?root: String) -> void
     def server: () -> untyped
