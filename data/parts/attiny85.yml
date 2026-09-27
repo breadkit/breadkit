@@ -1,0 +1,16 @@
+# https://ww1.microchip.com/downloads/en/devicedoc/atmel-2586-avr-8-bit-microcontroller-attiny25-attiny45-attiny85_datasheet.pdf
+id: attiny85
+category: mcu
+placement: dip
+package: {pins: 8}
+pins:
+  - {num: 1, name: PB5_RESET, type: reset, aliases: [RESET]}
+  - {num: 2, name: PB3, type: gpio}
+  - {num: 3, name: PB4, type: gpio}
+  - {num: 4, name: GND, type: ground}
+  - {num: 5, name: PB0, type: gpio}
+  - {num: 6, name: PB1, type: gpio}
+  - {num: 7, name: PB2, type: gpio}
+  - {num: 8, name: VCC, type: power}
+supply_range: [2.7, 5.5]
+render: {shape: dip, label: ATTINY85}

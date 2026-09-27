@@ -1,0 +1,16 @@
+# https://www.ti.com/lit/ds/symlink/lm393.pdf
+id: lm393
+category: ic
+placement: dip
+package: {pins: 8}
+pins:
+  - {num: 1, name: OUT1, type: open_drain}
+  - {num: 2, name: IN1_MINUS, type: input}
+  - {num: 3, name: IN1_PLUS, type: input}
+  - {num: 4, name: GND, type: ground}
+  - {num: 5, name: IN2_PLUS, type: input}
+  - {num: 6, name: IN2_MINUS, type: input}
+  - {num: 7, name: OUT2, type: open_drain}
+  - {num: 8, name: VCC, type: power}
+supply_range: [2, 36]
+render: {shape: dip, label: LM393}

@@ -1,0 +1,12 @@
+# Advanced Monolithic Systems fixed 3.3 V SOT-223 device; surface-mount only.
+# https://www.electronica-pt.com/pdf/AMS1117.pdf
+id: ams1117_3v3
+category: regulator
+placement: offboard
+pins:
+  - {num: 1, name: GND, type: ground}
+  - {num: 2, name: VOUT, type: power}
+  - {num: 3, name: VIN, type: power}
+  - {num: 4, name: TAB, type: power}
+internal: [[VOUT, TAB]]
+render: {shape: offboard, label: AMS1117-3.3}

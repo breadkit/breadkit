@@ -13,6 +13,7 @@
 - Export resolved circuits as KiCad XML, passive SPICE netlists, Wokwi diagrams, or firmware pin constants.
 - Parse component tolerance, power ratings, and voltage ratings when provided.
 - Estimate DC node voltages, resistor power, and LED/diode currents for supported circuits.
+- Add model-specific logic ICs, microcontrollers, sensors, switches, displays, power connectors, and breadboard-mounted boards.
 
 ## 0.1.0 — 2026-09-27
 

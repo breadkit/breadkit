@@ -1,0 +1,10 @@
+# TI uA7805 TO-220 (KC), front view: input, common, output.
+# https://www.ti.com/lit/ds/symlink/ua78.pdf
+id: ua7805
+category: regulator
+placement: leads
+pins:
+  - {num: 1, name: INPUT, type: power}
+  - {num: 2, name: GND, type: ground}
+  - {num: 3, name: OUTPUT, type: power}
+render: {shape: generic}

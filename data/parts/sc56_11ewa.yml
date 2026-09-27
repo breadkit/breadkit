@@ -1,0 +1,30 @@
+# Kingbright SC56-11EWA: 0.56-inch common-cathode display.
+# https://www.kingbrightusa.com/images/catalog/spec/sc56-11ewa.pdf
+id: sc56_11ewa
+category: display
+placement: footprint
+straddle: true
+pins:
+  - {num: 1, name: E, type: input}
+  - {num: 2, name: D, type: input}
+  - {num: 3, name: CATHODE1, type: passive, aliases: [CATHODE]}
+  - {num: 4, name: C, type: input}
+  - {num: 5, name: DP, type: input}
+  - {num: 6, name: B, type: input}
+  - {num: 7, name: A, type: input}
+  - {num: 8, name: CATHODE2, type: passive}
+  - {num: 9, name: F, type: input}
+  - {num: 10, name: G, type: input}
+internal: [[CATHODE1, CATHODE2]]
+footprint:
+  "1": [0, 0]
+  "2": [1, 0]
+  "3": [2, 0]
+  "4": [3, 0]
+  "5": [4, 0]
+  "6": [4, 6]
+  "7": [3, 6]
+  "8": [2, 6]
+  "9": [1, 6]
+  "10": [0, 6]
+render: {shape: seven_segment, label: SC56-11EWA}

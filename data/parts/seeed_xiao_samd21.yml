@@ -1,0 +1,37 @@
+# https://wiki.seeedstudio.com/Seeeduino-XIAO/
+# Synthetic pin numbers: left header top to bottom, then right header bottom to top.
+id: seeed_xiao_samd21
+category: module
+placement: footprint
+straddle: true
+pins:
+  - {num: 1, name: D0, type: gpio, aliases: [A0], max_voltage: 3.3, output_capable: true}
+  - {num: 2, name: D1, type: gpio, aliases: [A1], max_voltage: 3.3, output_capable: true}
+  - {num: 3, name: D2, type: gpio, aliases: [A2], max_voltage: 3.3, output_capable: true}
+  - {num: 4, name: D3, type: gpio, aliases: [A3], max_voltage: 3.3, output_capable: true}
+  - {num: 5, name: D4, type: gpio, aliases: [A4, SDA], max_voltage: 3.3, output_capable: true}
+  - {num: 6, name: D5, type: gpio, aliases: [A5, SCL], max_voltage: 3.3, output_capable: true}
+  - {num: 7, name: D6, type: gpio, aliases: [A6, TX], max_voltage: 3.3, output_capable: true}
+  - {num: 8, name: D7, type: gpio, aliases: [A7, RX], max_voltage: 3.3, output_capable: true}
+  - {num: 9, name: D8, type: gpio, aliases: [A8, SCK], max_voltage: 3.3, output_capable: true}
+  - {num: 10, name: D9, type: gpio, aliases: [A9, MISO], max_voltage: 3.3, output_capable: true}
+  - {num: 11, name: D10, type: gpio, aliases: [A10, MOSI], max_voltage: 3.3, output_capable: true}
+  - {num: 12, name: 3V3, type: power}
+  - {num: 13, name: GND, type: ground}
+  - {num: 14, name: 5V, type: power}
+footprint:
+  "1": [0, 0]
+  "2": [1, 0]
+  "3": [2, 0]
+  "4": [3, 0]
+  "5": [4, 0]
+  "6": [5, 0]
+  "7": [6, 0]
+  "8": [6, 6]
+  "9": [5, 6]
+  "10": [4, 6]
+  "11": [3, 6]
+  "12": [2, 6]
+  "13": [1, 6]
+  "14": [0, 6]
+render: {shape: module, label: XIAO SAMD21, size_mm: [21, 17.5], fill: "#2C2C2A", stroke: "#171715", text_color: "#FFFFFF"}

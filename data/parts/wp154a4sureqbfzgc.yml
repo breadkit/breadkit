@@ -1,0 +1,11 @@
+# Kingbright 5 mm RGB LED, common cathode; 1.27 mm lead pitch requires lead forming for a breadboard.
+# https://www.kingbrightusa.com/images/catalog/spec/WP154A4SUREQBFZGC.pdf
+id: wp154a4sureqbfzgc
+category: display
+placement: leads
+pins:
+  - {num: 1, name: RED, type: input}
+  - {num: 2, name: CATHODE, type: passive}
+  - {num: 3, name: BLUE, type: input}
+  - {num: 4, name: GREEN, type: input}
+render: {shape: rgb_led_5mm, label: RGB LED}

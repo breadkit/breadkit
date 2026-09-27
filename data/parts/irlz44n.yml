@@ -1,0 +1,10 @@
+# Infineon TO-220AB, front view: gate, drain, source.
+# https://www.infineon.com/assets/row/public/documents/24/49/infineon-irlz44n-datasheet-en.pdf
+id: irlz44n
+category: mosfet
+placement: leads
+pins:
+  - {num: 1, name: gate, aliases: [g]}
+  - {num: 2, name: drain, aliases: [d]}
+  - {num: 3, name: source, aliases: [s]}
+render: {shape: generic}

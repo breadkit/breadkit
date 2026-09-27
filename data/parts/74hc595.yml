@@ -1,0 +1,24 @@
+# https://www.ti.com/lit/ds/symlink/sn74hc595.pdf
+id: 74hc595
+category: ic
+placement: dip
+package: {pins: 16}
+pins:
+  - {num: 1, name: QB, type: output}
+  - {num: 2, name: QC, type: output}
+  - {num: 3, name: QD, type: output}
+  - {num: 4, name: QE, type: output}
+  - {num: 5, name: QF, type: output}
+  - {num: 6, name: QG, type: output}
+  - {num: 7, name: QH, type: output}
+  - {num: 8, name: GND, type: ground}
+  - {num: 9, name: QH_SERIAL, type: output}
+  - {num: 10, name: SRCLR, type: input}
+  - {num: 11, name: SRCLK, type: input}
+  - {num: 12, name: RCLK, type: input}
+  - {num: 13, name: OE, type: input}
+  - {num: 14, name: SER, type: input}
+  - {num: 15, name: QA, type: output}
+  - {num: 16, name: VCC, type: power}
+supply_range: [2, 6]
+render: {shape: dip, label: 74HC595}

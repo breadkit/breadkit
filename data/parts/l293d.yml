@@ -1,0 +1,24 @@
+# https://www.ti.com/lit/ds/symlink/l293.pdf
+id: l293d
+category: ic
+placement: dip
+package: {pins: 16}
+pins:
+  - {num: 1, name: EN12, type: input}
+  - {num: 2, name: 1A, type: input}
+  - {num: 3, name: 1Y, type: output}
+  - {num: 4, name: GND1, type: ground}
+  - {num: 5, name: GND2, type: ground}
+  - {num: 6, name: 2Y, type: output}
+  - {num: 7, name: 2A, type: input}
+  - {num: 8, name: VCC2, type: power}
+  - {num: 9, name: EN34, type: input}
+  - {num: 10, name: 3A, type: input}
+  - {num: 11, name: 3Y, type: output}
+  - {num: 12, name: GND3, type: ground}
+  - {num: 13, name: GND4, type: ground}
+  - {num: 14, name: 4Y, type: output}
+  - {num: 15, name: 4A, type: input}
+  - {num: 16, name: VCC1, type: power}
+internal: [[GND1, GND2], [GND2, GND3], [GND3, GND4]]
+render: {shape: dip, label: L293D}

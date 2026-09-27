@@ -1,0 +1,23 @@
+# https://www.ti.com/lit/ds/symlink/uln2003a.pdf
+id: uln2003a
+category: ic
+placement: dip
+package: {pins: 16}
+pins:
+  - {num: 1, name: 1B, type: input}
+  - {num: 2, name: 2B, type: input}
+  - {num: 3, name: 3B, type: input}
+  - {num: 4, name: 4B, type: input}
+  - {num: 5, name: 5B, type: input}
+  - {num: 6, name: 6B, type: input}
+  - {num: 7, name: 7B, type: input}
+  - {num: 8, name: E, type: ground}
+  - {num: 9, name: COM, type: passive}
+  - {num: 10, name: 7C, type: open_drain}
+  - {num: 11, name: 6C, type: open_drain}
+  - {num: 12, name: 5C, type: open_drain}
+  - {num: 13, name: 4C, type: open_drain}
+  - {num: 14, name: 3C, type: open_drain}
+  - {num: 15, name: 2C, type: open_drain}
+  - {num: 16, name: 1C, type: open_drain}
+render: {shape: dip, label: ULN2003A}

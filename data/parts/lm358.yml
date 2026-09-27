@@ -1,0 +1,16 @@
+# https://www.ti.com/lit/ds/symlink/lm358.pdf
+id: lm358
+category: ic
+placement: dip
+package: {pins: 8}
+pins:
+  - {num: 1, name: OUT1, type: output}
+  - {num: 2, name: IN1_MINUS, type: input}
+  - {num: 3, name: IN1_PLUS, type: input}
+  - {num: 4, name: V_MINUS, type: power}
+  - {num: 5, name: IN2_PLUS, type: input}
+  - {num: 6, name: IN2_MINUS, type: input}
+  - {num: 7, name: OUT2, type: output}
+  - {num: 8, name: V_PLUS, type: power}
+supply_range: [3, 30]
+render: {shape: dip, label: LM358}

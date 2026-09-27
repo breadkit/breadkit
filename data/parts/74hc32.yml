@@ -1,0 +1,22 @@
+# https://www.ti.com/lit/ds/symlink/sn74hc32.pdf
+id: 74hc32
+category: ic
+placement: dip
+package: {pins: 14}
+pins:
+  - {num: 1, name: 1A, type: input}
+  - {num: 2, name: 1B, type: input}
+  - {num: 3, name: 1Y, type: output}
+  - {num: 4, name: 2A, type: input}
+  - {num: 5, name: 2B, type: input}
+  - {num: 6, name: 2Y, type: output}
+  - {num: 7, name: GND, type: ground}
+  - {num: 8, name: 3Y, type: output}
+  - {num: 9, name: 3A, type: input}
+  - {num: 10, name: 3B, type: input}
+  - {num: 11, name: 4Y, type: output}
+  - {num: 12, name: 4A, type: input}
+  - {num: 13, name: 4B, type: input}
+  - {num: 14, name: VCC, type: power}
+supply_range: [2, 6]
+render: {shape: dip, label: 74HC32}

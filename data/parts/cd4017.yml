@@ -1,0 +1,24 @@
+# https://www.ti.com/lit/ds/symlink/cd4017b.pdf
+id: cd4017
+category: ic
+placement: dip
+package: {pins: 16}
+pins:
+  - {num: 1, name: Q5, type: output}
+  - {num: 2, name: Q1, type: output}
+  - {num: 3, name: Q0, type: output}
+  - {num: 4, name: Q2, type: output}
+  - {num: 5, name: Q6, type: output}
+  - {num: 6, name: Q7, type: output}
+  - {num: 7, name: Q3, type: output}
+  - {num: 8, name: VSS, type: ground}
+  - {num: 9, name: Q8, type: output}
+  - {num: 10, name: Q4, type: output}
+  - {num: 11, name: Q9, type: output}
+  - {num: 12, name: CARRY, type: output}
+  - {num: 13, name: CLOCK_INH, type: input}
+  - {num: 14, name: CLOCK, type: input}
+  - {num: 15, name: RESET, type: input}
+  - {num: 16, name: VDD, type: power}
+supply_range: [3, 18]
+render: {shape: dip, label: CD4017}

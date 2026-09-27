@@ -1,0 +1,58 @@
+# https://cdn.sparkfun.com/datasheets/Dev/Arduino/Boards/ProMicro16MHzv1.pdf
+# Synthetic pin numbers: left header top to bottom, then right header bottom to top.
+id: sparkfun_pro_micro_5v
+category: module
+placement: footprint
+straddle: true
+pins:
+  - {num: 1, name: D1, type: gpio, aliases: [TXO], max_voltage: 5, output_capable: true}
+  - {num: 2, name: D0, type: gpio, aliases: [RXI], max_voltage: 5, output_capable: true}
+  - {num: 3, name: GND1, type: ground, aliases: [GND]}
+  - {num: 4, name: GND2, type: ground}
+  - {num: 5, name: D2, type: gpio, max_voltage: 5, output_capable: true}
+  - {num: 6, name: D3, type: gpio, max_voltage: 5, output_capable: true}
+  - {num: 7, name: D4, type: gpio, aliases: [A6], max_voltage: 5, output_capable: true}
+  - {num: 8, name: D5, type: gpio, max_voltage: 5, output_capable: true}
+  - {num: 9, name: D6, type: gpio, aliases: [A7], max_voltage: 5, output_capable: true}
+  - {num: 10, name: D7, type: gpio, max_voltage: 5, output_capable: true}
+  - {num: 11, name: D8, type: gpio, aliases: [A8], max_voltage: 5, output_capable: true}
+  - {num: 12, name: D9, type: gpio, aliases: [A9], max_voltage: 5, output_capable: true}
+  - {num: 13, name: D10, type: gpio, aliases: [A10], max_voltage: 5, output_capable: true}
+  - {num: 14, name: D16, type: gpio, aliases: [MOSI], max_voltage: 5, output_capable: true}
+  - {num: 15, name: D14, type: gpio, aliases: [MISO], max_voltage: 5, output_capable: true}
+  - {num: 16, name: D15, type: gpio, aliases: [SCK], max_voltage: 5, output_capable: true}
+  - {num: 17, name: A0, type: gpio, max_voltage: 5, output_capable: true}
+  - {num: 18, name: A1, type: gpio, max_voltage: 5, output_capable: true}
+  - {num: 19, name: A2, type: gpio, max_voltage: 5, output_capable: true}
+  - {num: 20, name: A3, type: gpio, max_voltage: 5, output_capable: true}
+  - {num: 21, name: VCC, type: power}
+  - {num: 22, name: RST, type: reset}
+  - {num: 23, name: GND3, type: ground}
+  - {num: 24, name: RAW, type: power}
+internal: [[GND1, GND2], [GND2, GND3]]
+footprint:
+  "1": [0, 0]
+  "2": [1, 0]
+  "3": [2, 0]
+  "4": [3, 0]
+  "5": [4, 0]
+  "6": [5, 0]
+  "7": [6, 0]
+  "8": [7, 0]
+  "9": [8, 0]
+  "10": [9, 0]
+  "11": [10, 0]
+  "12": [11, 0]
+  "13": [11, 6]
+  "14": [10, 6]
+  "15": [9, 6]
+  "16": [8, 6]
+  "17": [7, 6]
+  "18": [6, 6]
+  "19": [5, 6]
+  "20": [4, 6]
+  "21": [3, 6]
+  "22": [2, 6]
+  "23": [1, 6]
+  "24": [0, 6]
+render: {shape: module, label: SparkFun Pro Micro 5V, size_mm: [33, 18], fill: "#2C2C2A", stroke: "#171715", text_color: "#FFFFFF"}

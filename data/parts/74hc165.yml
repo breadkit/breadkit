@@ -1,0 +1,24 @@
+# https://www.ti.com/lit/ds/symlink/sn74hc165.pdf
+id: 74hc165
+category: ic
+placement: dip
+package: {pins: 16}
+pins:
+  - {num: 1, name: SH_LD, type: input}
+  - {num: 2, name: CLK, type: input}
+  - {num: 3, name: E, type: input}
+  - {num: 4, name: F, type: input}
+  - {num: 5, name: G, type: input}
+  - {num: 6, name: H, type: input}
+  - {num: 7, name: QH_INV, type: output}
+  - {num: 8, name: GND, type: ground}
+  - {num: 9, name: QH, type: output}
+  - {num: 10, name: SER, type: input}
+  - {num: 11, name: A, type: input}
+  - {num: 12, name: B, type: input}
+  - {num: 13, name: C, type: input}
+  - {num: 14, name: D, type: input}
+  - {num: 15, name: CLK_INH, type: input}
+  - {num: 16, name: VCC, type: power}
+supply_range: [2, 6]
+render: {shape: dip, label: 74HC165}

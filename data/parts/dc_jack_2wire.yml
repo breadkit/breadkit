@@ -1,0 +1,8 @@
+id: dc_jack_2wire
+category: power
+placement: offboard
+pins:
+  - {num: 1, name: "POS", type: power}
+  - {num: 2, name: "NEG", type: ground}
+polarity: {positive: POS, negative: NEG}
+render: {shape: offboard, label: Dc Jack 2wire}

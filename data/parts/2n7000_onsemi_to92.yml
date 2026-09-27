@@ -1,0 +1,10 @@
+# Onsemi TO-92 CASE 135AN; other manufacturers may use a different pin order.
+# https://www.onsemi.com/pdf/datasheet/nds7002a-d.pdf
+id: 2n7000_onsemi_to92
+category: mosfet
+placement: leads
+pins:
+  - {num: 1, name: source, aliases: [s]}
+  - {num: 2, name: gate, aliases: [g]}
+  - {num: 3, name: drain, aliases: [d]}
+render: {shape: generic}

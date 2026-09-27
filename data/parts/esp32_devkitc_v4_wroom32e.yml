@@ -1,0 +1,86 @@
+# https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32/esp32-devkitc/user_guide.html
+# FLASH_* header pins are reserved for the module's SPI flash and must not be used for external wiring.
+id: esp32_devkitc_v4_wroom32e
+category: module
+placement: footprint
+straddle: true
+pins:
+  - {num: 1, name: 3V3, type: power}
+  - {num: 2, name: EN, type: reset}
+  - {num: 3, name: VP, type: input, aliases: [GPIO36], max_voltage: 3.3}
+  - {num: 4, name: VN, type: input, aliases: [GPIO39], max_voltage: 3.3}
+  - {num: 5, name: IO34, type: input, aliases: [GPIO34], max_voltage: 3.3}
+  - {num: 6, name: IO35, type: input, aliases: [GPIO35], max_voltage: 3.3}
+  - {num: 7, name: IO32, type: gpio, aliases: [GPIO32], max_voltage: 3.3, output_capable: true}
+  - {num: 8, name: IO33, type: gpio, aliases: [GPIO33], max_voltage: 3.3, output_capable: true}
+  - {num: 9, name: IO25, type: gpio, aliases: [GPIO25], max_voltage: 3.3, output_capable: true}
+  - {num: 10, name: IO26, type: gpio, aliases: [GPIO26], max_voltage: 3.3, output_capable: true}
+  - {num: 11, name: IO27, type: gpio, aliases: [GPIO27], max_voltage: 3.3, output_capable: true}
+  - {num: 12, name: IO14, type: gpio, aliases: [GPIO14], max_voltage: 3.3, output_capable: true}
+  - {num: 13, name: IO12, type: gpio, aliases: [GPIO12], max_voltage: 3.3, output_capable: true}
+  - {num: 14, name: GND1, type: ground, aliases: [GND]}
+  - {num: 15, name: IO13, type: gpio, aliases: [GPIO13], max_voltage: 3.3, output_capable: true}
+  - {num: 16, name: FLASH_D2, type: data}
+  - {num: 17, name: FLASH_D3, type: data}
+  - {num: 18, name: FLASH_CMD, type: data}
+  - {num: 19, name: 5V, type: power}
+  - {num: 20, name: FLASH_CLK, type: data}
+  - {num: 21, name: FLASH_D0, type: data}
+  - {num: 22, name: FLASH_D1, type: data}
+  - {num: 23, name: IO15, type: gpio, aliases: [GPIO15], max_voltage: 3.3, output_capable: true}
+  - {num: 24, name: IO2, type: gpio, aliases: [GPIO2], max_voltage: 3.3, output_capable: true}
+  - {num: 25, name: IO0, type: gpio, aliases: [GPIO0], max_voltage: 3.3, output_capable: true}
+  - {num: 26, name: IO4, type: gpio, aliases: [GPIO4], max_voltage: 3.3, output_capable: true}
+  - {num: 27, name: IO16, type: gpio, aliases: [GPIO16], max_voltage: 3.3, output_capable: true}
+  - {num: 28, name: IO17, type: gpio, aliases: [GPIO17], max_voltage: 3.3, output_capable: true}
+  - {num: 29, name: IO5, type: gpio, aliases: [GPIO5], max_voltage: 3.3, output_capable: true}
+  - {num: 30, name: IO18, type: gpio, aliases: [GPIO18], max_voltage: 3.3, output_capable: true}
+  - {num: 31, name: IO19, type: gpio, aliases: [GPIO19], max_voltage: 3.3, output_capable: true}
+  - {num: 32, name: GND2, type: ground}
+  - {num: 33, name: IO21, type: gpio, aliases: [GPIO21], max_voltage: 3.3, output_capable: true}
+  - {num: 34, name: RX, type: gpio, max_voltage: 3.3, output_capable: true}
+  - {num: 35, name: TX, type: gpio, max_voltage: 3.3, output_capable: true}
+  - {num: 36, name: IO22, type: gpio, aliases: [GPIO22], max_voltage: 3.3, output_capable: true}
+  - {num: 37, name: IO23, type: gpio, aliases: [GPIO23], max_voltage: 3.3, output_capable: true}
+  - {num: 38, name: GND3, type: ground}
+internal: [[GND1, GND2], [GND2, GND3]]
+footprint:
+  "1": [0, 0]
+  "2": [1, 0]
+  "3": [2, 0]
+  "4": [3, 0]
+  "5": [4, 0]
+  "6": [5, 0]
+  "7": [6, 0]
+  "8": [7, 0]
+  "9": [8, 0]
+  "10": [9, 0]
+  "11": [10, 0]
+  "12": [11, 0]
+  "13": [12, 0]
+  "14": [13, 0]
+  "15": [14, 0]
+  "16": [15, 0]
+  "17": [16, 0]
+  "18": [17, 0]
+  "19": [18, 0]
+  "20": [18, 10]
+  "21": [17, 10]
+  "22": [16, 10]
+  "23": [15, 10]
+  "24": [14, 10]
+  "25": [13, 10]
+  "26": [12, 10]
+  "27": [11, 10]
+  "28": [10, 10]
+  "29": [9, 10]
+  "30": [8, 10]
+  "31": [7, 10]
+  "32": [6, 10]
+  "33": [5, 10]
+  "34": [4, 10]
+  "35": [3, 10]
+  "36": [2, 10]
+  "37": [1, 10]
+  "38": [0, 10]
+render: {shape: module, label: ESP32 DevKitC V4, size_mm: [48.26, 27.94], fill: "#2C2C2A", stroke: "#171715", text_color: "#FFFFFF"}

@@ -1,4 +1,6 @@
-id: transistor
+# Onsemi 2N3904 TO-92 pin order (front view): emitter, base, collector.
+# https://www.onsemi.com/download/data-sheet/pdf/2n3904-d.pdf
+id: 2n3904
 category: transistor
 transistor_polarity: NPN
 placement: leads

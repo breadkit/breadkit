@@ -86,6 +86,11 @@ declares the connections it expects.
 | Connectivity analysis | Resolve conductive strips, pins, and switch states into named nets. |
 | JSON IR | Pass resolved circuits to the renderer, linter, or another tool. |
 
+The built-in part catalog includes 74HC logic, common DIP ICs, switches,
+displays, power connectors, and model-specific Pico, Nano, Pro Micro, XIAO,
+and ESP32 board footprints. Run `breadkit parts show PART` to inspect exact
+pins before wiring a physical component.
+
 The renderer creates SVG, PNG, and JPEG diagrams. The linter reports layout,
 electrical, and wiring-intent problems. Each gem is released separately.
 

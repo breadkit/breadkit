@@ -1,0 +1,37 @@
+# https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/DataSheets/ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf
+id: atmega328p
+category: mcu
+placement: dip
+package: {pins: 28}
+pins:
+  - {num: 1, name: PC6_RESET, type: reset, aliases: [RESET]}
+  - {num: 2, name: PD0, type: gpio}
+  - {num: 3, name: PD1, type: gpio}
+  - {num: 4, name: PD2, type: gpio}
+  - {num: 5, name: PD3, type: gpio}
+  - {num: 6, name: PD4, type: gpio}
+  - {num: 7, name: VCC, type: power}
+  - {num: 8, name: GND1, type: ground}
+  - {num: 9, name: PB6, type: gpio}
+  - {num: 10, name: PB7, type: gpio}
+  - {num: 11, name: PD5, type: gpio}
+  - {num: 12, name: PD6, type: gpio}
+  - {num: 13, name: PD7, type: gpio}
+  - {num: 14, name: PB0, type: gpio}
+  - {num: 15, name: PB1, type: gpio}
+  - {num: 16, name: PB2, type: gpio}
+  - {num: 17, name: PB3, type: gpio}
+  - {num: 18, name: PB4, type: gpio}
+  - {num: 19, name: PB5, type: gpio}
+  - {num: 20, name: AVCC, type: power}
+  - {num: 21, name: AREF, type: input}
+  - {num: 22, name: GND2, type: ground}
+  - {num: 23, name: PC0, type: gpio}
+  - {num: 24, name: PC1, type: gpio}
+  - {num: 25, name: PC2, type: gpio}
+  - {num: 26, name: PC3, type: gpio}
+  - {num: 27, name: PC4, type: gpio}
+  - {num: 28, name: PC5, type: gpio}
+internal: [[GND1, GND2]]
+supply_range: [1.8, 5.5]
+render: {shape: dip, label: ATMEGA328P}
