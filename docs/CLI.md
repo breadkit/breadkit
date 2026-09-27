@@ -20,6 +20,7 @@ part definitions are not circuit inputs.
 | `breadkit fmt FILE` | Print a normalized declarative YAML or TOML circuit file. |
 | `breadkit lock FILE` | Record the local part and board definition files used by a circuit in `breadkit.lock`. |
 | `breadkit suggest FILE` | Print JSON candidates for unmet connection intent between placed pins. Each candidate names two free board holes; nothing is changed. |
+| `breadkit kit --inventory KIT.yml FILE` | Allocate candidate jumpers from a measured YAML or JSON inventory. See [Jumper kits](JUMPER_KIT.md). |
 | `breadkit console FILE` | Open IRB with the loaded `circuit` variable. |
 | `breadkit doctor` | Check the Ruby version and availability of the optional linter and renderer commands. |
 

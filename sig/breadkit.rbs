@@ -185,6 +185,12 @@ module Breadkit
     def all: () -> Array[PartDef]
   end
 
+  class JumperKit
+    def initialize: (Hash[String, untyped] data) -> void
+    def self.load: (String path) -> JumperKit
+    def allocate: (Circuit circuit) -> Hash[Symbol, untyped]
+  end
+
   class Value
     attr_reader value: Float
     attr_reader unit: String
