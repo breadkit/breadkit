@@ -123,6 +123,18 @@ module Breadkit
       rail && (rail["polarity"] || rail.fetch("id").to_s[/[+-]\z/])
     end
 
+    def definition_for(_reference)
+      definition
+    end
+
+    def ravine_between_for(_reference)
+      ravine_between
+    end
+
+    def board_id_for(_reference)
+      nil
+    end
+
     private
 
     def add_hole(hole)
@@ -165,6 +177,94 @@ module Breadkit
           end
         end
       end
+    end
+  end
+
+  class BoardSet
+    Definition = Data.define(:id, :data)
+
+    attr_reader :boards, :holes, :strips, :definition
+
+    def initialize(boards)
+      @boards = boards
+      @holes, @strips = {}, {}
+      @terminal_rows = []
+      @rail_ids = []
+      right_edge = nil
+      boards.each do |name, board|
+        @terminal_rows.concat(board.terminal_rows.map { |row| "#{name}.#{row}" })
+        @rail_ids.concat(board.rail_ids.map { |rail| "#{name}.#{rail}" })
+        left, right = board.holes.values.map(&:x).minmax
+        raise ArgumentError, "board #{name} has no holes" unless left
+        offset = right_edge ? right_edge + 8 - left : -left
+        board.holes.each_value do |hole|
+          id = "#{name}.#{hole.id}"
+          strip_id = "#{name}.#{hole.strip_id}"
+          @holes[id] = Hole.new(id: id, kind: hole.kind, row: hole.row, col: hole.col,
+                                rail: hole.rail && "#{name}.#{hole.rail}", x: hole.x + offset,
+                                y: hole.y, strip_id: strip_id)
+          (@strips[strip_id] ||= []) << id
+        end
+        right_edge = right + offset
+      end
+      ground_labels = boards.values.flat_map { |board| Array(board.definition.data["ground_labels"] || %w[GND 0V VSS GROUND]) }.uniq
+      @definition = Definition.new(id: "multi", data: { "ground_labels" => ground_labels })
+      @width = right_edge ? right_edge.ceil + 1 : 0
+    end
+
+    def hole(id)
+      holes[HoleId.parse(id, board: self).to_s]
+    rescue ArgumentError
+      nil
+    end
+
+    def strip(id)
+      item = hole(id)
+      item && strips[item.strip_id]
+    end
+
+    def terminal_rows
+      @terminal_rows
+    end
+
+    def rail_ids
+      @rail_ids
+    end
+
+    def width
+      @width
+    end
+
+    def height
+      boards.values.map(&:height).max || 0
+    end
+
+    def split_rails
+      false
+    end
+
+    def board_id_for(reference)
+      prefix = reference.to_s.split(".", 2).first
+      boards.keys.find { |name| name.casecmp?(prefix) }
+    end
+
+    def board_for(reference)
+      boards[board_id_for(reference)]
+    end
+
+    def definition_for(reference)
+      board_for(reference)&.definition
+    end
+
+    def ravine_between_for(reference)
+      name = board_id_for(reference)
+      board = boards[name]
+      board ? board.ravine_between.map { |row| "#{name}.#{row}" } : []
+    end
+
+    def rail_polarity(id)
+      name = board_id_for(id)
+      boards[name]&.rail_polarity(id.to_s.delete_prefix("#{name}."))
     end
   end
 end

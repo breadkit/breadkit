@@ -39,6 +39,7 @@ expectations:
 | --- | --- | --- |
 | `title` | text | Circuit title. |
 | `board` | text or mapping | Board type, optionally `{type: full, split_rails: true}`. |
+| `boards` | list of mappings | Named boards with `name`, `type`, and optional `split_rails`; use instead of `board`. Qualify holes as `B1.a1`. |
 | `use_parts`, `use_boards` | path or list of paths | Load definitions relative to the circuit file. Globs are accepted. |
 | `supplies` | list of mappings | `name`, `voltage`, `plus`, `minus`; optional `isolated` and numeric `current_limit`. |
 | `labels` | list of mappings | `name` and `at` for a named net. |
@@ -89,6 +90,19 @@ wires:
 YAML object tags and aliases are rejected. Unknown fields and invalid field
 types produce input errors. Diagnostics from declarative files currently point
 to the file's first line rather than the individual field.
+
+For multiple boards, use `boards` instead of `board`:
+
+```yaml
+boards:
+  - {name: B1, type: half}
+  - {name: B2, type: mini}
+wires:
+  - {from: B1.a1, to: B2.j1}
+```
+
+This produces version 2 IR. See the [DSL reference](dsl.md#multiple-boards)
+for board identity and connection rules.
 
 `breadkit fmt FILE` prints canonical YAML or TOML without modifying the input.
 It validates the circuit fields first and keeps the original format. Formatting

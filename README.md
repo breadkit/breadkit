@@ -90,6 +90,7 @@ Prefer a data-only circuit file? The same LED circuit is available in
 | --- | --- |
 | Circuit inputs | Place boards, parts, supplies, wires, and expectations with the Ruby DSL or declarative YAML and TOML. |
 | Board and part definitions | Start with full, half, and mini boards or load your own YAML definitions. |
+| Multiple boards | Name breadboards and connect their qualified holes with explicit wires. |
 | Connectivity analysis | Resolve conductive strips, pins, and switch states into named nets. |
 | JSON IR | Pass resolved circuits to the renderer, linter, or another tool. |
 

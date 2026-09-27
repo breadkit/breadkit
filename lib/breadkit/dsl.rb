@@ -23,16 +23,27 @@ module Breadkit
         document.title = value.to_s
       end
 
-      def board(type, **options)
-        raise DSLError, "board may only be declared once" if @board_declared
+      def board(type, as: nil, **options)
         unknown = options.keys - [:split_rails]
         raise DSLError, "unknown board option #{unknown.first}" unless unknown.empty?
         if options.key?(:split_rails) && ![true, false].include?(options[:split_rails])
           raise DSLError, "split_rails must be boolean"
         end
 
-        @board_declared = true
-        document.board = { type: type.to_s, options: options }
+        if as
+          raise DSLError, "named and unnamed boards cannot be mixed" if @board_declared
+          name = helper_name(as, "board")
+          if document.boards.any? { |item| item[:name].casecmp?(name) }
+            raise DSLError, "duplicate board name #{name}"
+          end
+          document.boards << { name: name, type: type.to_s, options: options }
+        else
+          raise DSLError, "named and unnamed boards cannot be mixed" unless document.boards.empty?
+          raise DSLError, "board may only be declared once" if @board_declared
+
+          @board_declared = true
+          document.board = { type: type.to_s, options: options }
+        end
       end
 
       def use_parts(path)

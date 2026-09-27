@@ -49,7 +49,7 @@ module Breadkit
 
   class Document
     attr_accessor :title, :board, :supplies, :labels, :components, :wires, :expectations,
-                  :lint_disables, :part_paths, :part_definitions, :board_paths, :board_definitions, :diagnostics, :source_root, :steps
+                  :lint_disables, :part_paths, :part_definitions, :board_paths, :board_definitions, :diagnostics, :source_root, :steps, :boards
 
     def initialize
       @title = nil
@@ -57,6 +57,7 @@ module Breadkit
       @supplies, @labels, @components, @wires = [], [], [], []
       @expectations, @lint_disables, @part_paths, @part_definitions, @board_paths, @board_definitions = [], [], [], [], [], []
       @steps = []
+      @boards = []
       @diagnostics = []
     end
   end

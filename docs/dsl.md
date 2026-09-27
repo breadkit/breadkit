@@ -28,7 +28,7 @@ end
 | Method | Purpose |
 | --- | --- |
 | `title(text)` | Diagram title. |
-| `board(id, split_rails: false)` | Select `:full`, `:half`, `:mini`, or a custom board ID. |
+| `board(id, split_rails: false, as: nil)` | Select `:full`, `:half`, `:mini`, or a custom board ID. Name each board with `as:` when using multiple boards. |
 | `use_parts(path)` / `use_boards(path)` | Load additional YAML definitions relative to the DSL file. Paths may use globs. |
 | `include(path)` | Evaluate another trusted DSL file in the same circuit. Relative paths resolve from the including file; circular includes are rejected. |
 | `block(name) { ... }` / `use_block(name, *args, **kwargs)` | Define and expand a reusable group of DSL declarations. Each name is unique within the circuit. |
@@ -105,6 +105,34 @@ connectivity checks still apply. `circuit.steps` holds each number and title,
 while each resolved item exposes `.step`. JSON IR carries the same `steps`
 list and optional `step` field on those items. Existing IR files without steps
 remain valid.
+
+## Multiple boards
+
+Name each board and qualify every physical hole or rail reference when a
+circuit has more than one breadboard:
+
+```ruby
+board :half, as: :B1
+board :mini, as: :B2
+
+supply :BAT, voltage: 5, plus: "B1.b1", minus: "B2.b2"
+resistor :R1, "330", pins: %w[B1.a1 B1.a3]
+led :D1, color: :red, anode: "B2.a1", cathode: "B2.a2"
+wire "B1.b3", "B2.b1", color: :red
+```
+
+The boards have separate conductive strips. A wire may cross between boards;
+one component's placed pins must stay on one board. Board names are unique and
+use letters, digits, and underscores, starting with a letter. Unqualified
+holes such as `a1` and rails such as `T+` are invalid in a named-board circuit.
+Component pin references such as `R1.1` remain global. An unindexed named rail
+such as `B2.T+` still selects a free hole on that board's rail.
+
+`circuit.boards` maps names to boards, and `circuit.board` exposes the combined
+qualified hole and strip lookup. Named-board circuits export IR schema version
+2 with a `boards` array of names, definitions, and options. Existing unnamed
+single-board circuits continue to export version 1. The version 2 schema is
+[`schema/ir-v2.json`](../schema/ir-v2.json).
 
 ## Hole and pin references
 

@@ -114,6 +114,14 @@ module Breadkit
       IR::Writer.new.write(self)
     end
 
+    def boards
+      board.is_a?(BoardSet) ? board.boards : {}
+    end
+
+    def multi_board?
+      board.is_a?(BoardSet)
+    end
+
     def diff(other)
       raise ArgumentError, "expected a Breadkit::Circuit" unless other.is_a?(Circuit)
 
@@ -126,7 +134,11 @@ module Breadkit
     protected
 
     def diff_items
-      items = { "board" => "#{board.definition.id}#{' (split rails)' if board.split_rails}" }
+      items = if multi_board?
+        boards.to_h { |name, item| ["board #{name}", "#{item.definition.id}#{' (split rails)' if item.split_rails}"] }
+      else
+        { "board" => "#{board.definition.id}#{' (split rails)' if board.split_rails}" }
+      end
       supplies.each do |supply|
         voltage = supply.voltage_range ? supply.voltage_range.join("..") : supply.voltage
         limit = supply.current_limit ? ", #{supply.current_limit} A limit" : ""
@@ -196,6 +208,9 @@ module Breadkit
     end
 
     def node_for_reference(reference)
+      hole = board.hole(reference)
+      return "hole:#{hole.id}" if hole
+
       if reference.include?(".")
         prefix, pin = reference.split(".", 2)
         if components[prefix]
@@ -205,7 +220,6 @@ module Breadkit
         supply = supplies.find { |item| item.name == prefix }
         return "supply:#{reference}" if supply && %w[+ -].include?(pin)
       end
-      return "hole:#{board.hole(reference).id}" if board.hole(reference)
       "label:#{reference}" if labels.any? { |item| item.name == reference }
     rescue ArgumentError
       nil
@@ -214,6 +228,9 @@ module Breadkit
     private
 
     def hole_for_reference(reference)
+      hole = board.hole(reference)
+      return hole.id if hole
+
       if reference.include?(".")
         prefix, pin = reference.split(".", 2)
         supply = supplies.find { |item| item.name == prefix }

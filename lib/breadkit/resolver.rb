@@ -27,12 +27,34 @@ module Breadkit
     private
 
     def load_board
-      Board.new(BoardDef.load(@document.board[:type], extra_paths: @document.board_paths,
-                             extra_definitions: @document.board_definitions),
-                split_rails: @document.board[:options][:split_rails] || false)
-    rescue StandardError => e
-      @diagnostics << diagnostic(:unknown_board, "error", e.message, nil)
-      Board.new(BoardDef.load("full"))
+      unless @document.boards.empty?
+        names = {}
+        @document.boards.each do |item|
+          name = item[:name].to_s
+          raise DSLError, "invalid board name #{name.inspect}" unless /\A[A-Za-z][A-Za-z0-9_]*\z/.match?(name)
+          raise DSLError, "duplicate board name #{name}" if names[name.downcase]
+
+          names[name.downcase] = true
+        end
+        boards = @document.boards.to_h do |item|
+          definition = BoardDef.load(item[:type], extra_paths: @document.board_paths,
+                                     extra_definitions: @document.board_definitions)
+          [item[:name], Board.new(definition, split_rails: item[:options][:split_rails] || false)]
+        rescue StandardError => e
+          @diagnostics << diagnostic(:unknown_board, "error", e.message, nil)
+          [item[:name], Board.new(BoardDef.load("full"))]
+        end
+        return BoardSet.new(boards)
+      end
+
+      begin
+        Board.new(BoardDef.load(@document.board[:type], extra_paths: @document.board_paths,
+                               extra_definitions: @document.board_definitions),
+                  split_rails: @document.board[:options][:split_rails] || false)
+      rescue StandardError => e
+        @diagnostics << diagnostic(:unknown_board, "error", e.message, nil)
+        Board.new(BoardDef.load("full"))
+      end
     end
 
     def resolve_components
@@ -130,9 +152,14 @@ module Breadkit
                                       role: definition["type"] || definition["role"])
         end
       end
+      if @board.is_a?(BoardSet)
+        board_ids = result.values.filter_map { |pin| @board.board_id_for(pin.hole_id) if pin.hole_id }.uniq
+        placement_error(item, "#{item[:ref]} cannot span multiple boards") if board_ids.length > 1
+      end
       validate_footprint_geometry(item, part, result) if requested && part.placement == "footprint"
       if part.data["straddle"] && (item[:at] || requested)
-        groups = @board.definition.data.dig("terminal", "groups")
+        anchor = item[:at] || result.values.find(&:hole_id)&.hole_id
+        groups = @board.definition_for(anchor)&.data&.dig("terminal", "groups")
         occupied_groups = result.values.filter_map do |pin|
           row = @board.hole(pin.hole_id)&.row
           groups&.index { |rows| rows.include?(row) } if row
@@ -195,7 +222,7 @@ module Breadkit
         count = part.pins.length if count.zero?
         half = count / 2
         first_row = at.row
-        near_row, far_row = @board.ravine_between
+        near_row, far_row = @board.ravine_between_for(at.to_s)
         return invalid_placement(item, at) unless [near_row, far_row].include?(first_row)
         row = first_row
         col = at.col
@@ -240,7 +267,7 @@ module Breadkit
 
     def invalid_placement(item, at)
       unless @diagnostics.any? { |entry| entry.code == "invalid_placement" && entry.targets.include?(item[:ref]) }
-        @diagnostics << diagnostic(:invalid_placement, "error", "DIP #{item[:ref]} must straddle the center gap (#{@board.ravine_between.join('/')} row)", item[:location], [item[:ref], at.to_s])
+        @diagnostics << diagnostic(:invalid_placement, "error", "DIP #{item[:ref]} must straddle the center gap (#{@board.ravine_between_for(at.to_s).join('/')} row)", item[:location], [item[:ref], at.to_s])
       end
       nil
     end
@@ -436,6 +463,7 @@ module Breadkit
       entries = components.values.map { |item| [item.ref, item.location] } +
                 wires.map { |item| [item.id, item.location] } +
                 supplies.map { |item| [item.name, item.location] }
+      entries.concat(@board.boards.keys.map { |name| [name, nil] }) if @board.is_a?(BoardSet)
       entries.each do |name, location|
         if names[name]
           @diagnostics << diagnostic(:duplicate_ref, "error", "duplicate name #{name}", location, [name])

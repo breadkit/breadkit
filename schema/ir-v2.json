@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Breadkit IR v2",
+  "type": "object",
+  "required": ["schema_version", "title", "boards", "components", "wires", "supplies", "labels", "expectations"],
+  "not": { "anyOf": [{ "required": ["board"] }, { "required": ["board_definition"] }] },
+  "properties": {
+    "schema_version": { "const": 2 },
+    "source_root": { "type": "string" },
+    "title": { "type": ["string", "null"] },
+    "steps": { "type": "array", "items": { "$ref": "#/$defs/step" } },
+    "part_definitions": { "type": "array", "items": { "$ref": "#/$defs/partDefinition" } },
+    "boards": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/namedBoard" } },
+    "lint_disables": { "type": "array", "items": { "type": "object" } },
+    "components": { "type": "array", "items": { "$ref": "#/$defs/component" } },
+    "wires": { "type": "array", "items": { "$ref": "#/$defs/wire" } },
+    "supplies": { "type": "array", "items": { "$ref": "#/$defs/supply" } },
+    "labels": { "type": "array", "items": { "$ref": "#/$defs/label" } },
+    "expectations": { "type": "array", "items": { "$ref": "#/$defs/expectation" } },
+    "analysis": {
+      "type": "object",
+      "required": ["nets"],
+      "properties": { "nets": { "type": "array", "items": { "$ref": "#/$defs/net" } } }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "namedBoard": {
+      "type": "object", "required": ["name", "type", "options", "definition"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*$" },
+        "type": { "type": "string", "minLength": 1 },
+        "options": { "type": "object", "properties": { "split_rails": { "type": "boolean" } } },
+        "definition": { "$ref": "#/$defs/boardDefinition" }
+      }
+    },
+    "partDefinition": {
+      "type": "object", "required": ["id", "pins"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "pins": { "type": "array", "items": { "type": "object", "required": ["num"],
+          "properties": { "num": { "type": ["string", "integer"] }, "name": { "type": "string" }, "type": { "type": "string" }, "role": { "type": "string" } } } },
+        "placement": { "enum": ["leads", "dip", "footprint", "offboard"] },
+        "max_lead_span_mm": { "type": "number", "exclusiveMinimum": 0 },
+        "polarity": { "type": "object" }, "footprint": { "type": "object" },
+        "provides": { "type": "array", "items": { "type": "object", "required": ["positive", "negative", "voltage"],
+          "properties": { "positive": { "type": "string" }, "negative": { "type": "string" }, "voltage": { "type": "number", "exclusiveMinimum": 0 } } } }
+      }
+    },
+    "boardDefinition": {
+      "type": "object", "required": ["id", "terminal"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "terminal": { "type": "object", "required": ["columns", "rows", "groups"],
+          "properties": {
+            "columns": { "type": "integer", "minimum": 1 },
+            "rows": { "type": "array", "items": { "type": "string" } },
+            "groups": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } },
+            "ravine_between": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 2 }
+          } },
+        "rails": { "type": "array", "items": { "type": "object", "required": ["id"],
+          "properties": { "id": { "type": "string" }, "side": { "type": "string" }, "order": { "type": "integer" }, "polarity": { "enum": ["+", "-"] } } } },
+        "rail_layout": { "type": "object", "properties": { "segments": { "type": "array" }, "split_segments": { "type": "array" } } }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["path", "line"],
+      "properties": { "path": { "type": "string" }, "line": { "type": "integer", "minimum": 1 } }
+    },
+    "nullableSource": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/source" }] },
+    "step": {
+      "type": "object",
+      "required": ["number"],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "title": { "type": ["string", "null"], "minLength": 1 },
+        "source": { "$ref": "#/$defs/nullableSource" }
+      }
+    },
+    "location": {
+      "type": "object",
+      "required": ["path", "line"],
+      "properties": { "path": { "type": "string" }, "line": { "type": "integer", "minimum": 1 } }
+    },
+    "component": {
+      "type": "object",
+      "required": ["ref", "part", "value", "attrs", "pins", "unused", "source"],
+      "properties": {
+        "ref": { "type": "string" },
+        "part": { "type": "string" },
+        "value": { "type": ["string", "number", "null"] },
+        "attrs": { "type": "object" },
+        "pins": { "type": "object", "additionalProperties": { "type": ["string", "null"] } },
+        "unused": { "type": "array", "items": { "type": "string" } },
+        "step": { "type": "integer", "minimum": 1 },
+        "source": { "$ref": "#/$defs/nullableSource" }
+      }
+    },
+    "wire": {
+      "type": "object",
+      "required": ["id", "from", "to", "color", "route", "source"],
+      "properties": {
+        "id": { "type": "string" },
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "color": { "type": ["string", "null"] },
+        "route": { "type": "string" },
+        "step": { "type": "integer", "minimum": 1 },
+        "source": { "$ref": "#/$defs/nullableSource" }
+      }
+    },
+    "supply": {
+      "type": "object",
+      "required": ["name", "voltage", "plus", "minus", "source"],
+      "properties": {
+        "name": { "type": "string" },
+        "voltage": { "type": "number" },
+        "isolated": { "type": "boolean" },
+        "voltage_range": { "type": ["array", "null"], "prefixItems": [{ "type": "number", "exclusiveMinimum": 0 }, { "type": "number", "exclusiveMinimum": 0 }], "minItems": 2, "maxItems": 2 },
+        "current_limit": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "plus": { "type": "string" },
+        "minus": { "type": "string" },
+        "step": { "type": "integer", "minimum": 1 },
+        "source": { "$ref": "#/$defs/nullableSource" }
+      }
+    },
+    "label": {
+      "type": "object",
+      "required": ["net", "at", "source"],
+      "properties": {
+        "net": { "type": "string" },
+        "at": { "type": "string" },
+        "step": { "type": "integer", "minimum": 1 },
+        "source": { "$ref": "#/$defs/nullableSource" }
+      }
+    },
+    "expectation": {
+      "type": "object",
+      "required": ["strict", "entries", "location"],
+      "properties": {
+        "strict": { "type": "boolean" },
+        "when": { "type": "string", "minLength": 1 },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "refs", "location"],
+            "properties": {
+              "kind": { "enum": ["connected", "isolated", "net", "voltage", "current"] },
+              "refs": { "type": "array", "items": { "type": "string" } },
+              "range": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+              "location": { "$ref": "#/$defs/location" }
+            }
+          }
+        },
+        "location": { "$ref": "#/$defs/location" }
+      }
+    },
+    "net": {
+      "type": "object",
+      "required": ["name", "members", "holes", "potential"],
+      "properties": {
+        "name": { "type": "string" },
+        "members": { "type": "array", "items": { "type": "string" } },
+        "holes": { "type": "array", "items": { "type": "string" } },
+        "potential": { "type": ["number", "null"] }
+      }
+    }
+  }
+}

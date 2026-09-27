@@ -4,7 +4,7 @@ require "tomlrb"
 
 module Breadkit
   class StructuredInput
-    ROOT_KEYS = %w[title board use_parts use_boards supplies labels parts offboard wires expectations lint_disables].freeze
+    ROOT_KEYS = %w[title board boards use_parts use_boards supplies labels parts offboard wires expectations lint_disables].freeze
 
     def self.load_file(path)
       new(File.expand_path(path)).load_file
@@ -23,7 +23,13 @@ module Breadkit
       allowed!(data, ROOT_KEYS, "root")
       @builder.document.source_root = File.dirname(@path)
       @builder.title(string(data["title"], "title")) if data.key?("title")
+      raise DSLError, "board and boards cannot be used together" if data.key?("board") && data.key?("boards")
       load_board(data["board"]) if data.key?("board")
+      if data.key?("boards")
+        named = records(data, "boards")
+        raise DSLError, "boards must contain at least one board" if named.empty?
+        named.each_with_index { |item, index| load_named_board(item, "boards[#{index}]") }
+      end
       paths(data, "use_parts").each { |item| @builder.use_parts(item) }
       paths(data, "use_boards").each { |item| @builder.use_boards(item) }
       records(data, "supplies").each_with_index { |item, index| load_supply(item, "supplies[#{index}]") }
@@ -62,6 +68,14 @@ module Breadkit
         options[:split_rails] = boolean(item["split_rails"], "board.split_rails") if item.key?("split_rails")
         @builder.board(string(item["type"], "board.type"), **options)
       end
+    end
+
+    def load_named_board(value, context)
+      item = mapping(value, context)
+      allowed!(item, %w[name type split_rails], context)
+      options = {}
+      options[:split_rails] = boolean(item["split_rails"], "#{context}.split_rails") if item.key?("split_rails")
+      @builder.board(string(item["type"], "#{context}.type"), as: string(item["name"], "#{context}.name"), **options)
     end
 
     def load_supply(value, context)

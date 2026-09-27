@@ -13,7 +13,7 @@ module Breadkit
           part.data unless standard&.data == part.data
         end
         result = {
-          schema_version: 1,
+          schema_version: circuit.multi_board? ? 2 : 1,
           source_root: @source_root,
           title: circuit.title,
           board: { type: circuit.board.definition.id, options: { split_rails: circuit.board.split_rails } },
@@ -35,6 +35,14 @@ module Breadkit
           lint_disables: stringify(circuit.lint_disables),
           analysis: { nets: circuit.nets.map { |net| { name: net.name, members: net.members, holes: net.holes, potential: circuit.potentials.values[net.name] } } }
         }
+        if circuit.multi_board?
+          result.delete(:board)
+          result.delete(:board_definition)
+          result[:boards] = circuit.boards.map do |name, board|
+            { name: name, type: board.definition.id, options: { split_rails: board.split_rails },
+              definition: board.definition.data }
+          end
+        end
         result[:steps] = circuit.steps.map { |item| { number: item[:number], title: item[:title], source: source(item[:source]) } } unless circuit.steps.empty?
         result[:part_definitions] = part_definitions unless part_definitions.empty?
         result
@@ -83,8 +91,15 @@ module Breadkit
         doc.steps = Array(data["steps"]).map do |item|
           { number: item.fetch("number"), title: item["title"], source: location(item["source"]) }
         end
-        doc.board = { type: data.dig("board", "type") || "full", options: (data.dig("board", "options") || {}).transform_keys(&:to_sym) }
-        doc.board_definitions = [data["board_definition"]] if data["board_definition"]
+        if data["schema_version"] == 2
+          doc.boards = data.fetch("boards").map do |item|
+            { name: item.fetch("name"), type: item.fetch("type"), options: item.fetch("options").transform_keys(&:to_sym) }
+          end
+          doc.board_definitions = data.fetch("boards").map { |item| item.fetch("definition") }.uniq
+        else
+          doc.board = { type: data.dig("board", "type") || "full", options: (data.dig("board", "options") || {}).transform_keys(&:to_sym) }
+          doc.board_definitions = [data["board_definition"]] if data["board_definition"]
+        end
         doc.supplies = Array(data["supplies"]).map do |item|
           { name: item.fetch("name"), voltage: Value.parse(item.fetch("voltage")), plus: item.fetch("plus"),
             minus: item.fetch("minus"), isolated: item["isolated"] == true,
@@ -118,17 +133,18 @@ module Breadkit
 
       def validate!(data)
         require_hash(data, "root")
-        raise DSLError, "unsupported IR schema_version" unless data["schema_version"] == 1
+        raise DSLError, "unsupported IR schema_version" unless [1, 2].include?(data["schema_version"])
         raise DSLError, "invalid IR: title must be text or null" unless data["title"].nil? || data["title"].is_a?(String)
         raise DSLError, "invalid IR: source_root must be text" if data.key?("source_root") && !data["source_root"].is_a?(String)
 
-        board = require_hash(data["board"], "board")
-        require_string(board["type"], "board.type")
-        options = require_hash(board["options"], "board.options")
-        unless !options.key?("split_rails") || [true, false].include?(options["split_rails"])
-          raise DSLError, "invalid IR: board.options.split_rails must be boolean"
+        if data["schema_version"] == 2
+          validate_named_boards(data)
+        else
+          board = require_hash(data["board"], "board")
+          require_string(board["type"], "board.type")
+          validate_board_options(board["options"], "board.options")
+          validate_board_definition(data["board_definition"]) if data.key?("board_definition")
         end
-        validate_board_definition(data["board_definition"]) if data.key?("board_definition")
         validate_steps(data)
         validate_records(data, "supplies", %w[name plus minus], %w[voltage])
         data.fetch("supplies").each_with_index do |item, index|
@@ -194,6 +210,49 @@ module Breadkit
           end
         end
         require_array(require_hash(data["analysis"], "analysis")["nets"], "analysis.nets") if data.key?("analysis")
+      end
+
+      def validate_named_boards(data)
+        raise DSLError, "invalid IR: v2 must use boards instead of board" if data.key?("board") || data.key?("board_definition")
+
+        boards = require_array(data["boards"], "boards")
+        raise DSLError, "invalid IR: boards must not be empty" if boards.empty?
+
+        names = {}
+        definitions = {}
+        boards.each_with_index do |item, index|
+          item = require_hash(item, "boards[#{index}]")
+          name = item["name"]
+          unless name.is_a?(String) && /\A[A-Za-z][A-Za-z0-9_]*\z/.match?(name)
+            raise DSLError, "invalid IR: boards[#{index}].name is invalid"
+          end
+          raise DSLError, "invalid IR: duplicate board name #{name}" if names[name.downcase]
+          names[name.downcase] = true
+          require_string(item["type"], "boards[#{index}].type")
+          validate_board_options(item["options"], "boards[#{index}].options")
+          definition = item["definition"]
+          validate_board_definition(definition)
+          unless definition["id"] == item["type"]
+            raise DSLError, "invalid IR: boards[#{index}].definition.id must match type"
+          end
+          begin
+            board = Board.new(BoardDef.new(definition), split_rails: item.fetch("options").fetch("split_rails", false))
+            raise ArgumentError, "board has no holes" if board.holes.empty?
+          rescue StandardError => e
+            raise DSLError, "invalid IR: boards[#{index}].definition: #{e.message}"
+          end
+          if definitions.key?(item["type"]) && definitions[item["type"]] != definition
+            raise DSLError, "invalid IR: conflicting definitions for board type #{item['type']}"
+          end
+          definitions[item["type"]] = definition
+        end
+      end
+
+      def validate_board_options(value, path)
+        options = require_hash(value, path)
+        unless !options.key?("split_rails") || [true, false].include?(options["split_rails"])
+          raise DSLError, "invalid IR: #{path}.split_rails must be boolean"
+        end
       end
 
       def validate_steps(data)

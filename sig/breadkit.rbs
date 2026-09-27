@@ -40,7 +40,7 @@ module Breadkit
     attr_reader pins: Hash[String, Pin]
     attr_reader step: Integer?
     def pin: (String | Symbol | Integer reference) -> Pin?
-    def body_bounds: (Board board) -> [Float, Float, Float, Float]?
+    def body_bounds: (Board | BoardSet board) -> [Float, Float, Float, Float]?
   end
 
   class Wire
@@ -101,7 +101,9 @@ module Breadkit
 
   class Circuit
     attr_reader title: String?
-    attr_reader board: Board
+    attr_reader board: Board | BoardSet
+    def boards: () -> Hash[String, Board]
+    def multi_board?: () -> bool
     attr_reader components: Hash[String, Component]
     attr_reader wires: Array[Wire]
     attr_reader supplies: Array[Supply]
@@ -145,12 +147,23 @@ module Breadkit
     def rail_polarity: (String id) -> String?
   end
 
+  class BoardSet
+    attr_reader boards: Hash[String, Board]
+    attr_reader holes: Hash[String, untyped]
+    attr_reader strips: Hash[String, Array[String]]
+    def hole: (String id) -> untyped
+    def strip: (String id) -> Array[String]?
+    def board_id_for: (String id) -> String?
+    def width: () -> Integer
+    def height: () -> Integer
+  end
+
   class HoleId
     attr_reader kind: Symbol
     attr_reader row: String?
     attr_reader col: Integer?
     attr_reader rail: String?
-    def self.parse: (String value, ?board: Board?) -> HoleId
+    def self.parse: (String value, ?board: (Board | BoardSet)?) -> HoleId
     def to_s: () -> String
   end
 
@@ -199,6 +212,7 @@ module Breadkit
   class Document
     attr_accessor title: String?
     attr_accessor board: Hash[Symbol, untyped]
+    attr_accessor boards: Array[Hash[Symbol, untyped]]
     attr_accessor board_paths: Array[String]
     attr_accessor board_definitions: Array[Hash[String, untyped]]
     attr_accessor part_paths: Array[String]

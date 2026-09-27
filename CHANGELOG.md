@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Resolve circuits across named breadboards and preserve board identities in IR v2.
 - Accept an optional physical lead-span limit on specific two-pin lead parts.
 - Record numbered assembly steps in the Ruby DSL and JSON IR.
 - Format declarative YAML and TOML circuit files with `breadkit fmt`.
