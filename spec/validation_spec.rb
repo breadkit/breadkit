@@ -105,6 +105,20 @@ RSpec.describe "circuit input validation" do
       .to raise_error(Breadkit::DSLError, /inclusive and ascending/)
   end
 
+  it "preserves a positive supply current limit through IR" do
+    result = circuit("board :mini\nsupply :CELL, voltage: 3.7, current_limit: 0.02, plus: 'a1', minus: 'a2'")
+    expect(result.supplies.first.current_limit).to eq(0.02)
+    data = Breadkit::IR::Writer.new.write(result)
+    expect(data[:supplies].first[:current_limit]).to eq(0.02)
+    expect(Breadkit::IR::Reader.new.read(data).supplies.first.current_limit).to eq(0.02)
+    data[:supplies].first[:current_limit] = -1
+    expect { Breadkit::IR::Reader.new.read(data) }.to raise_error(Breadkit::DSLError, /current_limit/)
+    expect { circuit("board :mini\nsupply :CELL, voltage: 3.7, current_limit: 0, plus: 'a1', minus: 'a2'") }
+      .to raise_error(Breadkit::DSLError, /current_limit/)
+    expect { circuit("board :mini\nsupply :CELL, voltage: 3.7, current_limit: false, plus: 'a1', minus: 'a2'") }
+      .to raise_error(Breadkit::DSLError, /current_limit/)
+  end
+
   it "keeps IR source paths stable across working directories" do
     path = File.expand_path("../examples/01_led_button.bk.rb", __dir__)
     ir = Breadkit.load(path).to_ir

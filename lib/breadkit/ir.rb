@@ -20,6 +20,7 @@ module Breadkit
           board_definition: circuit.board.definition.data,
           supplies: circuit.supplies.map { |item| { name: item.name, voltage: item.voltage, plus: item.plus, minus: item.minus,
                                                    isolated: item.isolated == true, voltage_range: item.voltage_range,
+                                                   current_limit: item.current_limit,
                                                    source: source(item.location) } },
           labels: circuit.labels.map { |item| { net: item.name, at: item.at, source: source(item.location) } },
           components: circuit.components.values.map do |component|
@@ -79,7 +80,7 @@ module Breadkit
         doc.supplies = Array(data["supplies"]).map do |item|
           { name: item.fetch("name"), voltage: Value.parse(item.fetch("voltage")), plus: item.fetch("plus"),
             minus: item.fetch("minus"), isolated: item["isolated"] == true,
-            voltage_range: item["voltage_range"], location: location(item["source"]) }
+            voltage_range: item["voltage_range"], current_limit: item["current_limit"], location: location(item["source"]) }
         end
         doc.labels = Array(data["labels"]).map do |item|
           { name: item.fetch("net"), at: item.fetch("at"), location: location(item["source"]) }
@@ -134,6 +135,10 @@ module Breadkit
           end
           if range && (voltage < range[0] || voltage > range[1])
             raise DSLError, "invalid IR: supplies[#{index}].voltage must be within voltage_range"
+          end
+          limit = item["current_limit"]
+          unless limit.nil? || (limit.is_a?(Numeric) && limit.finite? && limit.positive?)
+            raise DSLError, "invalid IR: supplies[#{index}].current_limit must be positive"
           end
         end
         validate_records(data, "labels", %w[net at])

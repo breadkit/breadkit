@@ -13,7 +13,7 @@ module Breadkit
     end
   end
   Wire = Struct.new(:id, :from, :to, :color, :route, :layer, :electrical, :dashed, :location, keyword_init: true)
-  Supply = Struct.new(:name, :voltage, :plus, :minus, :location, :isolated, :voltage_range, keyword_init: true)
+  Supply = Struct.new(:name, :voltage, :plus, :minus, :location, :isolated, :voltage_range, :current_limit, keyword_init: true)
   Label = Struct.new(:name, :at, :location, keyword_init: true)
   Net = Struct.new(:name, :members, :holes, :labels, :potential, keyword_init: true)
 

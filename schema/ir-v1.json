@@ -103,6 +103,7 @@
         "voltage": { "type": "number" },
         "isolated": { "type": "boolean" },
         "voltage_range": { "type": ["array", "null"], "prefixItems": [{ "type": "number", "exclusiveMinimum": 0 }, { "type": "number", "exclusiveMinimum": 0 }], "minItems": 2, "maxItems": 2 },
+        "current_limit": { "type": ["number", "null"], "exclusiveMinimum": 0 },
         "plus": { "type": "string" },
         "minus": { "type": "string" },
         "source": { "$ref": "#/$defs/nullableSource" }

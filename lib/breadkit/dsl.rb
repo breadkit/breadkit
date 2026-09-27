@@ -43,15 +43,19 @@ module Breadkit
         document.board_paths.concat(Dir.glob(resolve_path(path)))
       end
 
-      def supply(name, voltage:, plus:, minus:, isolated: false)
+      def supply(name, voltage:, plus:, minus:, isolated: false, current_limit: nil)
         range = voltage.is_a?(Range) ? [Value.parse(voltage.begin), Value.parse(voltage.end)] : nil
         raise DSLError, "supply voltage range must be inclusive and ascending" if range && (voltage.exclude_end? || range[0] > range[1])
         parsed = range ? (range[0] + range[1]) / 2.0 : Value.parse(voltage)
         raise DSLError, "supply voltage must be positive" unless parsed.finite? && parsed.positive?
         raise DSLError, "supply voltage range must be positive" if range && range.any? { |value| !value.finite? || !value.positive? }
         raise DSLError, "isolated must be boolean" unless [true, false].include?(isolated)
+        if !current_limit.nil? && (!current_limit.is_a?(Numeric) || !current_limit.finite? || !current_limit.positive?)
+          raise DSLError, "current_limit must be a positive current in amperes"
+        end
         document.supplies << { name: name.to_s, voltage: parsed, plus: plus.to_s,
-                               minus: minus.to_s, isolated: isolated, voltage_range: range, location: source_location }
+                               minus: minus.to_s, isolated: isolated, voltage_range: range,
+                               current_limit: current_limit, location: source_location }
       end
 
       def net(name, *refs, at: nil, **options)

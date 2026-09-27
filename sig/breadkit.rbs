@@ -56,6 +56,7 @@ module Breadkit
     attr_reader location: SourceLocation?
     attr_reader isolated: bool
     attr_reader voltage_range: Array[Float]?
+    attr_reader current_limit: Float?
   end
 
   class Label
