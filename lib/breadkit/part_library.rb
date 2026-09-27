@@ -6,7 +6,7 @@ module Breadkit
   class PartDef
     attr_reader :data
 
-    KEYS = %w[id aliases category placement pins polarity footprint internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes required_attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current max_lead_span_mm datasheet_url].freeze
+    KEYS = %w[id aliases category placement pins polarity footprint footprint_mm internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes required_attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current max_lead_span_mm datasheet_url].freeze
     PIN_KEYS = %w[num name aliases type role label max_voltage max_current output_capable mount].freeze
 
     def initialize(data)
@@ -146,6 +146,15 @@ module Breadkit
           raise ArgumentError, "part #{id} has invalid footprint pin reference or offset"
         end
       end
+      if data.key?("footprint_mm")
+        offsets = data["footprint_mm"]
+        numbers = pins.map { |pin| pin.fetch("num").to_s }
+        raise ArgumentError, "part #{id} cannot set both footprint_mm and footprint" if data.key?("footprint")
+        unless placement == "footprint" && offsets.is_a?(Hash) && offsets.keys.sort == numbers.sort &&
+               offsets.values.all? { |pair| pair.is_a?(Array) && pair.length == 2 && pair.all? { |value| grid_offset_mm?(value) } }
+          raise ArgumentError, "part #{id} has invalid footprint_mm; pin offsets must align to 2.54 mm holes"
+        end
+      end
       if data.dig("render", "shape") == "module"
         size_mm = data.dig("render", "size_mm")
         raise ArgumentError, "part #{id} module rendering needs positive size_mm [width, height]" unless valid_mm_pair?(size_mm, positive: true)
@@ -172,6 +181,12 @@ module Breadkit
       data["max_lead_span_mm"]&.to_f
     end
 
+    def footprint
+      return data["footprint"] if data.key?("footprint")
+
+      data["footprint_mm"]&.transform_values { |pair| pair.map { |value| (value / 2.54).round } }
+    end
+
     def pin(value)
       key = value.to_s.downcase
       pins.find do |pin|
@@ -180,6 +195,11 @@ module Breadkit
     end
 
     private
+
+    def grid_offset_mm?(value)
+      value.is_a?(Numeric) && value.real? && value.finite? &&
+        ((value / 2.54) - (value / 2.54).round).abs < 1e-6
+    end
 
     def valid_mm_pair?(values, positive:)
       values.is_a?(Array) && values.length == 2 && values.all? do |value|

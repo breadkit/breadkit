@@ -235,7 +235,7 @@ module Breadkit
     end
 
     def validate_footprint_geometry(item, part, result)
-      footprint = part.data["footprint"]
+      footprint = part.footprint
       return unless footprint
 
       first = part.pins.first
@@ -286,7 +286,7 @@ module Breadkit
         end
         return "#{row}#{col}"
       end
-      footprint = part.data["footprint"]
+      footprint = part.footprint
       return nil unless footprint
       offset = footprint[pin_num]
       return item[:at] if !offset && pin_num == part.pins.first["num"].to_s

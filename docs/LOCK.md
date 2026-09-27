@@ -55,3 +55,21 @@ use_parts: [vendor/parts/*.yml]
 Breadkit does not download packs, resolve remote versions, or authenticate a
 Git source. Those steps remain with your existing Git or package manager
 workflow. Avoid loading unpinned remote files directly into a circuit.
+
+For a shared Git pack, pin the submodule to a reviewed commit and commit the
+submodule pointer, circuit, and generated lockfile together. In CI, check out
+submodules before running Breadkit. A pack repository can validate each
+definition with `breadkit check-part`; editors can use the public
+[`part-v1` schema](https://breadkit.github.io/breadkit/schema/part-v1.json):
+
+```sh
+for file in parts/*.yml; do
+  breadkit check-part "$file"
+done
+```
+
+Consumers should run `breadkit nets FILE` or `breadkit ir FILE` in CI after
+the submodule checkout. That verifies the recorded SHA-256 bytes and the
+exact set of matched definitions before a diagram or report is produced.
+The Git commit pins the pack version; `breadkit.lock` catches changed YAML
+bytes or newly matched files even when the checkout differs from that commit.
