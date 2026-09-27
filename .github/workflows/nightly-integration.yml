@@ -47,6 +47,9 @@ jobs:
       - name: Render suite
         working-directory: breadkit-render
         run: bundle install && bundle exec rake
+      - name: Full-board performance benchmark
+        working-directory: breadkit
+        run: ruby -Ilib -I../breadkit-lint/lib -I../breadkit-render/lib scripts/benchmark.rb
       - name: Lint shared examples
         working-directory: breadkit-lint
         run: bundle exec bklint ../breadkit/examples/*.bk.rb
