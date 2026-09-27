@@ -44,9 +44,10 @@ Install the gem with Ruby 3.3 or newer:
 gem install breadkit
 ```
 
-RubyGems currently publishes 0.1.0. This README describes the 0.2.0 main
-branch, which has not been released yet. To use the CLI commands below, follow
-the [source checkout instructions](#development).
+This README documents the 0.2.0 code on main. A RubyGems install may still
+provide the earlier 0.1.0 release until 0.2.0 is published. Check
+`breadkit --version`; use the [source checkout instructions](#development)
+when the installed version is older than this guide.
 
 Save this as `circuit.bk.rb`:
 
@@ -159,9 +160,9 @@ bundle install
 bundle exec rake
 ```
 
-To use the unreleased renderer and linter with this checkout, clone their
-repositories beside it. Their Gemfiles resolve Breadkit from the sibling
-directory:
+To use the renderer and linter from their main branches with this checkout,
+clone their repositories beside it. Their Gemfiles resolve Breadkit from the
+sibling directory:
 
 ```sh
 cd ..
