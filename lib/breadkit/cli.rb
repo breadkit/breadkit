@@ -9,6 +9,7 @@ module Breadkit
         ir [--force] [--timeout SECONDS] FILE
         nets [--state SWITCH] [--timeout SECONDS] FILE
         where HOLE FILE | explain PART FILE | bom FILE | diff OLD NEW
+        suggest FILE (show free-hole wire candidates for unmet connection intent)
         export --format kicad|spice|wokwi|pins FILE
         fmt FILE (declarative YAML or TOML; prints formatted source)
         lock FILE (pin local part and board definitions in breadkit.lock)
@@ -138,6 +139,13 @@ module Breadkit
       when "lock"
         path = required!(args, "lock FILE")
         puts "Wrote #{PartLock.write(path)}"
+        0
+      when "suggest"
+        path = required!(args, "suggest FILE")
+        circuit = Breadkit.load(path)
+        return 1 if report_errors(circuit)
+
+        puts JSON.pretty_generate(circuit.wire_suggestions)
         0
       when "console"
         path = required!(args, "console FILE")

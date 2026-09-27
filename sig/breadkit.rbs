@@ -119,6 +119,7 @@ module Breadkit
     def potentials: (?State? state) -> PotentialResult
     def dc_analysis: (?State? state) -> DCResult
     def net_of: (String reference, ?State? state) -> Net?
+    def wire_suggestions: () -> Array[Hash[Symbol, untyped]]
     def shortest_path: (String a, String b, ?State? state) -> Array[untyped]
     def to_ir: () -> Hash[String, untyped]
     def diff: (Circuit other) -> Hash[String, [untyped, untyped]]

@@ -19,6 +19,7 @@ part definitions are not circuit inputs.
 | `breadkit export --format FORMAT FILE` | Export `kicad`, `spice`, `wokwi`, or `pins` data. |
 | `breadkit fmt FILE` | Print a normalized declarative YAML or TOML circuit file. |
 | `breadkit lock FILE` | Record the local part and board definition files used by a circuit in `breadkit.lock`. |
+| `breadkit suggest FILE` | Print JSON candidates for unmet connection intent between placed pins. Each candidate names two free board holes; nothing is changed. |
 | `breadkit console FILE` | Open IRB with the loaded `circuit` variable. |
 | `breadkit doctor` | Check the Ruby version and availability of the optional linter and renderer commands. |
 
@@ -32,6 +33,11 @@ ignores source locations.
 
 `nets`, `where`, `explain`, and `bom` print error diagnostics to standard error
 and stop before printing inspection results when the circuit is invalid.
+`suggest` follows the same rule. It skips state-specific expectations,
+offboard or unplaced pins, occupied holes, holes under component bodies, and
+connections that would merge nets with different known voltages.
+An empty JSON list means no safe candidate was found; it does not prove the
+intent is satisfied. Inspect each candidate before adding a `wire` declaration.
 
 Use `breadkit ir --force FILE` to export a circuit with diagnostics. Supplies
 can be marked `isolated: true`, and an inclusive voltage range such as

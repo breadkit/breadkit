@@ -71,7 +71,13 @@ the placed circuit fails to join the references. Add or correct a `wire`
 declaration to satisfy it. The references may be declared before their parts;
 unknown pins are reported after resolution. Use `when: "SW1"` to check a
 selected switch state. This declaration uses the existing `connected`
-expectation in JSON IR; automatic wire or hole suggestions are not generated.
+expectation in JSON IR. Run `breadkit suggest FILE` to see conservative
+free-hole candidates for unmet default-state intent. If the wire above is
+omitted, it prints JSON such as
+`[{"from":"c1","to":"c5","refs":["R1.1","D1.anode"]}]` without editing the
+circuit. State-specific intent, offboard pins, occupied strips, holes under
+component bodies, and known voltage conflicts are skipped. The proposed route
+and physical fit still need review before adding a `wire` declaration.
 
 ## Power from an offboard module
 

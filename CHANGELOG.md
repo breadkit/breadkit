@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Suggest explicit free-hole wire endpoints for unmet connection intent without changing circuit wiring.
 - Declare layout-independent `connect` intent in Ruby, YAML, and TOML without adding physical wires.
 - Reuse fixed circuit connectivity across switch states while keeping each state's nets independent.
 - Report a wired power short at its bridge without a duplicate finding on the existing shared return.

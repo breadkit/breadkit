@@ -71,7 +71,8 @@ wires:
 
 The connection records the same IR expectation as Ruby `connect`; only the
 wire changes connectivity. Run `bklint` to report a mismatch or an unknown
-reference. TOML uses `[[connections]]` with `from` and `to` fields.
+reference. Run `breadkit suggest FILE` for free-hole candidates when both pins
+are physically placed. TOML uses `[[connections]]` with `from` and `to` fields.
 
 An expectation can contain `connected` or `isolated` as lists of reference
 lists, `nets` as a list of `{name, refs}` mappings, and `voltage` or `current`
