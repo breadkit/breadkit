@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Allocate straight on-board jumpers from a measured color and usable-span inventory, with explicit skipped and unassigned results.
+- Allocate jumpers from a measured color and usable-span inventory, with optional per-wire route measurements and explicit skipped and unassigned results.
 - Solve DC current for an explicitly declared `provides` output pin while retaining unknown GPIO state handling for other pins.
 - Allow custom part definitions to declare a validated positive `max_current` in amperes on individual pins.
 - Suggest explicit free-hole wire endpoints for unmet connection intent without changing circuit wiring.

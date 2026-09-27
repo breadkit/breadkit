@@ -55,6 +55,41 @@ RSpec.describe "jumper kit allocation" do
     expect(kit.allocate(custom)[:skipped]).to eq([{ wire: "W1", reason: "board pitch is not verified" }])
   end
 
+  it "uses explicitly measured spans for rail and curved wires" do
+    resolved = circuit('board :half; wire "B+1", "a1", color: :red; wire "a2", "a3", route: :arc, color: :blue')
+    inventory = { "wires" => [{ "color" => "red", "usable_span_mm" => 15, "count" => 1 },
+                              { "color" => "blue", "usable_span_mm" => 20, "count" => 1 }],
+                  "measured_routes" => { "W1" => 14, "W2" => 18 } }
+    result = Breadkit::JumperKit.new(inventory).allocate(resolved)
+    expect(result[:assignments].map { |item| [item[:wire], item[:required_span_mm], item[:span_source]] })
+      .to eq([["W1", 14.0, "measured"], ["W2", 18.0, "measured"]])
+    expect(result[:skipped]).to be_empty
+  end
+
+  it "uses an explicit span across boards without treating display spacing as physical" do
+    resolved = circuit('board :mini, as: :B1; board :mini, as: :B2; wire "B1.a1", "B2.a1"')
+    inventory = { "wires" => [{ "color" => "black", "usable_span_mm" => 60, "count" => 1 }],
+                  "measured_routes" => { "W1" => 50 } }
+    assignment = Breadkit::JumperKit.new(inventory).allocate(resolved)[:assignments].first
+    expect(assignment).to include(wire: "W1", minimum_span_mm: nil, required_span_mm: 50.0, span_source: "measured")
+  end
+
+  it "rejects stale, invalid, and physically impossible measured spans" do
+    resolved = circuit('board :mini; wire "a1", "a3"')
+    base = { "wires" => [{ "color" => "red", "usable_span_mm" => 10, "count" => 1 }] }
+    expect { Breadkit::JumperKit.new(base.merge("measured_routes" => { "W9" => 8 })).allocate(resolved) }
+      .to raise_error(ArgumentError, /unknown wire/)
+    [0, -1, Float::INFINITY, Float::NAN, "6"].each do |span|
+      expect { Breadkit::JumperKit.new(base.merge("measured_routes" => { "W1" => span })) }
+        .to raise_error(ArgumentError, /measured_routes/)
+    end
+    expect { Breadkit::JumperKit.new(base.merge("measured_routes" => { "W1" => 4 })).allocate(resolved) }
+      .to raise_error(ArgumentError, /shorter than/)
+    visual = circuit('board :mini; wire "a1", "a3", electrical: false')
+    expect { Breadkit::JumperKit.new(base.merge("measured_routes" => { "W1" => 6 })).allocate(visual) }
+      .to raise_error(ArgumentError, /visual-only/)
+  end
+
   it "safely loads an inventory and rejects invalid entries" do
     Dir.mktmpdir do |dir|
       path = File.join(dir, "kit.yml")

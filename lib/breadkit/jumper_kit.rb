@@ -18,7 +18,16 @@ module Breadkit
     end
 
     def initialize(data)
-      raise ArgumentError, "jumper inventory needs only a wires list" unless data.is_a?(Hash) && data.keys == ["wires"] && data["wires"].is_a?(Array)
+      unless data.is_a?(Hash) && (data.keys - %w[wires measured_routes]).empty? && data["wires"].is_a?(Array)
+        raise ArgumentError, "jumper inventory needs a wires list and optional measured_routes"
+      end
+
+      measured = data.fetch("measured_routes", {})
+      unless measured.is_a?(Hash) && measured.all? { |id, span| id.is_a?(String) && !id.empty? &&
+               span.is_a?(Numeric) && span.real? && span.finite? && span.positive? }
+        raise ArgumentError, "invalid measured_routes; use positive millimeter spans keyed by wire ID"
+      end
+      @measured_routes = measured.transform_values(&:to_f)
 
       @slots = data.fetch("wires").flat_map do |item|
         unless item.is_a?(Hash) && (item.keys - %w[color usable_span_mm count]).empty? &&
@@ -39,34 +48,45 @@ module Breadkit
 
     def allocate(circuit)
       raise ArgumentError, "circuit has errors" if circuit.diagnostics.any? { |item| item.severity == "error" }
+      unknown = @measured_routes.keys - circuit.wires.map(&:id)
+      raise ArgumentError, "measured_routes names unknown wire #{unknown.first}" unless unknown.empty?
 
       eligible, skipped = [], []
       circuit.wires.each do |wire|
         left, right = [wire.from, wire.to].map { |endpoint| circuit.board.hole(endpoint) }
         reason = skip_reason(circuit, wire, left, right)
-        if reason
+        measured_span = @measured_routes[wire.id]
+        raise ArgumentError, "measured route #{wire.id} refers to a visual-only wire" if measured_span && wire.electrical == false
+
+        if reason && !measured_span
           skipped << { wire: wire.id, reason: reason }
         else
+          modeled_span = Math.hypot(left.x - right.x, left.y - right.y) * 2.54 unless reason
+          if modeled_span && measured_span && measured_span + 1e-9 < modeled_span
+            raise ArgumentError, "measured route #{wire.id} is shorter than its modeled endpoint span"
+          end
           eligible << { wire: wire.id, color: wire.color&.downcase,
-                        minimum_span_mm: Math.hypot(left.x - right.x, left.y - right.y) * 2.54 }
+                        minimum_span_mm: modeled_span, required_span_mm: measured_span || modeled_span,
+                        span_source: measured_span ? "measured" : "board_geometry" }
         end
       end
 
       candidates = eligible.to_h do |wire|
         compatible = @slots.each_index.select do |index|
           slot = @slots.fetch(index)
-          (!wire[:color] || slot[:color] == wire[:color]) && slot[:usable_span_mm] + 1e-9 >= wire[:minimum_span_mm]
+          (!wire[:color] || slot[:color] == wire[:color]) && slot[:usable_span_mm] + 1e-9 >= wire[:required_span_mm]
         end.sort_by { |index| [@slots[index][:usable_span_mm], @slots[index][:color], index] }
         [wire[:wire], compatible]
       end
       owners, assigned = {}, {}
-      eligible.sort_by { |wire| [candidates.fetch(wire[:wire]).length, -wire[:minimum_span_mm], wire[:wire]] }
+      eligible.sort_by { |wire| [candidates.fetch(wire[:wire]).length, -wire[:required_span_mm], wire[:wire]] }
         .each { |wire| assign(wire[:wire], candidates, owners, assigned, {}) }
 
       assignments = eligible.filter_map do |wire|
         slot = @slots[assigned[wire[:wire]]] if assigned.key?(wire[:wire])
         { wire: wire[:wire], color: slot[:color], usable_span_mm: slot[:usable_span_mm],
-          minimum_span_mm: wire[:minimum_span_mm].round(2) } if slot
+          minimum_span_mm: wire[:minimum_span_mm]&.round(2),
+          required_span_mm: wire[:required_span_mm].round(2), span_source: wire[:span_source] } if slot
       end
       unassigned = eligible.reject { |wire| assigned.key?(wire[:wire]) }
         .map { |wire| { wire: wire[:wire], reason: "no compatible jumper in inventory" } }
