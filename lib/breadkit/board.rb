@@ -65,6 +65,8 @@ module Breadkit
           raise ArgumentError, "center rail needs a free row in the ravine"
         end
       end
+      rail_positions = Array(data["rails"]).map { |rail| rail.values_at("side", "order") }
+      raise ArgumentError, "rail positions overlap" unless rail_positions.uniq.length == rail_positions.length
     end
 
     def id

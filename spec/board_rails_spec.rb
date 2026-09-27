@@ -32,4 +32,11 @@ RSpec.describe Breadkit::Board do
     expect { definition(rails: rails) }.to raise_error(ArgumentError, /center rail/)
     expect { definition(rails: rails, ravine: nil) }.to raise_error(ArgumentError, /center rail/)
   end
+
+  it "rejects rails that would occupy the same physical row" do
+    rails = [{ "id" => "PWR", "side" => "left", "order" => 0 },
+             { "id" => "RET", "side" => "left", "order" => 0 }]
+
+    expect { definition(rails: rails) }.to raise_error(ArgumentError, /overlap/)
+  end
 end
