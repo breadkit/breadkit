@@ -140,10 +140,10 @@ module Breadkit
     end
 
     def pins(circuit)
-      controllers = circuit.components.values.select { |item| %w[arduino_uno pico_w rp2040_clone].include?(item.part.id) }
-      raise ArgumentError, "pin export needs exactly one Arduino Uno or RP2040 controller" unless controllers.length == 1
+      controllers = circuit.components.values.select { |item| %w[arduino_uno arduino_nano pico pico_w rp2040_clone].include?(item.part.id) }
+      raise ArgumentError, "pin export needs exactly one Arduino Uno, Nano, or RP2040 controller" unless controllers.length == 1
       controller = controllers.first
-      arduino = controller.part.id == "arduino_uno"
+      arduino = %w[arduino_uno arduino_nano].include?(controller.part.id)
       declarations = {}
       controller.pins.each_value do |pin|
         number = if arduino

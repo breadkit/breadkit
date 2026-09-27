@@ -76,10 +76,15 @@ breadkit where a10 circuit.bk.rb
 breadkit explain R1 circuit.bk.rb
 breadkit bom circuit.bk.rb
 breadkit export --format kicad circuit.bk.rb > circuit.xml
+breadkit export --format pins circuit.bk.rb
 
 # Declarative circuits can be normalized without executing Ruby.
 breadkit fmt examples/06_declarative_led.bk.yml > formatted.bk.yml
 ```
+
+The `pins` export writes an Arduino header for a connected Uno or Nano, or
+MicroPython constants for a connected Pico or RP2040 board. It requires exactly
+one supported controller. Add net labels when inferred constant names collide.
 
 The [complete button and LED example](examples/01_led_button.bk.rb) also
 declares the connections it expects.

@@ -44,6 +44,15 @@ RSpec.describe Breadkit::Exporters do
     expect(described_class.call(pico, format: "pins")).to include("# MicroPython GPIO constants", "PIN_R1_1 = 0")
   end
 
+  it "exports connected pins from the bundled Nano and Pico definitions" do
+    nano = circuit('board :full; part :NANO, :arduino_nano, at: "d1"; resistor :R1, "1k", pins: %w[a1 a2]')
+    pico = circuit('board :full; part :PICO, :pico, at: "d1"; resistor :R1, "1k", pins: %w[a1 a2]')
+    expect(nano.diagnostics.select { |item| item.severity == "error" }).to be_empty
+    expect(pico.diagnostics.select { |item| item.severity == "error" }).to be_empty
+    expect(described_class.call(nano, format: "pins")).to include("#define PIN_R1_1 13")
+    expect(described_class.call(pico, format: "pins")).to include("PIN_R1_1 = 0")
+  end
+
   it "rejects export of unresolved circuits" do
     invalid = circuit('board :mini; resistor :R1, "1k", pins: %w[a1 z1]')
     expect { described_class.call(invalid, format: "kicad") }.to raise_error(ArgumentError, /cannot export a circuit with errors/)
