@@ -15,39 +15,20 @@
   <a href="LICENSE.txt"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
 </p>
 
-<p align="center">
-  <a href="#quick-start">Quick start</a> ·
-  <a href="#what-breadkit-provides">Features</a> ·
-  <a href="#documentation">Documentation</a> ·
-  <a href="#development">Development</a> ·
-  <a href="https://breadkit.github.io/breadkit/">Website</a>
-</p>
-
----
-
-Breadkit is the core of a three-gem toolkit for breadboard circuits. It turns a
-Ruby description of boards, components, and wires into resolved connections and
-JSON IR. [breadkit-render](https://github.com/breadkit/breadkit-render) draws the
-circuit; [breadkit-lint](https://github.com/breadkit/breadkit-lint) checks it.
+Breadkit resolves board holes, part pins, wires, and switch states into connected
+nets. It exports JSON IR for other tools and checks declared connection intent.
 
 <p align="center">
   <img src="site/assets/01_led_button.svg" width="240" alt="Half-size breadboard diagram with a button, resistor, and LED">
 </p>
 
-<p align="center"><sub>A circuit described with Breadkit and drawn with breadkit-render.</sub></p>
-
 ## Quick start
 
-Install the gem with Ruby 3.3 or newer:
+Install with Ruby 3.3 or newer:
 
 ```sh
 gem install breadkit
 ```
-
-This README documents the 0.2.0 code on main. A RubyGems install may still
-provide the earlier 0.1.0 release until 0.2.0 is published. Check
-`breadkit --version`; use the [source checkout instructions](#development)
-when the installed version is older than this guide.
 
 Save this as `circuit.bk.rb`:
 
@@ -67,89 +48,31 @@ wire "a10", "B+", color: :red
 wire "a17", "B-", color: :black
 ```
 
-Inspect the connected nets or export the circuit for other tools:
-
 ```sh
 breadkit nets circuit.bk.rb
 breadkit ir circuit.bk.rb > circuit.json
-breadkit parts
-breadkit where a10 circuit.bk.rb
-breadkit explain R1 circuit.bk.rb
-breadkit bom circuit.bk.rb
-breadkit export --format kicad circuit.bk.rb > circuit.xml
-breadkit export --format pins circuit.bk.rb
-
-# Declarative circuits can be normalized without executing Ruby.
-breadkit fmt examples/06_declarative_led.bk.yml > formatted.bk.yml
 ```
 
-The `pins` export writes an Arduino header for a connected Uno or Nano, or
-MicroPython constants for a connected Pico or RP2040 board. It requires exactly
-one supported controller. Add net labels when inferred constant names collide.
-For an unsplit full-board sketch with straight jumpers, resistors, red LEDs,
-and 4-pin tact switches,
-`breadkit export --format fritzing board.bk.rb > board.fz` writes native
-Fritzing XML. Unsupported parts and board sizes are rejected explicitly; see
-the [export reference](docs/CLI.md#export-formats) for the exact limits.
-
-The [complete button and LED example](examples/01_led_button.bk.rb) also
-declares the connections it expects.
-
-Prefer a data-only circuit file? The same LED circuit is available in
-[YAML](examples/06_declarative_led.bk.yml) and
+This README follows main (0.2.0). If `breadkit --version` shows an older
+published release, use the [source checkout](#development) for newer features.
+The same circuit is available in [YAML](examples/06_declarative_led.bk.yml) and
 [TOML](examples/07_declarative_led.bk.toml).
 
-## What Breadkit provides
+## Explore
 
-| Capability | What it does |
-| --- | --- |
-| Circuit inputs | Place boards, parts, supplies, wires, and expectations with the Ruby DSL or declarative YAML and TOML. |
-| Board and part definitions | Start with double full (1660 holes), full, half, and mini boards or load your own YAML definitions. |
-| Multiple boards | Name breadboards and connect their qualified holes with explicit wires. |
-| Connectivity analysis | Resolve conductive strips, pins, and switch states into named nets. |
-| Circuit patterns | Opt in with `breadkit patterns FILE` to identify an unloaded resistor divider or the documented NE555 astable wiring. |
-| JSON IR | Pass resolved circuits to the renderer, linter, or another tool. |
-| MCP server | Inspect data-only circuits, nets, and IR from an MCP client over stdio. |
-| Language server | Get live diagnostics, hole and pin completion, and net hover in an LSP editor. |
+- [User guide](https://breadkit.github.io/breadkit/guide/) and [circuit gallery](https://breadkit.github.io/breadkit/gallery/)
+- [DSL reference](https://breadkit.github.io/breadkit/guide/dsl/) and [component catalog](https://breadkit.github.io/breadkit/guide/components/)
+- [CLI reference](docs/CLI.md), [YAML/TOML guide](docs/DECLARATIVE.md), and [JSON IR](docs/IR.md)
+- [Browser Playground](https://breadkit.github.io/breadkit/playground/) and [editor integration](docs/LSP.md)
 
-The built-in part catalog includes 74HC logic, common DIP ICs, switches,
-displays, power connectors, and model-specific Pico, Nano, Pro Micro, XIAO,
-and ESP32 board footprints. Run `breadkit parts show PART` to inspect exact
-pins before wiring a physical component.
+The companion repositories are [breadkit-render](https://github.com/breadkit/breadkit-render)
+for diagrams, [breadkit-lint](https://github.com/breadkit/breadkit-lint)
+for circuit checks, [breadkit-rspec](https://github.com/breadkit/breadkit-rspec)
+for connection matchers, and [breadkit-parts](https://github.com/breadkit/breadkit-parts)
+for model-specific definitions. Each gem is released independently.
 
-The separate [breadkit-parts](https://github.com/breadkit/breadkit-parts)
-repository starts with a source-verified Raspberry Pi Pico W definition. Add it
-as a Git submodule and run `breadkit lock` to pin the selected YAML bytes.
-
-The renderer creates SVG, PNG, and JPEG diagrams. The linter reports layout,
-electrical, and wiring-intent problems. Each gem is released separately.
-The separate [breadkit-rspec](https://github.com/breadkit/breadkit-rspec)
-gem checks resolved connections in tests, for example
-`expect(circuit).to connect("R1.2", "D1.anode")`.
-
-## Documentation
-
-- [User guide](https://breadkit.github.io/breadkit/guide/) — write a circuit and see its output.
-- [Circuit gallery](https://breadkit.github.io/breadkit/gallery/) — five complete recipes with generated diagrams.
-- [Component catalog](https://breadkit.github.io/breadkit/guide/components/) — boards, built-in parts, and custom modules.
-- [Community part pack](https://github.com/breadkit/breadkit-parts) — verified model-specific definitions with Git submodule and lockfile instructions.
-- [DSL reference](https://breadkit.github.io/breadkit/guide/dsl/) — methods, pins, nets, and custom definitions.
-- [Browser Playground](https://breadkit.github.io/breadkit/playground/) — edit a Ruby circuit and preview its diagram, nets, and lint results.
-- [JSON IR](docs/IR.md) — a valid JSON circuit example and the versioned schemas.
-- [CLI reference](docs/CLI.md) — templates, part validation, circuit inspection, and diff.
-- [Ruby DSL reference](docs/dsl.md) — circuit declarations, pins, and switch states.
-- [Rake task](docs/RAKE.md) — check selected circuit files during a build.
-- [Jumper kit allocation](docs/JUMPER_KIT.md) — match measured wire stock to circuit jumpers.
-- [YAML and TOML circuit guide](docs/DECLARATIVE.md) — data-only circuit files and examples.
-- [Locking local definitions](docs/LOCK.md) — pin local part and board definitions.
-- [ShillehTek MB102 power module](docs/MB102_POWER.md) — four explicitly placed rail contacts and independent output selectors.
-- [MCP server](docs/MCP.md) — configure the read-only stdio tools for a project.
-- [LSP and VS Code](docs/LSP.md) — editor diagnostics, completion, hover, and SVG preview.
-- [Compatibility policy](docs/COMPATIBILITY.md) — independent gem releases and versioned data formats.
-
-Ruby DSL files execute code. Load only Ruby files you trust. YAML (`.bk.yml`,
-`.bk.yaml`) and TOML (`.bk.toml`) circuit files are parsed as data without Ruby
-evaluation; JSON IR is also data-only.
+Ruby DSL files execute code; load only files you trust. YAML, TOML, and JSON IR
+are parsed as data.
 
 ## Development
 
@@ -157,36 +80,14 @@ evaluation; JSON IR is also data-only.
 git clone https://github.com/breadkit/breadkit.git
 cd breadkit
 bundle install
+bundle exec ruby exe/breadkit nets examples/01_led_button.bk.rb
 bundle exec rake
 ```
 
-To use the renderer and linter from their main branches with this checkout,
-clone their repositories beside it. Their Gemfiles resolve Breadkit from the
-sibling directory:
-
-```sh
-cd ..
-git clone https://github.com/breadkit/breadkit-render.git
-git clone https://github.com/breadkit/breadkit-lint.git
-cd breadkit-render
-bundle install
-bundle exec bkrender ../breadkit/examples/01_led_button.bk.rb -o example.svg
-cd ../breadkit-lint
-bundle install
-bundle exec bklint ../breadkit/examples/01_led_button.bk.rb
-```
-
-To build the Playground locally, keep `breadkit-lint` and `breadkit-render`
-beside this repository, then run `npm ci`, `npm run build`, and
-`node scripts/build-playground.mjs`. Serve `_site` over HTTP to open it.
-
-`Breadkit.load` in `lib/breadkit.rb` selects the Ruby DSL, YAML/TOML parser, or
-JSON IR reader. All three routes pass declarations to `Resolver`, which builds
-the resolved `Circuit`. `lib/breadkit/ir.rb` handles the JSON contract; the
-versioned schemas live in `schema/`. Run `bundle exec rake` for lint and specs
-after changing the resolver or a public format. See the
-[compatibility policy](docs/COMPATIBILITY.md) before changing a schema.
+Clone companion repositories beside this checkout when working on their main
+branches. See the [compatibility policy](docs/COMPATIBILITY.md) before changing
+a public data format.
 
 ## License
 
-Breadkit is available under the [MIT License](LICENSE.txt).
+[MIT](LICENSE.txt).
