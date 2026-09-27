@@ -81,6 +81,18 @@ module Breadkit
     attr_reader conflicts: Array[untyped]
   end
 
+  class DCResult
+    attr_reader status: Symbol
+    attr_reader voltages: Hash[String, Float]
+    attr_reader currents: Hash[String, Float]
+    attr_reader power: Hash[String, Float]
+    attr_reader floating: Array[Array[String]]
+    attr_reader reference_nodes: Array[String]
+    attr_reader assumptions: Array[String]
+    attr_reader errors: Array[String]
+    def success?: () -> bool
+  end
+
   class Circuit
     attr_reader title: String?
     attr_reader board: Board
@@ -96,6 +108,7 @@ module Breadkit
     def states: (?String mode) -> Array[State]
     def nets: (?State? state) -> Array[Net]
     def potentials: (?State? state) -> PotentialResult
+    def dc_analysis: (?State? state) -> DCResult
     def net_of: (String reference, ?State? state) -> Net?
     def shortest_path: (String a, String b, ?State? state) -> Array[untyped]
     def to_ir: () -> Hash[String, untyped]
@@ -167,6 +180,11 @@ module Breadkit
 
   class CLI
     def run: (Array[String] argv) -> Integer
+  end
+
+  module Exporters
+    FORMATS: Array[String]
+    def self.call: (Circuit circuit, format: String | Symbol) -> String
   end
 
   class Document

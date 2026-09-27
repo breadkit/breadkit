@@ -19,9 +19,10 @@ trust.
 | `breadkit doctor` | Check the Ruby version and availability of the optional linter and renderer commands. |
 
 `where` and `explain` accept `--state SWITCH` for a closed switch state. Their
-default is the all-open state. `explain` calculates resistor current when both
-terminal potentials are constrained by voltage sources. Other currents and
-unanchored net potentials are shown as unknown. `bom` reports quantities, not
+default is the all-open state. `explain` uses DC operating-point analysis for
+voltage sources, resistors, LEDs, and diodes. It reports the fixed-drop diode
+assumptions and labels ungrounded voltages as relative. Unsupported parts or
+indeterminate circuits leave currents unknown. `bom` reports quantities, not
 supplier part numbers or prices. `diff` compares resolved circuit content and
 ignores source locations.
 

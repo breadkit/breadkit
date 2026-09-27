@@ -192,19 +192,24 @@ module Breadkit
       component = circuit.components[reference]
       raise ArgumentError, "unknown component #{reference}" unless component
       puts "#{component.ref}: #{component.part.id}#{" #{component.value}" if component.value}"
+      dc = circuit.dc_analysis(state)
       potentials = []
       component.pins.each_value do |pin|
         net = circuit.net_of("#{component.ref}.#{pin.name}", state)
-        potential = net&.potential
+        potential = dc.success? && net && dc.voltages.key?(net.name) ? dc.voltages[net.name] : net&.potential
         potentials << potential
         voltage = potential.nil? ? "unknown" : "#{format('%.3g', potential)} V"
+        voltage += " (relative)" if dc.success? && net && dc.floating.any? { |group| group.include?(net.name) }
         puts "  #{pin.name}: #{pin.hole_id || 'offboard'} | #{net&.name || 'unconnected'} | #{voltage}"
       end
-      current = if component.part.id == "resistor" && potentials.length == 2 && potentials.none?(&:nil?)
+      current = dc.currents[component.ref]&.abs if dc.success?
+      current ||= if component.part.id == "resistor" && potentials.length == 2 && potentials.none?(&:nil?)
         resistance = Value.parse(component.value)
         (potentials[0] - potentials[1]).abs / resistance if resistance.positive?
       end
       puts "Current: #{current ? "#{format('%.3g', current)} A" : 'unknown (DC operating point unavailable)'}"
+      puts "Power: #{format('%.3g', dc.power[component.ref])} W" if dc.success? && dc.power.key?(component.ref)
+      dc.assumptions.each { |assumption| puts "Assumption: #{assumption}" } if dc.success? && dc.currents.key?(component.ref)
     end
 
     def show_bom(circuit)

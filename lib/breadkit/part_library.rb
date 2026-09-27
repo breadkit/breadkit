@@ -4,7 +4,7 @@ module Breadkit
   class PartDef
     attr_reader :data
 
-    KEYS = %w[id aliases category placement pins polarity footprint internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes provides extends override max_reverse_voltage].freeze
+    KEYS = %w[id aliases category placement pins polarity footprint internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current].freeze
     PIN_KEYS = %w[num name aliases type role label max_voltage output_capable].freeze
 
     def initialize(data)
@@ -85,6 +85,12 @@ module Breadkit
       if data.key?("max_reverse_voltage")
         limit = data["max_reverse_voltage"]
         raise ArgumentError, "part #{id} has invalid max_reverse_voltage" unless limit.is_a?(Numeric) && limit.finite? && limit >= 0
+      end
+      %w[forward_voltage on_resistance max_forward_current].each do |key|
+        next unless data.key?(key)
+
+        value = data[key]
+        raise ArgumentError, "part #{id} has invalid #{key}" unless value.is_a?(Numeric) && value.finite? && value.positive?
       end
       Array(data["provides"]).each do |source|
         unless source.is_a?(Hash) && %w[positive negative voltage].all? { |key| source.key?(key) } &&

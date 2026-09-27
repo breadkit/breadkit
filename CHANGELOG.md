@@ -12,6 +12,7 @@
 - Support isolated supplies and inclusive voltage ranges in circuit descriptions.
 - Export resolved circuits as KiCad XML, passive SPICE netlists, Wokwi diagrams, or firmware pin constants.
 - Parse component tolerance, power ratings, and voltage ratings when provided.
+- Estimate DC node voltages, resistor power, and LED/diode currents for supported circuits.
 
 ## 0.1.0 — 2026-09-27
 
