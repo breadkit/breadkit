@@ -14,7 +14,8 @@
         "rows": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
         "groups": { "type": "array", "items": { "type": "array", "minItems": 1, "items": { "type": "string" } } },
         "ravine_between": { "type": "array", "prefixItems": [{ "type": "string" }, { "type": "string" }], "minItems": 2, "maxItems": 2 },
-        "strip_direction": { "enum": ["column", "row"] }
+        "strip_direction": { "enum": ["column", "row"] },
+        "wire_attachment": { "enum": ["socket", "solder"] }
       }, "additionalProperties": false
     },
     "rails": {

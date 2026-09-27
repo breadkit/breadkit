@@ -404,6 +404,7 @@ module Breadkit
             picked = candidates && candidates.map { |id| @board.hole(id) }
                                       .compact.reject { |hole| occupied[hole.id] || reserved[hole.id] }
                                       .min_by { |hole| [(target_x ? (hole.x - target_x).abs : 0), hole_order(hole)] }
+            picked ||= @board.hole(pin_hole) if @board.solder_pad?(pin_hole)
             if picked
               endpoints[side], parsed[side] = picked.id, HoleId.parse(picked.id, board: @board)
               occupied[picked.id] = wire_id
@@ -431,7 +432,7 @@ module Breadkit
         endpoints.each do |endpoint|
           id = endpoint_hole(endpoint, components)
           next unless id && @board.hole(id)
-          if occupied[id] && occupied[id] != wire_id
+          if occupied[id] && occupied[id] != wire_id && !@board.solder_pad?(id)
             @diagnostics << diagnostic(:hole_conflict, "error", "hole #{id} is already occupied", item[:location], [wire_id, id])
           end
           occupied[id] = true

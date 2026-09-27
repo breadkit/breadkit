@@ -168,6 +168,19 @@ patterns require a custom board definition or explicit layout support. These
 are example sizes, not a universal hardware standard. A custom board can set
 `terminal.strip_direction: row` to connect each terminal row across its
 columns; the default `column` connects each declared group within a column.
+Set `terminal.wire_attachment: solder` for a soldered board. A wire naming a
+placed component pin uses another free hole on the same strip when available;
+when none exists, it joins that pin's occupied pad. Explicit wires can also
+share solder pads. The default `socket` behavior keeps breadboard holes
+exclusive to one inserted lead or wire. Component leads still cannot share a
+hole in either model. For example:
+
+```ruby
+board :universal
+resistor :R1, "330", pins: %w[a1 a2]
+wire "R1.1", "b1"
+```
+
 No generic MB102 power-supply model is included because jumper-selected
 output voltages and pin locations vary by module.
 

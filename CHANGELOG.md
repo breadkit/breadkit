@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Attach wires to occupied solder pads on universal and stripboard layouts while retaining socket occupancy checks.
 - Pin local part and board definition files with SHA-256 checksums in `breadkit.lock`.
 - Add isolated-pad universal perfboard and continuous-row stripboard models.
 - Report each distinct conflicting power terminal pair, including multiple conflicts involving the same supplies.

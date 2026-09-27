@@ -9,10 +9,13 @@ module Breadkit
       unknown = data.keys - %w[id name terminal rails rail_layout ground_labels]
       raise ArgumentError, "unknown board keys: #{unknown.join(', ')}" unless unknown.empty?
       terminal = data["terminal"] || {}
-      unknown_terminal = terminal.keys - %w[columns rows groups ravine_between strip_direction]
+      unknown_terminal = terminal.keys - %w[columns rows groups ravine_between strip_direction wire_attachment]
       raise ArgumentError, "unknown terminal keys: #{unknown_terminal.join(', ')}" unless unknown_terminal.empty?
       unless %w[column row].include?(terminal.fetch("strip_direction", "column"))
         raise ArgumentError, "terminal.strip_direction must be column or row"
+      end
+      unless %w[socket solder].include?(terminal.fetch("wire_attachment", "socket"))
+        raise ArgumentError, "terminal.wire_attachment must be socket or solder"
       end
       if data["ground_labels"] && (!data["ground_labels"].is_a?(Array) || !data["ground_labels"].all? { |label| label.is_a?(String) && !label.empty? })
         raise ArgumentError, "ground_labels must be a list of names"
@@ -98,6 +101,11 @@ module Breadkit
     def strip(id)
       item = hole(id)
       item && strips[item.strip_id]
+    end
+
+    def solder_pad?(id)
+      item = hole(id)
+      item&.kind == :terminal && definition.data.dig("terminal", "wire_attachment") == "solder"
     end
 
     def width
@@ -228,6 +236,10 @@ module Breadkit
     def strip(id)
       item = hole(id)
       item && strips[item.strip_id]
+    end
+
+    def solder_pad?(id)
+      board_for(id)&.solder_pad?(id.to_s.split(".", 2).last) || false
     end
 
     def terminal_rows
