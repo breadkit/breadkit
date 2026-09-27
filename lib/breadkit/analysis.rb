@@ -49,11 +49,16 @@ module Breadkit
       @net_cache, @net_index, @potential_cache = {}, {}, {}
     end
 
-    def states(mode = "single")
+    def states(mode = "single", budget: nil)
+      raise ArgumentError, "state budget must be a positive integer" if budget && (!budget.is_a?(Integer) || budget <= 0)
+
       switches = components.values.select { |component| !Array(component.part.data["switch"]).empty? }
       return [State.new(name: nil, closed_switches: [])] if mode.to_s == "none" || switches.empty?
-      # ponytail: exhaustive state generation stops at 8 switches; use a configurable search budget for larger circuits.
-      if mode.to_s == "all" && switches.length <= 8
+      combinations = 1 << switches.length
+      raise ArgumentError, "#{combinations} switch states exceed budget #{budget}" if mode.to_s == "all" && budget && combinations > budget
+
+      # ponytail: calls without an explicit budget keep the legacy eight-switch fallback.
+      if mode.to_s == "all" && (budget ? combinations <= budget : switches.length <= 8)
         (0...(1 << switches.length)).map do |bits|
           selected = switches.each_with_index.filter_map { |component, index| component if bits[index] == 1 }
           closed = selected.flat_map { |component| Array(component.part.data["switch"]).map { |pair| [component, pair] } }
