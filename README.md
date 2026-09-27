@@ -135,6 +135,22 @@ bundle install
 bundle exec rake
 ```
 
+To use the unreleased renderer and linter with this checkout, clone their
+repositories beside it. Their Gemfiles resolve Breadkit from the sibling
+directory:
+
+```sh
+cd ..
+git clone https://github.com/breadkit/breadkit-render.git
+git clone https://github.com/breadkit/breadkit-lint.git
+cd breadkit-render
+bundle install
+bundle exec bkrender ../breadkit/examples/01_led_button.bk.rb -o example.svg
+cd ../breadkit-lint
+bundle install
+bundle exec bklint ../breadkit/examples/01_led_button.bk.rb
+```
+
 To build the Playground locally, keep `breadkit-lint` and `breadkit-render`
 beside this repository, then run `npm ci`, `npm run build`, and
 `node scripts/build-playground.mjs`. Serve `_site` over HTTP to open it.
