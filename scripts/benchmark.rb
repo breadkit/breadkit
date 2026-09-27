@@ -24,10 +24,8 @@ end
 
 document = Breadkit::DSL.load_file("benchmark.bk.rb", source: source.join("\n"))
 circuit = nil
-analysis = Benchmark.realtime do
-  circuit = Breadkit::Resolver.new.call(document)
-  circuit.states("single").each { |state| circuit.nets(state) }
-end
+resolution = Benchmark.realtime { circuit = Breadkit::Resolver.new.call(document) }
+network = Benchmark.realtime { circuit.states("single").each { |state| circuit.nets(state) } }
 abort "benchmark circuit has errors" if circuit.diagnostics.any? { |item| item.severity == "error" }
 abort "benchmark circuit size changed" unless circuit.components.size == 110 && circuit.wires.size == 200
 
@@ -42,5 +40,5 @@ render = Benchmark.realtime { svg = Breadkit::Render::SvgRenderer.new.render(cir
 abort "render produced no SVG" unless svg.include?("<svg")
 
 puts "110 components (100 resistors, 10 switches), 200 wires, single switch states"
-puts "analysis: #{analysis.round(3)}s, lint: #{lint.round(3)}s, SVG: #{render.round(3)}s"
-abort "performance regression: analysis > 2s or SVG > 1s" if analysis > 2 || render > 1
+puts "resolve: #{resolution.round(3)}s, states/nets: #{network.round(3)}s, lint: #{lint.round(3)}s, SVG: #{render.round(3)}s"
+abort "performance regression: analysis > 2s or SVG > 1s" if resolution + network > 2 || render > 1
