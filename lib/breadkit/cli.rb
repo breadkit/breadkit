@@ -54,8 +54,7 @@ module Breadkit
         else
           return 1 if report_errors(circuit)
 
-          state = circuit.states.find { |item| item.name == state_name } if state_name
-          raise ArgumentError, "unknown switch state #{state_name}" if state_name && !state
+          state = circuit.state(state_name)
           circuit.nets(state).each { |net| puts "#{net.name}: #{net.members.join(', ')}" }
           0
         end
@@ -212,7 +211,7 @@ module Breadkit
 
     def select_state(circuit, name)
       return unless name
-      circuit.states.find { |item| item.name == name } || raise(ArgumentError, "unknown switch state #{name}")
+      circuit.state(name)
     end
 
     def show_where(circuit, reference, state)

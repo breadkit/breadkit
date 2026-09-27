@@ -6,7 +6,7 @@ module Breadkit
   class PartDef
     attr_reader :data
 
-    KEYS = %w[id aliases category placement pins polarity footprint footprint_mm internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes required_attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current max_lead_span_mm datasheet_url].freeze
+    KEYS = %w[id aliases category placement pins polarity footprint footprint_mm internal switch independent_switches same_strip_ok straddle package render flags supply_range transistor_polarity attributes required_attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current max_lead_span_mm datasheet_url].freeze
     PIN_KEYS = %w[num name aliases type role label max_voltage max_current output_capable mount].freeze
 
     def initialize(data)
@@ -84,6 +84,13 @@ module Breadkit
       %w[internal switch same_strip_ok].each do |key|
         Array(data[key]).each do |pair|
           raise ArgumentError, "part #{id} has invalid #{key} pin pair #{pair.inspect}" unless pair.length == 2 && pair.all? { |pin| valid_pins.include?(pin.to_s) }
+        end
+      end
+      if data.key?("independent_switches")
+        pairs = Array(data["switch"])
+        terminals = pairs.flatten.map { |reference| pin(reference).fetch("num").to_s }
+        unless data["independent_switches"] == true && !pairs.empty? && terminals.uniq.length == terminals.length
+          raise ArgumentError, "part #{id} has invalid independent_switches; contacts must use distinct pins"
         end
       end
       raise ArgumentError, "part #{id} has invalid placement" unless %w[leads dip footprint offboard].include?(placement)

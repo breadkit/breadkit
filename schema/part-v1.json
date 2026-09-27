@@ -79,6 +79,7 @@
     },
     "internal": { "$ref": "#/$defs/pairs" },
     "switch": { "$ref": "#/$defs/pairs" },
+    "independent_switches": { "const": true },
     "same_strip_ok": { "$ref": "#/$defs/pairs" }
   },
   "additionalProperties": false,

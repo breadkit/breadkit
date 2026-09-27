@@ -52,7 +52,7 @@ module Breadkit
     def states(mode = "single", budget: nil)
       raise ArgumentError, "state budget must be a positive integer" if budget && (!budget.is_a?(Integer) || budget <= 0)
 
-      switches = components.values.select { |component| !Array(component.part.data["switch"]).empty? }
+      switches = switch_units
       return [State.new(name: nil, closed_switches: [])] if mode.to_s == "none" || switches.empty?
       combinations = 1 << switches.length
       raise ArgumentError, "#{combinations} switch states exceed budget #{budget}" if mode.to_s == "all" && budget && combinations > budget
@@ -60,19 +60,29 @@ module Breadkit
       # ponytail: calls without an explicit budget keep the legacy eight-switch fallback.
       if mode.to_s == "all" && (budget ? combinations <= budget : switches.length <= 8)
         (0...(1 << switches.length)).map do |bits|
-          selected = switches.each_with_index.filter_map { |component, index| component if bits[index] == 1 }
-          closed = selected.flat_map { |component| Array(component.part.data["switch"]).map { |pair| [component, pair] } }
-          State.new(name: selected.empty? ? nil : selected.map(&:ref).join(","), closed_switches: closed)
+          selected = switches.each_with_index.filter_map { |unit, index| unit if bits[index] == 1 }
+          State.new(name: selected.empty? ? nil : selected.map(&:first).join(","), closed_switches: selected.flat_map(&:last))
         end
       else
-        singles = switches.map do |component|
-          pairs = Array(component.part.data["switch"]).map { |pair| [component, pair] }
-          State.new(name: component.ref, closed_switches: pairs)
+        singles = switches.map do |name, pairs|
+          State.new(name: name, closed_switches: pairs)
         end
         all_pairs = singles.flat_map(&:closed_switches)
-        singles << State.new(name: switches.map(&:ref).join(","), closed_switches: all_pairs) if mode.to_s == "all"
+        singles << State.new(name: switches.map(&:first).join(","), closed_switches: all_pairs) if mode.to_s == "all"
         [State.new(name: nil, closed_switches: [])] + singles
       end
+    end
+
+    def state(name)
+      return nil unless name
+
+      names = name.split(",", -1)
+      units = switch_units.to_h
+      if names.uniq.length != names.length || names.any? { |unit| !units.key?(unit) }
+        raise ArgumentError, "unknown switch state #{name}"
+      end
+
+      State.new(name: name, closed_switches: names.flat_map { |unit| units.fetch(unit) })
     end
 
     def nets(state = nil)
@@ -239,6 +249,19 @@ module Breadkit
     end
 
     private
+
+    def switch_units
+      components.values.flat_map do |component|
+        pairs = Array(component.part.data["switch"])
+        next [] if pairs.empty?
+
+        if component.part.data["independent_switches"]
+          pairs.each_with_index.map { |pair, index| ["#{component.ref}.#{index + 1}", [[component, pair]]] }
+        else
+          [[component.ref, pairs.map { |pair| [component, pair] }]]
+        end
+      end
+    end
 
     def hole_for_reference(reference)
       hole = board.hole(reference)

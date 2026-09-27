@@ -115,6 +115,7 @@ module Breadkit
     attr_reader steps: Array[Hash[Symbol, untyped]]
     def voltage_sources: () -> Array[Supply]
     def states: (?String mode, ?budget: Integer?) -> Array[State]
+    def state: (String? name) -> State?
     def nets: (?State? state) -> Array[Net]
     def potentials: (?State? state) -> PotentialResult
     def dc_analysis: (?State? state) -> DCResult

@@ -25,8 +25,13 @@ part definitions are not circuit inputs.
 | `breadkit console FILE` | Open IRB with the loaded `circuit` variable. |
 | `breadkit doctor` | Check the Ruby version and availability of the optional linter and renderer commands. |
 
-`where` and `explain` accept `--state SWITCH` for a closed switch state. Their
-default is the all-open state. `explain` uses DC operating-point analysis for
+`nets`, `where`, and `explain` accept `--state SWITCH` for a closed switch state.
+Their default is the all-open state. A regular switch uses its reference, such
+as `SW1`. The C&K BD04 has four independent positions: `SW1.1` through
+`SW1.4`. Separate selected positions with commas, for example
+`breadkit nets --state SW1.1,SW1.4 circuit.bk.rb`. The position names are
+Breadkit logical names, not a claim about the manufacturer's terminal numbers.
+`explain` uses DC operating-point analysis for
 voltage sources, resistors, LEDs, and diodes. It reports the fixed-drop diode
 assumptions and labels ungrounded voltages as relative. Unsupported parts or
 indeterminate circuits leave currents unknown. `bom` reports quantities, not

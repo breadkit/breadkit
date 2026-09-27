@@ -214,6 +214,7 @@ output voltages and pin locations vary by module.
 - Terminal holes use rows `a` through `j` and 1-based columns, such as `a10` or `J30`.
 - Rail holes use `T+`, `T-`, `B+`, and `B-`, optionally followed by a 1-based index. A rail without an index selects the nearest free hole.
 - A custom board may define other row and rail IDs in its YAML. For example, rows `u` and `v` use `u1` and `v1`; a rail with `id: PWR` uses `PWR1` or the unindexed `PWR`. Set each rail's `polarity:` to `+` or `-` for polarity-aware rendering.
+- Custom rails use `side: top|bottom|left|right|center` and a zero-based `order`. Left and right rails run vertically; `rail_layout.start_row` (default `1`) positions their first hole. Center rails occupy the two free rows of the declared `terminal.ravine_between` gap, so only orders `0` and `1` fit. Horizontal rails use `rail_layout.start_column` as before.
 - Component pins use `R1.1`, `D1.anode`, `U1.8`, or `U1.VCC`. A wire endpoint naming a placed pin selects a free hole in that pin's conductive strip.
 - The built-in `ne555` and generic `dip` definitions must straddle the center gap. For a generic package, set `pin_count`, for example `part :U2, :dip, pin_count: 14, at: "e20"`.
 - A generic pin header can be sized with `part :J1, :pin_header, pin_count: 4, pins: %w[a1 a2 a3 a4]`.
@@ -227,6 +228,8 @@ Values accept SI suffixes and RKM notation such as `4.7k`, `4k7`, `1M`, `100n`, 
 ## Switch states and IR
 
 `circuit.states("none")`, `circuit.states("single")`, and `circuit.states("all")` control switch contact simulation. `Breadkit.load(path)` reads `.bk.rb` DSL, `.bk.yml` / `.bk.yaml` / `.bk.toml` circuit files, or `.json` IR. `circuit.to_ir` returns the resolved circuit representation; automatically selected holes are fixed in IR and are not selected again when loaded.
+
+For independent SPST positions in a custom part, set `switch: [[P1A, P1B], [P2A, P2B]]` and `independent_switches: true`. Every contact pair must use distinct pins. The corresponding state names are `SW1.1` and `SW1.2` for an instance named `SW1`; `circuit.state("SW1.1,SW1.2")` selects both. The built-in C&K BD04 uses this model. Place it with `part :SW1, :ck_bd04, at: "e20"`; its four contacts occupy rows 20–23 across the center gap. The `PnA`/`PnB` labels are logical position-side names because the [C&K BD datasheet](https://www.littelfuse.com/assetdocs/littelfuse-ck-dip-bd-series-datasheet?assetguid=c1d4e4f2-7607-4309-afba-ad965b566d35) does not specify every terminal number in its drawing. Check the physical switch's marked position 1 and orientation before wiring it.
 
 `old_circuit.diff(new_circuit)` returns a hash of changed board, supply, component, label, and wire entries. Each value is `[before, after]`, with `nil` for an added or removed entry. The CLI `breadkit diff OLD NEW` prints the same changes.
 
