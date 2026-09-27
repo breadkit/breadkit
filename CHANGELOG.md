@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Reuse fixed circuit connectivity across switch states while keeping each state's nets independent.
 - Report a wired power short at its bridge without a duplicate finding on the existing shared return.
 - Attach wires to occupied solder pads on universal and stripboard layouts while retaining socket occupancy checks.
 - Pin local part and board definition files with SHA-256 checksums in `breadkit.lock`.

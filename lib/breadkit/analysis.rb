@@ -28,6 +28,13 @@ module Breadkit
       @parent[right] = left
       @rank[left] += 1 if @rank[left] == @rank[right]
     end
+
+    def snapshot
+      copy = dup
+      copy.instance_variable_set(:@parent, @parent.dup)
+      copy.instance_variable_set(:@rank, @rank.dup)
+      copy
+    end
   end
 
   class Circuit
@@ -68,7 +75,8 @@ module Breadkit
       key = state_key(state)
       return @net_cache[key] if @net_cache.key?(key)
 
-      resolved = Connectivity.new(self).build(state)
+      @connectivity ||= Connectivity.new(self)
+      resolved = @connectivity.build(state)
       @net_index[key] = resolved.each_with_object({}) do |net, index|
         index[net.name] ||= net
         net.members.each do |member|
@@ -262,30 +270,18 @@ module Breadkit
   class Connectivity
     def initialize(circuit)
       @circuit = circuit
+      @uf = UnionFind.new
+      build_static_connections
+      @base_uf = @uf
+      @exposed_nodes = exposed_nodes
     end
 
     def build(state)
-      @uf = UnionFind.new
-      circuit.board.strips.each_value { |ids| ids.each_cons(2) { |a, b| @uf.union(hole_node(a), hole_node(b)) } }
-      circuit.components.each_value do |component|
-        component.pins.each_value { |pin| @uf.union(pin.node_id, hole_node(pin.hole_id)) if pin.hole_id }
-        Array(component.part.data["internal"]).each { |pair| join_pins(component, pair) }
-      end
-      circuit.wires.each do |wire|
-        next if wire.electrical == false
-
-        id = wire_node(wire.id)
-        @uf.union(id, endpoint_node(wire.from))
-        @uf.union(id, endpoint_node(wire.to))
-      end
-      circuit.supplies.each do |supply|
-        @uf.union(supply_node(supply.name, "+"), hole_node(supply.plus))
-        @uf.union(supply_node(supply.name, "-"), hole_node(supply.minus))
-      end
+      @uf = @base_uf.snapshot
       state.closed_switches.each { |component, pair| join_pins(component, pair) }
 
       groups = Hash.new { |hash, key| hash[key] = { members: [], holes: [], labels: [], supplies: [] } }
-      exposed_nodes.each do |node, member, kind|
+      @exposed_nodes.each do |node, member, kind|
         entry = groups[@uf.find(node)]
         entry[:members] << member if member
         entry[:holes] << node.delete_prefix("hole:") if kind == :hole
@@ -298,10 +294,14 @@ module Breadkit
       roots = groups.keys.select { |root| !groups[root][:members].empty? || !groups[root][:labels].empty? }
                    .sort_by { |root| order_for(groups[root][:holes]) }
       used_names = {}
+      unnamed_count = 0
       roots.map.with_index do |root, index|
         data = groups[root]
         chosen = data[:labels].first&.name || supply_name(data[:supplies])
-        chosen ||= "N#{roots.take(index + 1).count { |candidate| groups[candidate][:labels].empty? && groups[candidate][:supplies].empty? }}"
+        unless chosen
+          unnamed_count += 1
+          chosen = "N#{unnamed_count}"
+        end
         name = chosen
         if used_names[name]
           # Multiple nets can have the same label; retain deterministic unique display names.
@@ -318,6 +318,25 @@ module Breadkit
     private
 
     attr_reader :circuit
+
+    def build_static_connections
+      circuit.board.strips.each_value { |ids| ids.each_cons(2) { |a, b| @uf.union(hole_node(a), hole_node(b)) } }
+      circuit.components.each_value do |component|
+        component.pins.each_value { |pin| @uf.union(pin.node_id, hole_node(pin.hole_id)) if pin.hole_id }
+        Array(component.part.data["internal"]).each { |pair| join_pins(component, pair) }
+      end
+      circuit.wires.each do |wire|
+        next if wire.electrical == false
+
+        id = wire_node(wire.id)
+        @uf.union(id, endpoint_node(wire.from))
+        @uf.union(id, endpoint_node(wire.to))
+      end
+      circuit.supplies.each do |supply|
+        @uf.union(supply_node(supply.name, "+"), hole_node(supply.plus))
+        @uf.union(supply_node(supply.name, "-"), hole_node(supply.minus))
+      end
+    end
 
     def exposed_nodes
       list = []
