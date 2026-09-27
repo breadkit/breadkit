@@ -1,6 +1,6 @@
 # Breadkit DSL
 
-Breadkit evaluates a Ruby file into a breadboard circuit, resolves pin and wire locations, and exposes the result as nets and JSON IR. DSL files are executable Ruby; only load files you trust. Use IR JSON when the input must remain data-only.
+Breadkit evaluates a Ruby file into a breadboard circuit, resolves pin and wire locations, and exposes the result as nets and JSON IR. DSL files are executable Ruby; only load files you trust. Use [YAML or TOML circuit files](DECLARATIVE.md) when the input must remain data-only.
 
 ## A small circuit
 
@@ -31,6 +31,8 @@ end
 | `board(id, split_rails: false)` | Select `:full`, `:half`, `:mini`, or a custom board ID. |
 | `use_parts(path)` / `use_boards(path)` | Load additional YAML definitions relative to the DSL file. Paths may use globs. |
 | `include(path)` | Evaluate another trusted DSL file in the same circuit. Relative paths resolve from the including file; circular includes are rejected. |
+| `block(name) { ... }` / `use_block(name, *args, **kwargs)` | Define and expand a reusable group of DSL declarations. Each name is unique within the circuit. |
+| `bus(name, **lines)` | Label the explicit reference for each line as `NAME_LINE`, for example `I2C_SCL`. |
 | `supply(name, voltage:, plus:, minus:, current_limit: nil)` | Add a DC source. Both terminals occupy board holes. Optional `current_limit:` is the supply's positive output limit in amperes. |
 | `net(name, at:)` | Label a hole or component pin. |
 | `part(ref, type, value = nil, pins: ..., at: ..., **attrs)` | Place a defined part. `pins:` accepts pin order arrays or pin-name hashes. |
@@ -41,6 +43,42 @@ end
 | `lint_disable(rule, on: nil, reason: nil)` | Suppress a lint rule, optionally for one target. |
 
 Short forms are available for `resistor`, `capacitor`, `electrolytic`, `diode`, `led`, `transistor`, `pot`, `button`, and `ic`.
+
+## Reusable blocks and buses
+
+A block runs in the same DSL context each time it is used. Pass the references
+and holes for each instance explicitly so every component gets a distinct name
+and placement:
+
+```ruby
+board :mini
+
+block :indicator do |number, resistor_pins:, led_pins:|
+  resistor "R#{number}", "330", pins: resistor_pins
+  led "D#{number}", color: :red, **led_pins
+end
+
+use_block :indicator, 1,
+          resistor_pins: %w[a1 a3], led_pins: { anode: "b3", cathode: "b4" }
+use_block :indicator, 2,
+          resistor_pins: %w[a6 a8], led_pins: { anode: "b8", cathode: "b9" }
+```
+
+Blocks defined in an included DSL file are available to the including file.
+Recursive calls and duplicate block names are rejected. The resolved circuit
+and JSON IR contain the expanded parts and wires, with no separate block
+record.
+
+Use a bus to name related nets at their explicit board holes or pin references:
+
+```ruby
+bus :I2C, scl: "f22", sda: "f24"
+# Creates I2C_SCL at f22 and I2C_SDA at f24.
+```
+
+The call adds labels. Add `wire` declarations for physical connections to
+devices on each line. The bus helper accepts any named lines; it does not
+perform I2C protocol analysis.
 
 ## Hole and pin references
 
@@ -57,7 +95,7 @@ Values accept SI suffixes and RKM notation such as `4.7k`, `4k7`, `1M`, `100n`, 
 
 ## Switch states and IR
 
-`circuit.states("none")`, `circuit.states("single")`, and `circuit.states("all")` control switch contact simulation. `Breadkit.load(path)` reads `.bk.rb` DSL or `.json` IR. `circuit.to_ir` returns the resolved circuit representation; automatically selected holes are fixed in IR and are not selected again when loaded.
+`circuit.states("none")`, `circuit.states("single")`, and `circuit.states("all")` control switch contact simulation. `Breadkit.load(path)` reads `.bk.rb` DSL, `.bk.yml` / `.bk.yaml` / `.bk.toml` circuit files, or `.json` IR. `circuit.to_ir` returns the resolved circuit representation; automatically selected holes are fixed in IR and are not selected again when loaded.
 
 `old_circuit.diff(new_circuit)` returns a hash of changed board, supply, component, label, and wire entries. Each value is `[before, after]`, with `nil` for an added or removed entry. The CLI `breadkit diff OLD NEW` prints the same changes.
 

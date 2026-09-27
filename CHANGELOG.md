@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add reusable Ruby DSL blocks and named bus-line labels.
 - Read declarative `.bk.yml`, `.bk.yaml`, and `.bk.toml` circuits through the existing resolver without evaluating Ruby.
 - Report DSL source lines for evaluation errors and stop runaway circuit files after a timeout.
 - Validate component values, part attributes, wire colors and routes, and ambiguous wire IDs.

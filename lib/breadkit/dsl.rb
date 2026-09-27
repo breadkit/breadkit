@@ -4,7 +4,7 @@ require "timeout"
 
 module Breadkit
   module DSL
-    METHODS = %w[title board use_parts use_boards include supply net part wire offboard expect expect_voltage expect_current lint_disable resistor capacitor electrolytic diode led transistor pot button ic connected isolated].freeze
+    METHODS = %w[title board use_parts use_boards include block use_block bus supply net part wire offboard expect expect_voltage expect_current lint_disable resistor capacitor electrolytic diode led transistor pot button ic connected isolated].freeze
 
     class Builder
       attr_reader :document
@@ -14,6 +14,8 @@ module Breadkit
         @expected = nil
         @base_dir = base_dir
         @include_stack = []
+        @blocks = {}
+        @active_blocks = []
       end
 
       def title(value)
@@ -61,6 +63,44 @@ module Breadkit
           @base_dir = previous_dir
           @include_stack.pop
         end
+      end
+
+      def block(name, &body)
+        key = helper_name(name, "block")
+        raise DSLError, "block #{key} requires a body" unless body
+        raise DSLError, "block #{key} is already defined" if @blocks.key?(key)
+
+        @blocks[key] = body
+      end
+
+      def use_block(name, *args, **kwargs)
+        active = false
+        key = helper_name(name, "block")
+        body = @blocks[key]
+        raise DSLError, "unknown block #{key}" unless body
+        raise DSLError, "recursive block #{key}" if @active_blocks.include?(key)
+
+        @active_blocks << key
+        active = true
+        instance_exec(*args, **kwargs, &body)
+      ensure
+        @active_blocks.pop if active
+      end
+
+      def bus(name, **lines)
+        prefix = helper_name(name, "bus").upcase
+        raise DSLError, "bus #{prefix} must declare at least one line" if lines.empty?
+        raise DSLError, "bus cannot be declared inside expect" if @expected
+
+        labels = {}
+        lines.each do |line, reference|
+          key = helper_name(line, "bus line").upcase
+          raise DSLError, "duplicate bus line #{key}" if labels.key?(key)
+          raise DSLError, "bus line #{key} reference must be text" unless reference.is_a?(String) && !reference.empty?
+
+          labels[key] = reference
+        end
+        labels.each { |line, reference| net "#{prefix}_#{line}", at: reference }
       end
 
       def supply(name, voltage:, plus:, minus:, isolated: false, current_limit: nil)
@@ -200,6 +240,14 @@ module Breadkit
       end
 
       private
+
+      def helper_name(value, kind)
+        name = value.to_s
+        raise DSLError, "invalid #{kind} name #{name.inspect}" unless value.is_a?(String) || value.is_a?(Symbol)
+        raise DSLError, "invalid #{kind} name #{name.inspect}" unless /\A[A-Za-z][A-Za-z0-9_]*\z/.match?(name)
+
+        name
+      end
 
       def measurement_expectation(kind, reference, range)
         raise DSLError, "#{kind} expectation requires an inclusive range" unless range.is_a?(Range) && !range.exclude_end?
