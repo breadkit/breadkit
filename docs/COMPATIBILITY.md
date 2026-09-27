@@ -22,6 +22,37 @@ boards. Consumers should check `schema_version` before reading an IR file and
 ignore unknown optional fields. They should not infer the IR version from the
 gem version. The linter publishes its own [result schema](https://breadkit.github.io/breadkit-lint/schemas/lint-v1.json).
 
+## Editor schema associations
+
+Part and board files can use any YAML filename when referenced by `use_parts`
+or `use_boards`. The optional `.bkpart.yml` and `.bkboard.yml` endings make
+editor associations unambiguous. In VS Code with the YAML extension, use a
+modeline at the start of an individual file:
+
+```yaml
+# yaml-language-server: $schema=https://breadkit.github.io/breadkit/schema/part-v1.json
+id: custom_part
+pins:
+  - {num: 1, name: SIGNAL}
+```
+
+For a whole workspace, add this to `.vscode/settings.json`:
+
+```json
+{
+  "yaml.schemas": {
+    "https://breadkit.github.io/breadkit/schema/part-v1.json": "*.bkpart.yml",
+    "https://breadkit.github.io/breadkit/schema/board-v1.json": "*.bkboard.yml"
+  },
+  "json.schemas": [
+    { "fileMatch": ["*.bkir.json"], "url": "https://breadkit.github.io/breadkit/schema/ir-v1.json" }
+  ]
+}
+```
+
+Use `ir-v2.json` for named-board IR. `.bkir.json` is an optional filename;
+`Breadkit.load` accepts any `.json` circuit IR file.
+
 Before a 1.0 release, changes to a public schema or documented DSL form need
 round-trip coverage and an entry in the relevant gem's changelog. The published
 schema files are versioned artifacts; changing a v1 schema to reinterpret
