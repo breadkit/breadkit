@@ -154,6 +154,10 @@ module Breadkit
     attr_reader unit: String
     def initialize: (String | Numeric value, ?category: Symbol?) -> void
     def self.parse: (String | Numeric input) -> Float
+    def self.tolerance: (String | Numeric input) -> Float?
+    def self.power_rating: (String | Numeric input) -> Float?
+    def self.voltage_rating: (String | Numeric input) -> Float?
+    def self.split_spec: (String | Numeric input) -> [String, Array[String]]
     def to_s: () -> String
   end
 

@@ -10,6 +10,14 @@ RSpec.describe Breadkit do
       expect(described_class.parse("10uF")).to be_within(1e-12).of(10e-6)
       expect(described_class.new("4.7k").to_s).to eq("4.7k")
       expect(described_class.new("4.7k", category: :resistor).to_s).to eq("4.7kΩ")
+      expect(described_class.parse("4.7k 5%")).to eq(4700.0)
+      expect(described_class.tolerance("4.7k 5%")).to eq(0.05)
+      expect(described_class.power_rating("330 1/4W")).to eq(0.25)
+      expect(described_class.parse("10u 16V")).to be_within(1e-12).of(10e-6)
+      expect(described_class.voltage_rating("10u 16V")).to eq(16.0)
+      expect(described_class.new("10u 16V", category: :electrolytic).to_s).to eq("10uF")
+      expect { described_class.parse("330 1/0W") }.to raise_error(ArgumentError, /qualifier/)
+      expect { described_class.parse("330 5% 10%") }.to raise_error(ArgumentError, /duplicate/)
       expect { described_class.parse("k") }.to raise_error(ArgumentError)
     end
   end
