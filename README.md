@@ -64,6 +64,7 @@ The same circuit is available in [YAML](examples/06_declarative_led.bk.yml) and
 - [DSL reference](https://breadkit.github.io/breadkit/guide/dsl/) and [component catalog](https://breadkit.github.io/breadkit/guide/components/)
 - [CLI reference](docs/CLI.md), [YAML/TOML guide](docs/DECLARATIVE.md), and [JSON IR](docs/IR.md)
 - [Browser Playground](https://breadkit.github.io/breadkit/playground/) and [editor integration](docs/LSP.md)
+- [MCP server](docs/MCP.md), [Rake task](docs/RAKE.md), [jumper kit](docs/JUMPER_KIT.md), and [definition lockfile](docs/LOCK.md)
 
 The companion repositories are [breadkit-render](https://github.com/breadkit/breadkit-render)
 for diagrams, [breadkit-lint](https://github.com/breadkit/breadkit-lint)
