@@ -1,9 +1,14 @@
 # frozen_string_literal: true
 
-require "benchmark"
 require "breadkit"
 require "breadkit/lint"
 require "breadkit/render"
+
+def measure
+  start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  yield
+  Process.clock_gettime(Process::CLOCK_MONOTONIC) - start
+end
 
 source = ["board :full"]
 20.times do |pair|
@@ -24,19 +29,19 @@ end
 
 document = Breadkit::DSL.load_file("benchmark.bk.rb", source: source.join("\n"))
 circuit = nil
-resolution = Benchmark.realtime { circuit = Breadkit::Resolver.new.call(document) }
-network = Benchmark.realtime { circuit.states("single").each { |state| circuit.nets(state) } }
+resolution = measure { circuit = Breadkit::Resolver.new.call(document) }
+network = measure { circuit.states("single").each { |state| circuit.nets(state) } }
 abort "benchmark circuit has errors" if circuit.diagnostics.any? { |item| item.severity == "error" }
 abort "benchmark circuit size changed" unless circuit.components.size == 110 && circuit.wires.size == 200
 
 lint_result = nil
 linter = Breadkit::Lint::Engine.new
-lint = Benchmark.realtime do
+lint = measure do
   lint_result = linter.run(["benchmark.bk.rb"], source: source.join("\n"))
 end
 abort "lint failed to inspect benchmark circuit" if linter.fatal?(lint_result)
 svg = nil
-render = Benchmark.realtime { svg = Breadkit::Render::SvgRenderer.new.render(circuit) }
+render = measure { svg = Breadkit::Render::SvgRenderer.new.render(circuit) }
 abort "render produced no SVG" unless svg.include?("<svg")
 
 puts "110 components (100 resistors, 10 switches), 200 wires, single switch states"
