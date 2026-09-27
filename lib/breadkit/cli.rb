@@ -236,7 +236,8 @@ module Breadkit
       items = { "board" => "#{circuit.board.definition.id}#{' (split rails)' if circuit.board.split_rails}" }
       circuit.supplies.each do |supply|
         voltage = supply.voltage_range ? supply.voltage_range.join("..") : supply.voltage
-        items["supply #{supply.name}"] = "#{voltage} V, #{supply.plus} to #{supply.minus}"
+        limit = supply.current_limit ? ", #{supply.current_limit} A limit" : ""
+        items["supply #{supply.name}"] = "#{voltage} V, #{supply.plus} to #{supply.minus}#{limit}"
       end
       circuit.labels.each { |label| items["label #{label.name}@#{label.at}"] = true }
       circuit.components.each_value do |component|

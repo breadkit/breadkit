@@ -47,6 +47,9 @@ RSpec.describe Breadkit::CLI do
       File.write(first, 'board :mini; supply :BAT, voltage: 3.0..5.0, plus: "a1", minus: "a2"')
       File.write(modified, 'board :mini; supply :BAT, voltage: 2.0..6.0, plus: "a1", minus: "a2"')
       expect { cli.run(["diff", first, modified]) }.to output(/3\.0\.\.5\.0 V.*2\.0\.\.6\.0 V/m).to_stdout
+      File.write(first, 'board :mini; supply :BAT, voltage: 5, plus: "a1", minus: "a2", current_limit: 0.02')
+      File.write(modified, 'board :mini; supply :BAT, voltage: 5, plus: "a1", minus: "a2", current_limit: 0.05')
+      expect { cli.run(["diff", first, modified]) }.to output(/0\.02 A.*0\.05 A/m).to_stdout
     end
   end
 
