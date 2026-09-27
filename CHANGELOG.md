@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Report each distinct conflicting power terminal pair, including multiple conflicts involving the same supplies.
 - Add an LSP stdio server and a minimal VS Code extension for circuit editing and preview.
 - Show circuit errors before printing net and inspection results.
 - Add a read-only MCP stdio server for data-only circuit resolution, net inspection, and IR export.

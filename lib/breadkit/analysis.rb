@@ -402,7 +402,7 @@ module Breadkit
       end
       ground_labels = Array(circuit.board.definition.data["ground_labels"] || %w[GND 0V VSS GROUND]).map(&:upcase)
       ground = circuit.nets(state).find { |net| net.labels.any? { |label| ground_labels.include?(label.upcase) } }&.name
-      components, witnesses, witness_sources, seen_conflicts = [], {}, {}, {}
+      components, witnesses, seen_conflicts = [], {}, {}
       starts = adjacency.keys
       starts = [ground, *(starts - [ground])] if starts.include?(ground)
       starts.each do |start|
@@ -416,7 +416,6 @@ module Breadkit
             terminal_for(supply, "+")
           end
         end.first
-        witness_sources[start] = edges.find { |_supply, from, to| from&.name == start || to&.name == start }&.first&.name
         queue = [start]
         until queue.empty?
           current = queue.shift
@@ -427,7 +426,7 @@ module Breadkit
 
               first, second = witnesses[target], terminal
               next if first == second
-              pair = [witness_sources[target] || supply.name, supply.name].sort
+              pair = [first, second].sort
               next if seen_conflicts[pair]
               path = circuit.shortest_path(first, second, state)
               path_wires = circuit.wires.select { |wire| path.include?(wire.id) }
@@ -438,7 +437,6 @@ module Breadkit
             else
               values[target] = proposed
               witnesses[target] = terminal
-              witness_sources[target] = supply.name
               queue << target
             end
           end

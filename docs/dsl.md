@@ -46,6 +46,12 @@ end
 
 Short forms are available for `resistor`, `capacitor`, `electrolytic`, `diode`, `led`, `transistor`, `pot`, `button`, and `ic`.
 
+Standalone supplies require a positive voltage. Use the positive and negative
+terminal positions to express polarity; an inclusive voltage range must have
+two positive, ascending limits. By default, net labels `GND`, `0V`, `VSS`, and
+`GROUND` anchor the potential calculation at 0 V regardless of case. A custom
+board definition can replace that list with `ground_labels: [RETURN, AGND]`.
+
 ## Power from an offboard module
 
 The Arduino Uno definition declares 5 V and 3.3 V outputs relative to GND.
@@ -176,5 +182,8 @@ Values accept SI suffixes and RKM notation such as `4.7k`, `4k7`, `1M`, `100n`, 
 The core CLI provides `breadkit nets`, `breadkit parts`, and `breadkit ir`.
 
 Custom module pins can declare their kind with `type:` in the part YAML, for example `power`, `ground`, `clock`, `data`, `address`, or `interrupt`. The renderer colors typed pin markers and dims pins without a wire connection.
+Use `type:` for new definitions; the legacy `role:` spelling is accepted and
+normalized to `type:`. A pin cannot declare both. Unknown part and pin keys,
+and unsupported pin types, are rejected when the definition is loaded.
 
 Assign the same `layer:` to wires and components to make them appear together in the interactive SVG layer controls. A layer may be a string or a list of strings when an item belongs to multiple views. Components without a layer remain visible in every view. Use `electrical: false, dashed: true` for an alternate connection that must not affect connectivity analysis.

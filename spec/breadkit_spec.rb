@@ -370,12 +370,13 @@ RSpec.describe "resolver and DSL regressions" do
     expect(circuit.nets.map(&:name)).to include("VCC")
   end
 
-  it "grounds labeled GND and reports each conflicting supply once with its terminals" do
+  it "grounds labeled GND and reports distinct conflicting terminal pairs" do
     circuit = resolve('board :half; supply :A, voltage: "5V", plus: "a1", minus: "a2"; supply :B, voltage: "3.3V", plus: "b1", minus: "b2"; net :GND, at: "c2"')
     result = circuit.potentials
     expect(result.values["GND"]).to eq(0.0)
-    expect(result.conflicts.length).to eq(1)
-    expect([result.conflicts.first[:terminal_a], result.conflicts.first[:terminal_b]]).to contain_exactly("A.+", "B.+")
+    expect(result.conflicts.length).to eq(2)
+    expect(result.conflicts.map { |item| [item[:terminal_a], item[:terminal_b]].sort })
+      .to contain_exactly(%w[A.+ B.+], %w[A.- B.-])
     expect(result.conflicts.first[:location]).not_to be_nil
     bipolar = resolve('board :half; supply :POS, voltage: "5V", plus: "a1", minus: "a2"; supply :NEG, voltage: "5V", plus: "b2", minus: "b3"; net :GND, at: "c2"; wire "a1", "a3"')
     conflict = bipolar.potentials.conflicts.fetch(0)
