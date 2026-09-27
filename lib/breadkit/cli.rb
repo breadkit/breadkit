@@ -42,17 +42,18 @@ module Breadkit
 
         circuit = Breadkit.load(path, timeout: timeout)
         if command == "ir"
-          errors = circuit.diagnostics.select { |item| item.severity == "error" }
-          errors.each { |item| warn "breadkit: #{item.code}: #{item.message}" }
-          return 1 unless errors.empty? || force
+          has_errors = report_errors(circuit)
+          return 1 if has_errors && !force
 
           puts JSON.pretty_generate(circuit.to_ir)
           0
         else
+          return 1 if report_errors(circuit)
+
           state = circuit.states.find { |item| item.name == state_name } if state_name
           raise ArgumentError, "unknown switch state #{state_name}" if state_name && !state
           circuit.nets(state).each { |net| puts "#{net.name}: #{net.members.join(', ')}" }
-          circuit.diagnostics.any? { |item| item.severity == "error" } ? 1 : 0
+          0
         end
       when "parts"
         show = args.shift if args.first == "show"
@@ -88,13 +89,15 @@ module Breadkit
         target = args.shift unless command == "bom"
         path = required!(args, command == "bom" ? "bom FILE" : "#{command} TARGET FILE")
         circuit = Breadkit.load(path, timeout: timeout)
+        return 1 if report_errors(circuit)
+
         state = select_state(circuit, state_name)
         case command
         when "where" then show_where(circuit, target, state)
         when "explain" then show_explain(circuit, target, state)
         when "bom" then show_bom(circuit)
         end
-        circuit.diagnostics.any? { |item| item.severity == "error" } ? 1 : 0
+        0
       when "new"
         template = nil
         OptionParser.new { |opts| opts.on("--template NAME") { |value| template = value } }.parse!(args)
@@ -156,6 +159,12 @@ module Breadkit
     end
 
     private
+
+    def report_errors(circuit)
+      errors = circuit.diagnostics.select { |item| item.severity == "error" }
+      errors.each { |item| warn "breadkit: #{item.code}: #{item.message}" }
+      !errors.empty?
+    end
 
     def required!(args, usage)
       path = args.shift

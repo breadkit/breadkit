@@ -29,6 +29,9 @@ indeterminate circuits leave currents unknown. `bom` reports quantities, not
 supplier part numbers or prices. `diff` compares resolved circuit content and
 ignores source locations.
 
+`nets`, `where`, `explain`, and `bom` print error diagnostics to standard error
+and stop before printing inspection results when the circuit is invalid.
+
 Use `breadkit ir --force FILE` to export a circuit with diagnostics. Supplies
 can be marked `isolated: true`, and an inclusive voltage range such as
 `3.0..4.2` can describe a battery whose voltage varies. Component values may
