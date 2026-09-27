@@ -6,6 +6,7 @@
   "required": ["id", "pins"],
   "properties": {
     "id": { "type": "string", "minLength": 1 },
+    "datasheet_url": { "type": "string", "format": "uri", "pattern": "^https://" },
     "aliases": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "category": { "type": "string" },
     "extends": { "type": "string" },

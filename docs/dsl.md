@@ -232,6 +232,9 @@ Values accept SI suffixes and RKM notation such as `4.7k`, `4k7`, `1M`, `100n`, 
 The core CLI provides `breadkit nets`, `breadkit parts`, and `breadkit ir`.
 
 Custom module pins can declare their kind with `type:` in the part YAML, for example `power`, `ground`, `clock`, `data`, `address`, or `interrupt`. The renderer colors typed pin markers and dims pins without a wire connection.
+Custom part YAML may set `datasheet_url: https://example.com/part.pdf` to
+retain a source link in part listings and JSON IR. Use an actual HTTPS
+datasheet URL for a published part; URLs with embedded credentials are rejected.
 An individual pin may also declare `max_current: 0.012` for a 12 mA limit.
 Use a verified limit from that part's datasheet; pins without this field have
 no inferred current limit. The value is preserved in JSON IR for lint tools.

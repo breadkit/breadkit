@@ -39,6 +39,7 @@
       "type": "object", "required": ["id", "pins"],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
+        "datasheet_url": { "type": "string", "format": "uri", "pattern": "^https://" },
         "pins": { "type": "array", "items": { "type": "object", "required": ["num"],
           "properties": { "num": { "type": ["string", "integer"] }, "name": { "type": "string" }, "type": { "type": "string" }, "role": { "type": "string" }, "max_current": { "type": "number", "exclusiveMinimum": 0 } } } },
         "placement": { "enum": ["leads", "dip", "footprint", "offboard"] },

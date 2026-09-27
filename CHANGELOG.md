@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Preserve a validated HTTPS `datasheet_url` on custom part definitions and in JSON IR.
 - Allocate jumpers from a measured color and usable-span inventory, with optional per-wire route measurements and explicit skipped and unassigned results.
 - Solve DC current for an explicitly declared `provides` output pin while retaining unknown GPIO state handling for other pins.
 - Allow custom part definitions to declare a validated positive `max_current` in amperes on individual pins.

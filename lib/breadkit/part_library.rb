@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
+require "uri"
+
 module Breadkit
   class PartDef
     attr_reader :data
 
-    KEYS = %w[id aliases category placement pins polarity footprint internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current max_lead_span_mm].freeze
+    KEYS = %w[id aliases category placement pins polarity footprint internal switch same_strip_ok straddle package render flags supply_range transistor_polarity attributes provides extends override max_reverse_voltage forward_voltage on_resistance max_forward_current max_lead_span_mm datasheet_url].freeze
     PIN_KEYS = %w[num name aliases type role label max_voltage max_current output_capable].freeze
 
     def initialize(data)
@@ -20,6 +22,16 @@ module Breadkit
       raise ArgumentError, "part #{data['id']} has unknown keys: #{unknown.join(', ')}" unless unknown.empty?
       raise ArgumentError, "part definition needs an id" unless data["id"]
       raise ArgumentError, "part #{data['id']} needs pins" unless data["pins"].is_a?(Array)
+      if data.key?("datasheet_url")
+        valid_url = begin
+          url = data["datasheet_url"]
+          parsed = URI.parse(url) if url.is_a?(String)
+          parsed.is_a?(URI::HTTPS) && !parsed.host.to_s.empty? && !parsed.userinfo
+        rescue URI::InvalidURIError
+          false
+        end
+        raise ArgumentError, "part #{id} has invalid datasheet_url" unless valid_url
+      end
       if data.key?("attributes")
         attributes = data["attributes"]
         unless attributes.is_a?(Hash) && attributes.all? { |key, schema| key.is_a?(String) &&
