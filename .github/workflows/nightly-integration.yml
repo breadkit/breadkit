@@ -39,6 +39,12 @@ jobs:
           ref: main
           path: breadkit-rspec
           persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: breadkit/breadkit-parts
+          ref: main
+          path: breadkit-parts
+          persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y librsvg2-bin libvips-dev fonts-noto-cjk
       - uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073 # v1.324.0
         with:
@@ -47,6 +53,14 @@ jobs:
       - name: Core suite
         working-directory: breadkit
         run: bundle install && bundle exec rake
+      - name: Part pack pinout and placement
+        working-directory: breadkit
+        run: |
+          ruby ../breadkit-parts/test/pico_w_test.rb
+          bundle exec ruby -Ilib ../breadkit-parts/test/placement_test.rb
+          for file in ../breadkit-parts/parts/*.yml; do
+            bundle exec breadkit check-part "$file"
+          done
       - name: Lint suite
         working-directory: breadkit-lint
         run: bundle install && bundle exec rake

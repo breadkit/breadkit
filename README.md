@@ -115,6 +115,10 @@ displays, power connectors, and model-specific Pico, Nano, Pro Micro, XIAO,
 and ESP32 board footprints. Run `breadkit parts show PART` to inspect exact
 pins before wiring a physical component.
 
+The separate [breadkit-parts](https://github.com/breadkit/breadkit-parts)
+repository starts with a source-verified Raspberry Pi Pico W definition. Add it
+as a Git submodule and run `breadkit lock` to pin the selected YAML bytes.
+
 The renderer creates SVG, PNG, and JPEG diagrams. The linter reports layout,
 electrical, and wiring-intent problems. Each gem is released separately.
 The separate [breadkit-rspec](https://github.com/breadkit/breadkit-rspec)
@@ -126,6 +130,7 @@ gem checks resolved connections in tests, for example
 - [User guide](https://breadkit.github.io/breadkit/guide/) — write a circuit and see its output.
 - [Circuit gallery](https://breadkit.github.io/breadkit/gallery/) — five complete recipes with generated diagrams.
 - [Component catalog](https://breadkit.github.io/breadkit/guide/components/) — boards, built-in parts, and custom modules.
+- [Community part pack](https://github.com/breadkit/breadkit-parts) — verified model-specific definitions with Git submodule and lockfile instructions.
 - [DSL reference](https://breadkit.github.io/breadkit/guide/dsl/) — methods, pins, nets, and custom definitions.
 - [Browser Playground](https://breadkit.github.io/breadkit/playground/) — edit a Ruby circuit and preview its diagram, nets, and lint results.
 - [Project design](docs/DESIGN.md) — the data model and resolution rules.
