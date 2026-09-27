@@ -227,6 +227,10 @@ module Breadkit
     def self.call: (Circuit circuit, format: String | Symbol) -> String
   end
 
+  module Patterns
+    def self.call: (Circuit circuit) -> Array[Hash[String, String | Float]]
+  end
+
   class Document
     attr_accessor title: String?
     attr_accessor board: Hash[Symbol, untyped]

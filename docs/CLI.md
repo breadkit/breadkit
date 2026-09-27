@@ -21,6 +21,7 @@ part definitions are not circuit inputs.
 | `breadkit lock FILE` | Record the local part and board definition files used by a circuit in `breadkit.lock`. |
 | `breadkit suggest FILE` | Print JSON candidates for unmet connection intent between placed pins. Each candidate names two free board holes; nothing is changed. |
 | `breadkit kit --inventory KIT.yml FILE` | Allocate candidate jumpers from a measured YAML or JSON inventory. See [Jumper kits](JUMPER_KIT.md). |
+| `breadkit patterns FILE` | Print recognized circuit patterns as JSON. An empty array means no supported pattern matched. |
 | `breadkit console FILE` | Open IRB with the loaded `circuit` variable. |
 | `breadkit doctor` | Check the Ruby version and availability of the optional linter and renderer commands. |
 
@@ -45,6 +46,26 @@ can be marked `isolated: true`, and an inclusive voltage range such as
 `3.0..4.2` can describe a battery whose voltage varies. Component values may
 also include tolerance or ratings, such as `4.7k 5%`, `330 1/4W`, and
 `10u 16V`.
+
+## Circuit patterns
+
+`breadkit patterns FILE` currently identifies only an unloaded two-resistor
+voltage divider. It requires exactly one fixed-voltage standalone supply and
+exactly two resistors in series between the supply terminals. It uses the DC
+analysis result for the nominal midpoint voltage and reports that voltage
+relative to the supply's negative terminal. The output names the top and bottom
+resistors and the midpoint net:
+
+```sh
+breadkit patterns divider.bk.rb
+```
+
+The command prints `[]` for a loaded midpoint, another component or supply,
+a ranged supply, or a valid circuit the DC solver cannot resolve. Invalid
+circuits report diagnostics and exit with an error.
+This is deliberately narrow: `[]` does not mean the circuit is safe or has no
+useful topology. A 555 astable is not recognized because a DC netlist alone
+cannot establish the timer's charge/discharge operation or timing behavior.
 
 ## Export formats
 

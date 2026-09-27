@@ -11,6 +11,7 @@ module Breadkit
         where HOLE FILE | explain PART FILE | bom FILE | diff OLD NEW
         suggest FILE (show free-hole wire candidates for unmet connection intent)
         kit --inventory KIT.yml FILE (allocate measured jumpers to straight board wires)
+        patterns FILE (recognize supported unloaded circuit patterns)
         export --format kicad|spice|wokwi|pins|fritzing FILE
         fmt FILE (declarative YAML or TOML; prints formatted source)
         lock FILE (pin local part and board definitions in breadkit.lock)
@@ -158,6 +159,13 @@ module Breadkit
         return 1 if report_errors(circuit)
 
         puts JSON.pretty_generate(JumperKit.load(inventory).allocate(circuit))
+        0
+      when "patterns"
+        path = required!(args, "patterns FILE")
+        circuit = Breadkit.load(path)
+        return 1 if report_errors(circuit)
+
+        puts JSON.pretty_generate(Patterns.call(circuit))
         0
       when "console"
         path = required!(args, "console FILE")

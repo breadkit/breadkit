@@ -106,6 +106,7 @@ Prefer a data-only circuit file? The same LED circuit is available in
 | Board and part definitions | Start with double full (1660 holes), full, half, and mini boards or load your own YAML definitions. |
 | Multiple boards | Name breadboards and connect their qualified holes with explicit wires. |
 | Connectivity analysis | Resolve conductive strips, pins, and switch states into named nets. |
+| Circuit patterns | Opt in with `breadkit patterns FILE` to identify an unloaded resistor divider and its nominal midpoint voltage. |
 | JSON IR | Pass resolved circuits to the renderer, linter, or another tool. |
 | MCP server | Inspect data-only circuits, nets, and IR from an MCP client over stdio. |
 | Language server | Get live diagnostics, hole and pin completion, and net hover in an LSP editor. |
