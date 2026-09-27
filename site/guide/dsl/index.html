@@ -125,7 +125,7 @@ led :D1, color: :red, anode: "B2.a1", cathode: "B2.a2"
 wire "B1.b1", "B1.T+2", color: :red
 wire "B1.b3", "B2.b1", color: :red
 wire "B2.b2", "B2.B-2", color: :black</code></pre>
-          <p class="mt-4 text-pretty leading-7 text-muted">This path runs from the battery through the resistor and LED, then back to the battery. <code class="font-mono text-paper">breadkit nets</code> reports three nets: <code class="font-mono text-paper">BAT+</code>, <code class="font-mono text-paper">N1</code>, and <code class="font-mono text-paper">BAT-</code>. Named-board circuits use <a class="text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="https://github.com/breadkit/breadkit/blob/main/schema/ir-v2.json">JSON IR v2</a>; unnamed single-board circuits keep IR v1.</p>
+          <p class="mt-4 text-pretty leading-7 text-muted">This path runs from the battery through the resistor and LED, then back to the battery. <code class="font-mono text-paper">breadkit nets</code> reports three nets: <code class="font-mono text-paper">BAT+</code>, <code class="font-mono text-paper">N1</code>, and <code class="font-mono text-paper">BAT-</code>. Named-board circuits use <a class="text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../../schema/ir-v2.json">JSON IR v2</a>; unnamed single-board circuits use <a class="text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../../schema/ir-v1.json">JSON IR v1</a>.</p>
         </section>
 
         <section id="cli" class="scroll-mt-8 mt-12 border-t border-line pt-10 pb-16">
@@ -136,6 +136,7 @@ breadkit parts
 breadkit ir circuit.bk.rb
 breadkit fmt circuit.bk.yml &gt; formatted.bk.yml</code></pre>
           <p class="mt-4 text-pretty leading-7 text-muted">Use <code class="font-mono text-paper">breadkit nets</code> to inspect connections, <code class="font-mono text-paper">breadkit parts</code> to list built-in definitions, and <code class="font-mono text-paper">breadkit ir</code> to print JSON IR. <code class="font-mono text-paper">breadkit fmt</code> prints normalized declarative YAML or TOML and discards comments. See the <a class="text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../#declarative">YAML and TOML example</a>.</p>
+          <p class="mt-4 text-pretty leading-7 text-muted">For editor validation, use the published <a class="text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../../schema/part-v1.json">part</a> and <a class="text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../../schema/board-v1.json">board</a> JSON Schemas.</p>
         </section>
       </main>
 

@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "build": "mkdir -p _site && cp -R site/. _site/ && tailwindcss -i site/styles.css -o _site/assets/site.css --minify"
+    "build": "mkdir -p _site/schema && cp -R site/. _site/ && cp -R schema/. _site/schema/ && tailwindcss -i site/styles.css -o _site/assets/site.css --minify"
   },
   "devDependencies": {
     "@tailwindcss/cli": "4.3.3",

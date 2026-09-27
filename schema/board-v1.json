@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://breadkit.github.io/breadkit/schema/board-v1.json",
   "title": "Breadkit board definition v1",
   "type": "object",
   "required": ["id", "terminal"],

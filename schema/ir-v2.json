@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://breadkit.github.io/breadkit/schema/ir-v2.json",
   "title": "Breadkit IR v2",
   "type": "object",
   "required": ["schema_version", "title", "boards", "components", "wires", "supplies", "labels", "expectations"],
