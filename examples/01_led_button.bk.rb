@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-title "押しボタンで LED を点灯"
+title "Button-controlled LED"
 board :half
 
 supply :USB, voltage: 5.0, plus: "B+1", minus: "B-1"

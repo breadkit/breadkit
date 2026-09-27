@@ -12,12 +12,14 @@ resistor :R2, "10k", pins: %w[h21 h22]
 resistor :R3, "330", pins: %w[a22 a25]
 capacitor :C1, "10n", pins: %w[h23 h24]
 electrolytic :C2, "100u", plus: "g22", minus: "j24"
+capacitor :C3, "100n", pins: %w[B+19 B-19]
 led :D1, color: :red, anode: "b25", cathode: "b27"
 
 wire "i30", "B+", color: :red
-wire "g20", "B+", color: :red
+wire "B+15", "T+15", color: :red
+wire "g20", "T+20", color: :red
 wire "b20", "B-", color: :black
-wire "b21", "i22", color: :yellow
+wire "b21", "i22", color: :yellow, route: :edge
 wire "a23", "B+", color: :red
 wire "a27", "B-", color: :black
 wire "i24", "B-", color: :black
