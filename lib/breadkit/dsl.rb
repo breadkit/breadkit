@@ -4,7 +4,7 @@ require "timeout"
 
 module Breadkit
   module DSL
-    METHODS = %w[title board use_parts use_boards supply net part wire offboard expect expect_voltage expect_current lint_disable resistor capacitor electrolytic diode led transistor pot button ic connected isolated].freeze
+    METHODS = %w[title board use_parts use_boards include supply net part wire offboard expect expect_voltage expect_current lint_disable resistor capacitor electrolytic diode led transistor pot button ic connected isolated].freeze
 
     class Builder
       attr_reader :document
@@ -13,6 +13,7 @@ module Breadkit
         @document = Document.new
         @expected = nil
         @base_dir = base_dir
+        @include_stack = []
       end
 
       def title(value)
@@ -41,6 +42,25 @@ module Breadkit
 
       def use_boards(path)
         document.board_paths.concat(Dir.glob(resolve_path(path)))
+      end
+
+      def include(path)
+        absolute = resolve_path(path)
+        raise DSLError.new("circular include: #{absolute}", location: source_location) if @include_stack.include?(absolute)
+
+        previous_dir = @base_dir
+        @include_stack << absolute
+        @base_dir = File.dirname(absolute)
+        instance_eval(File.read(absolute, encoding: "UTF-8"), absolute, 1)
+      rescue DSLError, ScriptError => e
+        frame = e.backtrace_locations&.find { |item| item.path == absolute }
+        location = e.respond_to?(:location) && e.location || SourceLocation.new(path: absolute, line: frame&.lineno)
+        raise DSLError.new(e.message, location: location)
+      ensure
+        if previous_dir
+          @base_dir = previous_dir
+          @include_stack.pop
+        end
       end
 
       def supply(name, voltage:, plus:, minus:, isolated: false, current_limit: nil)

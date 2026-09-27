@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "tempfile"
+require "tmpdir"
 
 RSpec.describe "circuit input validation" do
   def circuit(source)
@@ -177,5 +178,46 @@ RSpec.describe "circuit input validation" do
     result = Breadkit::Resolver.new.call(builder.document)
     expect(result.diagnostics).to be_empty
     expect(result.components.fetch("U1").pins.values.map(&:hole_id)).to eq(%w[c10 d10 c9])
+  end
+
+  it "includes reusable circuit declarations relative to each source file" do
+    Dir.mktmpdir do |directory|
+      Dir.mkdir(File.join(directory, "blocks"))
+      root = File.join(directory, "main.bk.rb")
+      block = File.join(directory, "blocks", "power.bk.rb")
+      nested = File.join(directory, "blocks", "led.bk.rb")
+      File.write(root, "board :mini\ninclude 'blocks/power.bk.rb'\n")
+      File.write(block, "supply :USB, voltage: 5, plus: 'a1', minus: 'a2'\ninclude 'led.bk.rb'\n")
+      File.write(nested, "resistor :R1, '330', pins: %w[b1 b3]\n")
+
+      result = Breadkit.load(root)
+      expect(result.diagnostics).to be_empty
+      expect(result.supplies.first.name).to eq("USB")
+      expect(result.components.fetch("R1").location.path).to eq(nested)
+      expect(result.components.fetch("R1").location.line).to eq(1)
+      File.write(nested, "registor :R1, '330', pins: %w[b1 b3]\n")
+      expect { Breadkit.load(root) }.to raise_error(Breadkit::DSLError) { |error|
+        expect(error.location.path).to eq(nested)
+        expect(error.location.line).to eq(1)
+      }
+      File.write(nested, "include 'power.bk.rb'\n")
+      expect { Breadkit.load(root) }.to raise_error(Breadkit::DSLError, /circular include/)
+    end
+  end
+
+  it "reports physical module bounds after footprint orientation" do
+    builder = Breadkit::DSL::Builder.new
+    builder.document.part_definitions << { "id" => "module", "placement" => "footprint",
+      "pins" => (1..3).map { |number| { "num" => number } },
+      "footprint" => { "1" => [0, 0], "2" => [1, 0], "3" => [0, 1] },
+      "render" => { "shape" => "module", "size_mm" => [10, 20], "body_offset_mm" => [2.54, 5.08] } }
+    builder.instance_eval("board :mini; part :U1, :module, at: 'c10', rotate: 90, mirror: true", "sample.bk.rb", 1)
+    result = Breadkit::Resolver.new.call(builder.document)
+    expect(result.diagnostics).to be_empty
+    x, y, width, height = result.components.fetch("U1").body_bounds(result.board)
+    expect(width).to be_within(0.001).of(20 / 2.54)
+    expect(height).to be_within(0.001).of(10 / 2.54)
+    expect(x + width / 2).to be_within(0.001).of(6.5)
+    expect(y + height / 2).to be_within(0.001).of(0.5)
   end
 end

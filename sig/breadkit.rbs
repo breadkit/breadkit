@@ -39,6 +39,7 @@ module Breadkit
     attr_reader part: PartDef
     attr_reader pins: Hash[String, Pin]
     def pin: (String | Symbol | Integer reference) -> Pin?
+    def body_bounds: (Board board) -> [Float, Float, Float, Float]?
   end
 
   class Wire

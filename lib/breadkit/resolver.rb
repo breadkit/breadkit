@@ -228,14 +228,7 @@ module Breadkit
     end
 
     def transformed_offset(item, offset)
-      x, y = offset.map(&:to_i)
-      x = -x if item.dig(:attrs, :mirror)
-      case item.dig(:attrs, :rotate) || 0
-      when 90 then [-y, x]
-      when 180 then [-x, -y]
-      when 270 then [y, -x]
-      else [x, y]
-      end
+      Geometry.transform(offset.map(&:to_i), rotate: item.dig(:attrs, :rotate) || 0, mirror: item.dig(:attrs, :mirror) == true)
     end
 
     def placement_error(item, message)

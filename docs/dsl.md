@@ -30,6 +30,7 @@ end
 | `title(text)` | Diagram title. |
 | `board(id, split_rails: false)` | Select `:full`, `:half`, `:mini`, or a custom board ID. |
 | `use_parts(path)` / `use_boards(path)` | Load additional YAML definitions relative to the DSL file. Paths may use globs. |
+| `include(path)` | Evaluate another trusted DSL file in the same circuit. Relative paths resolve from the including file; circular includes are rejected. |
 | `supply(name, voltage:, plus:, minus:, current_limit: nil)` | Add a DC source. Both terminals occupy board holes. Optional `current_limit:` is the supply's positive output limit in amperes. |
 | `net(name, at:)` | Label a hole or component pin. |
 | `part(ref, type, value = nil, pins: ..., at: ..., **attrs)` | Place a defined part. `pins:` accepts pin order arrays or pin-name hashes. |
@@ -50,6 +51,7 @@ Short forms are available for `resistor`, `capacitor`, `electrolytic`, `diode`, 
 - The built-in `ne555` and generic `dip` definitions must straddle the center gap. For a generic package, set `pin_count`, for example `part :U2, :dip, pin_count: 14, at: "e20"`.
 - A generic pin header can be sized with `part :J1, :pin_header, pin_count: 4, pins: %w[a1 a2 a3 a4]`.
 - Footprint parts accept `rotate: 0|90|180|270` and `mirror: true|false`, for example `part :J1, :pin_header, pin_count: 3, at: "c10", rotate: 90`. Rotation is clockwise on the board; mirroring reflects left to right before rotation. The same orientation is checked when pins are placed explicitly.
+- A placed part with `render.size_mm` exposes its physical rectangle as `component.body_bounds(circuit.board)`, in board hole pitch units (`[x, y, width, height]`).
 
 Values accept SI suffixes and RKM notation such as `4.7k`, `4k7`, `1M`, `100n`, `10uF`, and `4.7kΩ`.
 
