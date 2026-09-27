@@ -44,4 +44,16 @@ RSpec.describe Breadkit::CLI do
       expect(described_class.new.run(["fmt", "circuit.bk.rb"])).to eq(2)
     end
   end
+
+  it "round-trips escaped TOML values and repeated table arrays" do
+    data = {
+      "title" => "LED \"A\"\nSecond line",
+      "board" => "mini",
+      "parts" => [
+        { "ref" => "R1", "type" => "resistor", "value" => "4.7k 5%", "pins" => %w[a1 a3] },
+        { "ref" => "D1", "type" => "led", "pins" => { "anode" => "b3", "cathode" => "b4" } }
+      ]
+    }
+    expect(Tomlrb.parse(Breadkit::Formatter.toml(data))).to eq(data)
+  end
 end
