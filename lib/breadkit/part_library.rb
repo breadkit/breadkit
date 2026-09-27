@@ -87,9 +87,10 @@ module Breadkit
       end
       if data["render"]
         render = data["render"]
-        unknown_render = render.is_a?(Hash) ? render.keys - %w[shape label size_mm body_offset_mm fill stroke text_color] : []
+        unknown_render = render.is_a?(Hash) ? render.keys - %w[shape label size_mm body_offset_mm fill stroke text_color svg] : []
         unless render.is_a?(Hash) && unknown_render.empty? && (!render.key?("shape") || render["shape"].is_a?(String)) &&
                (!render.key?("label") || render["label"].is_a?(String)) &&
+               (!render.key?("svg") || render["svg"].is_a?(String)) &&
                %w[fill stroke text_color].all? { |key| !render.key?(key) || Color.valid?(render[key]) }
           raise ArgumentError, "part #{id} has invalid render options#{": #{unknown_render.join(', ')}" unless unknown_render.empty?}"
         end
