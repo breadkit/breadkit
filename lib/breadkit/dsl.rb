@@ -69,8 +69,10 @@ module Breadkit
       end
 
       def part(ref, type, value = nil, pins: nil, at: nil, **attrs)
-        unsupported = attrs.keys.find { |key| %i[rotate wire_layer].include?(key.to_sym) }
+        unsupported = attrs.keys.find { |key| key.to_sym == :wire_layer }
         raise DSLError, "unsupported component option #{unsupported}" if unsupported
+        raise DSLError, "rotate must be 0, 90, 180, or 270" if attrs.key?(:rotate) && ![0, 90, 180, 270].include?(attrs[:rotate])
+        raise DSLError, "mirror must be boolean" if attrs.key?(:mirror) && ![true, false].include?(attrs[:mirror])
 
         document.components << { ref: ref.to_s, type: type.to_s, value: value, pins: pins, at: at,
                                  attrs: attrs, unused: Array(attrs.delete(:unused)), location: source_location }
@@ -119,7 +121,7 @@ module Breadkit
       end
 
       def offboard(name, type, side: :left, at: nil, unused: [], **attrs)
-        unsupported = attrs.keys.find { |key| %i[rotate wire_layer].include?(key.to_sym) }
+        unsupported = attrs.keys.find { |key| %i[rotate mirror wire_layer].include?(key.to_sym) }
         raise DSLError, "unsupported component option #{unsupported}" if unsupported
 
         attrs[:at] = at if at

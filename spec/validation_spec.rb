@@ -129,4 +129,53 @@ RSpec.describe "circuit input validation" do
     restored = Breadkit::IR::Reader.new.read(ir)
     expect(restored.components.values.first.location.path).to eq(path)
   end
+
+  it "rotates and mirrors footprint pins around their anchor" do
+    placements = {
+      [0, false] => %w[c10 c11 d10],
+      [90, false] => %w[c10 d10 c9],
+      [180, false] => %w[c10 c9 b10],
+      [270, false] => %w[c10 b10 c11],
+      [0, true] => %w[c10 c9 d10]
+    }
+    placements.each do |(rotate, mirror), expected|
+      builder = Breadkit::DSL::Builder.new
+      builder.document.part_definitions << { "id" => "asymmetric", "placement" => "footprint",
+        "pins" => (1..3).map { |number| { "num" => number } },
+        "footprint" => { "1" => [0, 0], "2" => [1, 0], "3" => [0, 1] } }
+      builder.instance_eval("board :mini; part :U1, :asymmetric, at: 'c10', rotate: #{rotate}, mirror: #{mirror}", "sample.bk.rb", 1)
+      result = Breadkit::Resolver.new.call(builder.document)
+      expect(result.diagnostics).to be_empty
+      expect(result.components.fetch("U1").pins.values.map(&:hole_id)).to eq(expected)
+      restored = Breadkit::IR::Reader.new.read(result.to_ir)
+      expect(restored.components.fetch("U1").attrs).to include(rotate: rotate, mirror: mirror)
+    end
+  end
+
+  it "checks rotated explicit pins and reports an out-of-board footprint once" do
+    builder = Breadkit::DSL::Builder.new
+    builder.document.part_definitions << { "id" => "asymmetric", "placement" => "footprint",
+      "pins" => (1..3).map { |number| { "num" => number } },
+      "footprint" => { "1" => [0, 0], "2" => [1, 0], "3" => [0, 1] } }
+    builder.instance_eval("board :mini; part :U1, :asymmetric, pins: %w[c10 d10 c9], rotate: 90", "sample.bk.rb", 1)
+    expect(Breadkit::Resolver.new.call(builder.document).diagnostics).to be_empty
+    builder.document.components.first[:pins] = %w[c10 c11 d10]
+    expect(Breadkit::Resolver.new.call(builder.document).diagnostics.map(&:code)).to include("invalid_placement")
+    builder.document.components.first[:pins] = nil
+    builder.document.components.first[:at] = "a1"
+    builder.document.components.first[:attrs] = { rotate: 180 }
+    errors = Breadkit::Resolver.new.call(builder.document).diagnostics.select { |entry| entry.code == "invalid_placement" }
+    expect(errors.length).to eq(1)
+  end
+
+  it "treats the anchor as pin one even when its footprint offset is nonzero" do
+    builder = Breadkit::DSL::Builder.new
+    builder.document.part_definitions << { "id" => "offset", "placement" => "footprint",
+      "pins" => (1..3).map { |number| { "num" => number } },
+      "footprint" => { "1" => [1, 0], "2" => [2, 0], "3" => [1, 1] } }
+    builder.instance_eval("board :mini; part :U1, :offset, at: 'c10', rotate: 90", "sample.bk.rb", 1)
+    result = Breadkit::Resolver.new.call(builder.document)
+    expect(result.diagnostics).to be_empty
+    expect(result.components.fetch("U1").pins.values.map(&:hole_id)).to eq(%w[c10 d10 c9])
+  end
 end

@@ -79,6 +79,9 @@ module Breadkit
         end
       end
       attrs = item[:attrs] || {}
+      if attrs.key?(:rotate) || attrs.key?(:mirror)
+        placement_error(item, "#{item[:ref]} orientation requires a footprint") unless part.placement == "footprint"
+      end
       pin_names = part.pins.flat_map { |pin| [pin["num"], pin["name"], *Array(pin["aliases"])] }.compact.map(&:to_s)
       attrs.each do |key, value|
         if key.to_s == "color" && !Color.valid?(value)
@@ -91,7 +94,7 @@ module Breadkit
           @diagnostics << diagnostic(:invalid_option, "error", "invalid #{item[:ref]}.#{key}: #{value.inspect}", item[:location], [item[:ref]]) unless valid
           next
         end
-        next if part.pin(key) || %w[pin_count color layer address label side at].include?(key.to_s)
+        next if part.pin(key) || %w[pin_count color layer address label side at rotate mirror].include?(key.to_s)
 
         suggestion = DidYouMean::SpellChecker.new(dictionary: pin_names).correct(key.to_s).first
         if suggestion
@@ -162,7 +165,7 @@ module Breadkit
       origin = @board.hole(item[:at] || result[first_key]&.hole_id)
       return unless origin
 
-      first_offset = footprint[first["num"].to_s] || [0, 0]
+      first_offset = transformed_offset(item, footprint[first["num"].to_s] || [0, 0])
       part.pins.each do |definition|
         pin = result[(definition["name"] || definition["num"]).to_s]
         next unless pin&.hole_id
@@ -170,8 +173,8 @@ module Breadkit
         offset = footprint[definition["num"].to_s]
         next unless offset
 
-        expected = @terminal_positions[[origin.x + offset[0].to_i - first_offset[0].to_i,
-                                         origin.y + offset[1].to_i - first_offset[1].to_i]]
+        x, y = transformed_offset(item, offset)
+        expected = @terminal_positions[[origin.x + x - first_offset[0], origin.y + y - first_offset[1]]]
         unless pin.hole_id == expected&.id
           placement_error(item, "#{item[:ref]} pins do not match its footprint")
           break
@@ -211,7 +214,9 @@ module Breadkit
       return item[:at] if !offset && pin_num == part.pins.first["num"].to_s
       return nil unless offset
       anchor = @board.hole(at.to_s)
-      target = anchor && @terminal_positions[[anchor.x + offset[0].to_i, anchor.y + offset[1].to_i]]
+      x, y = transformed_offset(item, offset)
+      first_offset = transformed_offset(item, footprint[part.pins.first["num"].to_s] || [0, 0])
+      target = anchor && @terminal_positions[[anchor.x + x - first_offset[0], anchor.y + y - first_offset[1]]]
       unless target
         placement_error(item, "#{item[:ref]} footprint extends beyond the board or into the center gap")
         return nil
@@ -220,6 +225,17 @@ module Breadkit
     rescue ArgumentError
       placement_error(item, "invalid component anchor #{item[:at]}")
       nil
+    end
+
+    def transformed_offset(item, offset)
+      x, y = offset.map(&:to_i)
+      x = -x if item.dig(:attrs, :mirror)
+      case item.dig(:attrs, :rotate) || 0
+      when 90 then [-y, x]
+      when 180 then [-x, -y]
+      when 270 then [y, -x]
+      else [x, y]
+      end
     end
 
     def placement_error(item, message)

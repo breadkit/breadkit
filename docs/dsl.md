@@ -49,6 +49,7 @@ Short forms are available for `resistor`, `capacitor`, `electrolytic`, `diode`, 
 - Component pins use `R1.1`, `D1.anode`, `U1.8`, or `U1.VCC`. A wire endpoint naming a placed pin selects a free hole in that pin's conductive strip.
 - The built-in `ne555` and generic `dip` definitions must straddle the center gap. For a generic package, set `pin_count`, for example `part :U2, :dip, pin_count: 14, at: "e20"`.
 - A generic pin header can be sized with `part :J1, :pin_header, pin_count: 4, pins: %w[a1 a2 a3 a4]`.
+- Footprint parts accept `rotate: 0|90|180|270` and `mirror: true|false`, for example `part :J1, :pin_header, pin_count: 3, at: "c10", rotate: 90`. Rotation is clockwise on the board; mirroring reflects left to right before rotation. The same orientation is checked when pins are placed explicitly.
 
 Values accept SI suffixes and RKM notation such as `4.7k`, `4k7`, `1M`, `100n`, `10uF`, and `4.7kΩ`.
 

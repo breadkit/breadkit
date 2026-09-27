@@ -34,10 +34,12 @@ RSpec.describe "review batch 3" do
     expect(Breadkit::IR::Reader.new.read(circuit.to_ir).net_of("u1")).not_to be_nil
   end
 
-  it "rejects documented component options that have no implementation" do
+  it "rejects unsupported component orientation and layering" do
     builder = Breadkit::DSL::Builder.new
-    expect { builder.instance_eval('resistor :R1, "1k", pins: %w[a1 a2], rotate: 90', "sample.bk.rb", 1) }
+    expect { builder.instance_eval('resistor :R1, "1k", pins: %w[a1 a2], rotate: 45', "sample.bk.rb", 1) }
       .to raise_error(Breadkit::DSLError, /rotate/)
+    expect { builder.instance_eval('resistor :R1, "1k", pins: %w[a1 a2], mirror: :yes', "sample.bk.rb", 1) }
+      .to raise_error(Breadkit::DSLError, /mirror/)
     expect { builder.instance_eval('offboard :UNO, "arduino_uno", wire_layer: :below', "sample.bk.rb", 1) }
       .to raise_error(Breadkit::DSLError, /wire_layer/)
   end
