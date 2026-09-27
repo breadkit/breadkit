@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Record numbered assembly steps in the Ruby DSL and JSON IR.
 - Format declarative YAML and TOML circuit files with `breadkit fmt`.
 - Add reusable Ruby DSL blocks and named bus-line labels.
 - Read declarative `.bk.yml`, `.bk.yaml`, and `.bk.toml` circuits through the existing resolver without evaluating Ruby.

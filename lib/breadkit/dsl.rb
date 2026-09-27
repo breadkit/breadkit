@@ -4,7 +4,7 @@ require "timeout"
 
 module Breadkit
   module DSL
-    METHODS = %w[title board use_parts use_boards include block use_block bus supply net part wire offboard expect expect_voltage expect_current lint_disable resistor capacitor electrolytic diode led transistor pot button ic connected isolated].freeze
+    METHODS = %w[title board use_parts use_boards include block use_block bus step supply net part wire offboard expect expect_voltage expect_current lint_disable resistor capacitor electrolytic diode led transistor pot button ic connected isolated].freeze
 
     class Builder
       attr_reader :document
@@ -16,6 +16,7 @@ module Breadkit
         @include_stack = []
         @blocks = {}
         @active_blocks = []
+        @current_step = nil
       end
 
       def title(value)
@@ -103,6 +104,22 @@ module Breadkit
         labels.each { |line, reference| net "#{prefix}_#{line}", at: reference }
       end
 
+      def step(number, title: nil, &body)
+        active = false
+        raise DSLError, "nested step declarations are not allowed" if @current_step
+        expected = document.steps.length + 1
+        raise DSLError, "step number must be #{expected}" unless number.is_a?(Integer) && number == expected
+        raise DSLError, "step title must be nonempty text" unless title.nil? || (title.is_a?(String) && !title.empty?)
+        raise DSLError, "step #{number} requires a body" unless body
+
+        document.steps << { number: number, title: title, source: source_location }
+        @current_step = number
+        active = true
+        instance_eval(&body)
+      ensure
+        @current_step = nil if active
+      end
+
       def supply(name, voltage:, plus:, minus:, isolated: false, current_limit: nil)
         range = voltage.is_a?(Range) ? [Value.parse(voltage.begin), Value.parse(voltage.end)] : nil
         raise DSLError, "supply voltage range must be inclusive and ascending" if range && (voltage.exclude_end? || range[0] > range[1])
@@ -115,7 +132,7 @@ module Breadkit
         end
         document.supplies << { name: name.to_s, voltage: parsed, plus: plus.to_s,
                                minus: minus.to_s, isolated: isolated, voltage_range: range,
-                               current_limit: current_limit, location: source_location }
+                               current_limit: current_limit, location: source_location, step: @current_step }
       end
 
       def net(name, *refs, at: nil, **options)
@@ -124,7 +141,7 @@ module Breadkit
         else
           raise DSLError, "net requires at: outside expect" if at.nil? || !refs.empty? || !options.empty?
 
-          document.labels << { name: name.to_s, at: at.to_s, location: source_location }
+          document.labels << { name: name.to_s, at: at.to_s, location: source_location, step: @current_step }
         end
       end
 
@@ -135,7 +152,7 @@ module Breadkit
         raise DSLError, "mirror must be boolean" if attrs.key?(:mirror) && ![true, false].include?(attrs[:mirror])
 
         document.components << { ref: ref.to_s, type: type.to_s, value: value, pins: pins, at: at,
-                                 attrs: attrs, unused: Array(attrs.delete(:unused)), location: source_location }
+                                 attrs: attrs, unused: Array(attrs.delete(:unused)), location: source_location, step: @current_step }
       end
 
       def resistor(ref, value, **options)
@@ -177,7 +194,7 @@ module Breadkit
       def wire(from, to, color: nil, id: nil, route: :straight, layer: nil, electrical: true, dashed: false)
         document.wires << { id: id&.to_s, from: from.to_s, to: to.to_s, color: color&.to_s,
                             route: route.to_s, layer: layer_names(layer), electrical: electrical != false,
-                            dashed: !!dashed, location: source_location }
+                            dashed: !!dashed, location: source_location, step: @current_step }
       end
 
       def offboard(name, type, side: :left, at: nil, unused: [], **attrs)
@@ -186,7 +203,8 @@ module Breadkit
 
         attrs[:at] = at if at
         document.components << { ref: name.to_s, type: type.to_s, attrs: attrs.merge(side: side.to_s),
-                                 pins: nil, unused: Array(unused), location: source_location, offboard: true }
+                                 pins: nil, unused: Array(unused), location: source_location, offboard: true,
+                                 step: @current_step }
       end
 
       def expect(strict: false, **options, &block)

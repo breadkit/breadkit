@@ -7,6 +7,7 @@
     "schema_version": { "const": 1 },
     "source_root": { "type": "string" },
     "title": { "type": ["string", "null"] },
+    "steps": { "type": "array", "items": { "$ref": "#/$defs/step" } },
     "part_definitions": { "type": "array", "items": { "$ref": "#/$defs/partDefinition" } },
     "board_definition": { "$ref": "#/$defs/boardDefinition" },
     "lint_disables": { "type": "array", "items": { "type": "object" } },
@@ -65,6 +66,15 @@
       "properties": { "path": { "type": "string" }, "line": { "type": "integer", "minimum": 1 } }
     },
     "nullableSource": { "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/source" }] },
+    "step": {
+      "type": "object",
+      "required": ["number"],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "title": { "type": ["string", "null"], "minLength": 1 },
+        "source": { "$ref": "#/$defs/nullableSource" }
+      }
+    },
     "location": {
       "type": "object",
       "required": ["path", "line"],
@@ -80,6 +90,7 @@
         "attrs": { "type": "object" },
         "pins": { "type": "object", "additionalProperties": { "type": ["string", "null"] } },
         "unused": { "type": "array", "items": { "type": "string" } },
+        "step": { "type": "integer", "minimum": 1 },
         "source": { "$ref": "#/$defs/nullableSource" }
       }
     },
@@ -92,6 +103,7 @@
         "to": { "type": "string" },
         "color": { "type": ["string", "null"] },
         "route": { "type": "string" },
+        "step": { "type": "integer", "minimum": 1 },
         "source": { "$ref": "#/$defs/nullableSource" }
       }
     },
@@ -106,6 +118,7 @@
         "current_limit": { "type": ["number", "null"], "exclusiveMinimum": 0 },
         "plus": { "type": "string" },
         "minus": { "type": "string" },
+        "step": { "type": "integer", "minimum": 1 },
         "source": { "$ref": "#/$defs/nullableSource" }
       }
     },
@@ -115,6 +128,7 @@
       "properties": {
         "net": { "type": "string" },
         "at": { "type": "string" },
+        "step": { "type": "integer", "minimum": 1 },
         "source": { "$ref": "#/$defs/nullableSource" }
       }
     },

@@ -13,11 +13,12 @@ module Breadkit
       wires = resolve_wires(components)
       supplies = resolve_supplies
       validate_names(components, wires, supplies)
-      labels = document.labels.map { |item| Label.new(name: item[:name], at: item[:at], location: item[:location]) }
+      labels = document.labels.map { |item| Label.new(name: item[:name], at: item[:at], location: item[:location], step: item[:step]) }
       validate_references(components, supplies, labels)
       circuit = Circuit.new(title: document.title, board: @board, components: components, wires: wires,
                             supplies: supplies, labels: labels, expectations: document.expectations,
                             lint_disables: document.lint_disables, diagnostics: @diagnostics,
+                            steps: document.steps,
                             source_root: document.source_root)
       validate_split_labels(circuit) if labels.length > 1
       circuit
@@ -66,7 +67,7 @@ module Breadkit
         end
         pins = resolve_pins(item, part)
         result[ref] = Component.new(ref: ref, part: part, value: item[:value], attrs: item[:attrs] || {},
-                                    pins: pins, unused: Array(item[:unused]).map(&:to_s), location: item[:location])
+                                    pins: pins, unused: Array(item[:unused]).map(&:to_s), location: item[:location], step: item[:step])
       end
     end
 
@@ -319,7 +320,7 @@ module Breadkit
           end
           wires << Wire.new(id: wire_id, from: endpoints[0], to: endpoints[1], color: item[:color],
                             route: item[:route], layer: item[:layer], electrical: false, dashed: item[:dashed],
-                            location: item[:location])
+                            location: item[:location], step: item[:step])
           next
         end
         parsed = endpoints.map { |endpoint| HoleId.parse(endpoint, board: @board) rescue nil }
@@ -371,7 +372,7 @@ module Breadkit
         end
         wires << Wire.new(id: wire_id, from: endpoints[0], to: endpoints[1], color: item[:color],
                           route: item[:route], layer: item[:layer], electrical: true, dashed: item[:dashed],
-                          location: item[:location])
+                          location: item[:location], step: item[:step])
       end
       wires
     end
@@ -426,7 +427,7 @@ module Breadkit
       @document.supplies.map do |item|
         Supply.new(name: item[:name], voltage: item[:voltage], plus: item[:plus], minus: item[:minus],
                    location: item[:location], isolated: item[:isolated] == true, voltage_range: item[:voltage_range],
-                   current_limit: item[:current_limit])
+                   current_limit: item[:current_limit], step: item[:step])
       end
     end
 

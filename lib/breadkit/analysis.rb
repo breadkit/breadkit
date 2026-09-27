@@ -32,11 +32,12 @@ module Breadkit
 
   class Circuit
     attr_reader :title, :board, :components, :wires, :supplies, :labels, :expectations,
-                :lint_disables, :diagnostics, :source_root
+                :lint_disables, :diagnostics, :source_root, :steps
 
-    def initialize(title:, board:, components:, wires:, supplies:, labels:, expectations:, lint_disables:, diagnostics:, source_root: nil)
+    def initialize(title:, board:, components:, wires:, supplies:, labels:, expectations:, lint_disables:, diagnostics:, steps: [], source_root: nil)
       @title, @board, @components, @wires, @supplies, @labels = title, board, components, wires, supplies, labels
       @expectations, @lint_disables, @diagnostics = expectations, lint_disables, diagnostics
+      @steps = steps
       @source_root = source_root
       @net_cache, @net_index, @potential_cache = {}, {}, {}
     end

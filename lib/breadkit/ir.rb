@@ -21,25 +21,30 @@ module Breadkit
           supplies: circuit.supplies.map { |item| { name: item.name, voltage: item.voltage, plus: item.plus, minus: item.minus,
                                                    isolated: item.isolated == true, voltage_range: item.voltage_range,
                                                    current_limit: item.current_limit,
-                                                   source: source(item.location) } },
-          labels: circuit.labels.map { |item| { net: item.name, at: item.at, source: source(item.location) } },
+                                                   source: source(item.location) }.merge(step_field(item)) },
+          labels: circuit.labels.map { |item| { net: item.name, at: item.at, source: source(item.location) }.merge(step_field(item)) },
           components: circuit.components.values.map do |component|
             { ref: component.ref, part: component.part.id, value: component.value,
               attrs: stringify(component.attrs), pins: component.pins.transform_values(&:hole_id),
-              unused: component.unused, source: source(component.location) }
+              unused: component.unused, source: source(component.location) }.merge(step_field(component))
           end,
           wires: circuit.wires.map { |wire| { id: wire.id, from: wire.from, to: wire.to, color: wire.color, route: wire.route,
                                                layer: wire.layer, electrical: wire.electrical, dashed: wire.dashed,
-                                               source: source(wire.location) } },
+                                               source: source(wire.location) }.merge(step_field(wire)) },
           expectations: stringify(circuit.expectations),
           lint_disables: stringify(circuit.lint_disables),
           analysis: { nets: circuit.nets.map { |net| { name: net.name, members: net.members, holes: net.holes, potential: circuit.potentials.values[net.name] } } }
         }
+        result[:steps] = circuit.steps.map { |item| { number: item[:number], title: item[:title], source: source(item[:source]) } } unless circuit.steps.empty?
         result[:part_definitions] = part_definitions unless part_definitions.empty?
         result
       end
 
       private
+
+      def step_field(item)
+        item.step ? { step: item.step } : {}
+      end
 
       def source(location)
         return nil unless location && location.path && location.line
@@ -75,26 +80,30 @@ module Breadkit
         doc = Document.new
         doc.source_root = @source_root
         doc.title = data["title"]
+        doc.steps = Array(data["steps"]).map do |item|
+          { number: item.fetch("number"), title: item["title"], source: location(item["source"]) }
+        end
         doc.board = { type: data.dig("board", "type") || "full", options: (data.dig("board", "options") || {}).transform_keys(&:to_sym) }
         doc.board_definitions = [data["board_definition"]] if data["board_definition"]
         doc.supplies = Array(data["supplies"]).map do |item|
           { name: item.fetch("name"), voltage: Value.parse(item.fetch("voltage")), plus: item.fetch("plus"),
             minus: item.fetch("minus"), isolated: item["isolated"] == true,
-            voltage_range: item["voltage_range"], current_limit: item["current_limit"], location: location(item["source"]) }
+            voltage_range: item["voltage_range"], current_limit: item["current_limit"],
+            location: location(item["source"]), step: item["step"] }
         end
         doc.labels = Array(data["labels"]).map do |item|
-          { name: item.fetch("net"), at: item.fetch("at"), location: location(item["source"]) }
+          { name: item.fetch("net"), at: item.fetch("at"), location: location(item["source"]), step: item["step"] }
         end
         doc.components = Array(data["components"]).map do |item|
           { ref: item.fetch("ref"), type: item.fetch("part"), value: item["value"],
             pins: item["pins"] || {}, at: nil, attrs: (item["attrs"] || {}).transform_keys(&:to_sym),
-            unused: item["unused"] || [], location: location(item["source"]) }
+            unused: item["unused"] || [], location: location(item["source"]), step: item["step"] }
         end
         doc.part_definitions = Array(data["part_definitions"])
         doc.wires = Array(data["wires"]).map do |item|
           { id: item["id"], from: item.fetch("from"), to: item.fetch("to"), color: item["color"],
             route: item["route"] || "straight", layer: item["layer"], electrical: item["electrical"] != false,
-            dashed: item["dashed"] == true, location: location(item["source"]) }
+            dashed: item["dashed"] == true, location: location(item["source"]), step: item["step"] }
         end
         doc.expectations = Array(data["expectations"])
         doc.lint_disables = Array(data["lint_disables"]).map do |item|
@@ -120,6 +129,7 @@ module Breadkit
           raise DSLError, "invalid IR: board.options.split_rails must be boolean"
         end
         validate_board_definition(data["board_definition"]) if data.key?("board_definition")
+        validate_steps(data)
         validate_records(data, "supplies", %w[name plus minus], %w[voltage])
         data.fetch("supplies").each_with_index do |item, index|
           voltage = item["voltage"]
@@ -184,6 +194,29 @@ module Breadkit
           end
         end
         require_array(require_hash(data["analysis"], "analysis")["nets"], "analysis.nets") if data.key?("analysis")
+      end
+
+      def validate_steps(data)
+        steps = data.fetch("steps", [])
+        require_array(steps, "steps").each_with_index do |item, index|
+          require_hash(item, "steps[#{index}]")
+          raise DSLError, "invalid IR: steps[#{index}].number must be #{index + 1}" unless item["number"] == index + 1
+          unless item["title"].nil? || (item["title"].is_a?(String) && !item["title"].empty?)
+            raise DSLError, "invalid IR: steps[#{index}].title must be nonempty text or null"
+          end
+          require_source(item["source"], "steps[#{index}].source") if item.key?("source")
+        end
+        %w[supplies labels components wires].each do |key|
+          next unless data[key].is_a?(Array)
+
+          data[key].each_with_index do |item, index|
+            next unless item.is_a?(Hash) && item.key?("step")
+            number = item["step"]
+            unless number.is_a?(Integer) && number.positive? && number <= steps.length
+              raise DSLError, "invalid IR: #{key}[#{index}].step must reference a declared step"
+            end
+          end
+        end
       end
 
       def validate_board_definition(value)

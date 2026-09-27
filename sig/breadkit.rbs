@@ -38,6 +38,7 @@ module Breadkit
     attr_reader ref: String
     attr_reader part: PartDef
     attr_reader pins: Hash[String, Pin]
+    attr_reader step: Integer?
     def pin: (String | Symbol | Integer reference) -> Pin?
     def body_bounds: (Board board) -> [Float, Float, Float, Float]?
   end
@@ -47,6 +48,7 @@ module Breadkit
     attr_reader from: String
     attr_reader to: String
     attr_reader electrical: bool
+    attr_reader step: Integer?
   end
 
   class Supply
@@ -58,12 +60,14 @@ module Breadkit
     attr_reader isolated: bool
     attr_reader voltage_range: Array[Float]?
     attr_reader current_limit: Float?
+    attr_reader step: Integer?
   end
 
   class Label
     attr_reader name: String
     attr_reader at: String
     attr_reader location: SourceLocation?
+    attr_reader step: Integer?
   end
 
   class Net
@@ -106,6 +110,7 @@ module Breadkit
     attr_reader lint_disables: Array[Hash[Symbol, untyped]]
     attr_reader diagnostics: Array[Diagnostic]
     attr_reader source_root: String?
+    attr_reader steps: Array[Hash[Symbol, untyped]]
     def voltage_sources: () -> Array[Supply]
     def states: (?String mode) -> Array[State]
     def nets: (?State? state) -> Array[Net]
@@ -199,6 +204,7 @@ module Breadkit
     attr_accessor part_definitions: Array[Hash[String, untyped]]
     attr_accessor diagnostics: Array[Diagnostic]
     attr_accessor source_root: String?
+    attr_accessor steps: Array[Hash[Symbol, untyped]]
   end
 
   module DSL

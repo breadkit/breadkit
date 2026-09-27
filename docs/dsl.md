@@ -33,6 +33,7 @@ end
 | `include(path)` | Evaluate another trusted DSL file in the same circuit. Relative paths resolve from the including file; circular includes are rejected. |
 | `block(name) { ... }` / `use_block(name, *args, **kwargs)` | Define and expand a reusable group of DSL declarations. Each name is unique within the circuit. |
 | `bus(name, **lines)` | Label the explicit reference for each line as `NAME_LINE`, for example `I2C_SCL`. |
+| `step(number, title: nil) { ... }` | Group assembly declarations under a numbered step. Numbers start at 1 and increase by 1. |
 | `supply(name, voltage:, plus:, minus:, current_limit: nil)` | Add a DC source. Both terminals occupy board holes. Optional `current_limit:` is the supply's positive output limit in amperes. |
 | `net(name, at:)` | Label a hole or component pin. |
 | `part(ref, type, value = nil, pins: ..., at: ..., **attrs)` | Place a defined part. `pins:` accepts pin order arrays or pin-name hashes. |
@@ -79,6 +80,31 @@ bus :I2C, scl: "f22", sda: "f24"
 The call adds labels. Add `wire` declarations for physical connections to
 devices on each line. The bus helper accepts any named lines; it does not
 perform I2C protocol analysis.
+
+## Assembly steps
+
+Place the declarations for each assembly stage inside a numbered `step` block:
+
+```ruby
+board :mini
+
+step 1, title: "Install the resistor" do
+  resistor :R1, "330", pins: %w[b1 b3]
+end
+
+step 2, title: "Add the LED and return wire" do
+  led :D1, color: :red, anode: "c3", cathode: "c4"
+  wire "d4", "b2", color: :black
+end
+```
+
+Steps must be declared in order, starting at 1. Nested steps are rejected.
+Supplies, net labels, parts, and wires declared inside a step keep that step
+number; declarations outside steps have no number. Normal placement and
+connectivity checks still apply. `circuit.steps` holds each number and title,
+while each resolved item exposes `.step`. JSON IR carries the same `steps`
+list and optional `step` field on those items. Existing IR files without steps
+remain valid.
 
 ## Hole and pin references
 
