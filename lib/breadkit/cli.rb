@@ -73,7 +73,8 @@ module Breadkit
         path = required!(args, "check-part YAML")
         data = YAML.safe_load(File.read(path, encoding: "UTF-8"), aliases: false)
         raise ArgumentError, "part definition must be a YAML mapping" unless data.is_a?(Hash)
-        part = PartDef.new(data)
+        part = PartLibrary.new(extra_paths: [path]).find(data["id"])
+        raise ArgumentError, "part definition needs an id" unless part
         puts "Valid part: #{part.id} (#{part.pins.length} pins)"
         0
       when "where", "explain", "bom"
@@ -229,12 +230,17 @@ module Breadkit
     def diff_items(circuit)
       items = { "board" => "#{circuit.board.definition.id}#{' (split rails)' if circuit.board.split_rails}" }
       circuit.supplies.each do |supply|
-        items["supply #{supply.name}"] = "#{supply.voltage} V, #{supply.plus} to #{supply.minus}"
+        voltage = supply.voltage_range ? supply.voltage_range.join("..") : supply.voltage
+        items["supply #{supply.name}"] = "#{voltage} V, #{supply.plus} to #{supply.minus}"
       end
-      circuit.labels.each { |label| items["label #{label.name}"] = label.at }
+      circuit.labels.each { |label| items["label #{label.name}@#{label.at}"] = true }
       circuit.components.each_value do |component|
         pins = component.pins.values.map { |pin| "#{pin.name}=#{pin.hole_id || '-'}" }.join(", ")
-        items["component #{component.ref}"] = [component.part.id, component.value, pins].compact.join(" ")
+        attrs = component.attrs.map { |key, value| [key.to_s, value] }.sort_by(&:first).to_h
+        details = [component.part.id, component.value, pins]
+        details << "attrs=#{attrs.inspect}" unless attrs.empty?
+        details << "unused=#{component.unused.inspect}" unless component.unused.empty?
+        items["component #{component.ref}"] = details.compact.join(" ")
       end
       circuit.wires.each do |wire|
         options = [wire.color, wire.route, wire.layer, wire.electrical, wire.dashed]

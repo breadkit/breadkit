@@ -11,6 +11,11 @@ RSpec.describe Breadkit::CLI do
     path = File.expand_path("../data/parts/led.yml", __dir__)
     expect { cli.run(["check-part", path]) }.to output(/Valid part: led/).to_stdout
     expect(cli.run(["check-part", "missing.yml"])).to eq(2)
+    Dir.mktmpdir do |dir|
+      derived = File.join(dir, "derived.yml")
+      File.write(derived, "id: led\nextends: led\nattributes: {color: css_color}\n")
+      expect { cli.run(["check-part", derived]) }.to output(/Valid part: led/).to_stdout
+    end
   end
 
   it "explains a hole and a component without inventing current" do
@@ -36,6 +41,12 @@ RSpec.describe Breadkit::CLI do
       File.write(modified, File.read(example, encoding: "UTF-8").sub('"330"', '"470"'))
       expect { cli.run(["diff", example, modified]) }
         .to output(/- component R1: resistor 330.*\+ component R1: resistor 470/m).to_stdout
+      File.write(modified, File.read(example, encoding: "UTF-8").sub("color: :red", "color: :blue"))
+      expect { cli.run(["diff", example, modified]) }.to output(/component D1: led.*color.*red.*color.*blue/m).to_stdout
+      first = File.join(dir, "first.bk.rb")
+      File.write(first, 'board :mini; supply :BAT, voltage: 3.0..5.0, plus: "a1", minus: "a2"')
+      File.write(modified, 'board :mini; supply :BAT, voltage: 2.0..6.0, plus: "a1", minus: "a2"')
+      expect { cli.run(["diff", first, modified]) }.to output(/3\.0\.\.5\.0 V.*2\.0\.\.6\.0 V/m).to_stdout
     end
   end
 
