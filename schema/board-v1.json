@@ -21,14 +21,14 @@
     },
     "rails": {
       "type": "array", "items": { "type": "object", "required": ["id", "side", "order"],
-        "properties": { "id": { "type": "string" }, "side": { "enum": ["top", "bottom", "left", "right"] }, "order": { "type": "integer" }, "polarity": { "enum": ["+", "-"] } },
+        "properties": { "id": { "type": "string" }, "side": { "enum": ["top", "bottom", "left", "right", "center"] }, "order": { "type": "integer", "minimum": 0 }, "polarity": { "enum": ["+", "-"] } },
         "additionalProperties": false }
     },
     "rail_layout": {
       "type": "object", "required": ["segments"],
       "properties": {
         "holes": { "type": "integer", "minimum": 1 }, "group_size": { "type": "integer", "minimum": 1 },
-        "start_column": { "type": "integer", "minimum": 1 },
+        "start_column": { "type": "integer", "minimum": 1 }, "start_row": { "type": "integer", "minimum": 1 },
         "segments": { "$ref": "#/$defs/segments" }, "split_segments": { "$ref": "#/$defs/segments" }
       }, "additionalProperties": false
     }

@@ -56,6 +56,15 @@ module Breadkit
           raise ArgumentError, "ravine_between must name adjacent terminal rows"
         end
       end
+      Array(data["rails"]).each do |rail|
+        side, order = rail.values_at("side", "order")
+        unless %w[top bottom left right center].include?(side) && order.is_a?(Integer) && order >= 0
+          raise ArgumentError, "rail side or order is invalid"
+        end
+        if side == "center" && (!terminal.key?("ravine_between") || order > 1)
+          raise ArgumentError, "center rail needs a free row in the ravine"
+        end
+      end
     end
 
     def id
@@ -182,10 +191,21 @@ module Breadkit
         segments = layout.fetch("split_segments", segments) if split_rails
         segments.each_with_index do |range, segment_index|
           (range[0]..range[1]).each do |index|
-            x = layout.fetch("start_column", 1) - 1 + index - 1
             size = layout["group_size"].to_i
-            x += (index - 1) / size if size.positive?
-            y = rail.fetch("side") == "top" ? height + 1 + rail.fetch("order", 0) : -2 - rail.fetch("order", 0)
+            along = index - 1
+            along += (index - 1) / size if size.positive?
+            side, order = rail.values_at("side", "order")
+            if %w[left right].include?(side)
+              x = side == "left" ? -2 - order : width + 1 + order
+              y = layout.fetch("start_row", 1) - 1 + along
+            else
+              x = layout.fetch("start_column", 1) - 1 + along
+              y = case side
+                  when "top" then height + 1 + order
+                  when "center" then @terminal_row_positions.fetch(definition.data.dig("terminal", "ravine_between", 0).to_s) + 1 + order
+                  else -2 - order
+                  end
+            end
             strip_id = "rail:#{rail_id}:#{segment_index}"
             add_hole(Hole.new(id: "#{rail_id}#{index}", kind: :rail, rail: rail_id,
                               col: index, x: x.to_f, y: y.to_f, strip_id: strip_id))
