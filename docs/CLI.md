@@ -39,11 +39,13 @@ nominal current: it uses the midpoint of a supply range and does not propagate
 resistor tolerance. Check the highest supply voltage and lowest resistance
 when sizing components.
 Library callers can request `circuit.dc_analysis(state, worst_case: true)` to
-calculate voltage, current, and resistor power ranges across endpoint
-combinations of standalone supply voltage ranges and resistor tolerances.
+calculate voltage and current ranges across endpoint combinations of standalone
+supply voltage ranges and resistor tolerances. Resistor power ranges also check
+interior resistance peaks and zero-current crossings.
 `bounds_status` is `:ok` for solved passive linear networks, `:endpoint_only`
-when a modeled diode may change conduction state between endpoints,
-`:too_complex` when the 512-scenario limit is reached, and `:indeterminate`
+when a modeled diode may change conduction state between endpoints or a power
+peak cannot be certified numerically, `:too_complex` when the 512-scenario limit
+is exceeded, and `:indeterminate`
 when at least one combination cannot be solved. The ordinary `voltages`,
 `currents`, and `power` fields remain nominal. Endpoint-only ranges do not
 certify a safe limit between the sampled endpoints.
