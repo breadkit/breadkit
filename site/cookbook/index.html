@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101719">
+    <meta name="description" content="Ten working Breadkit circuit examples, with source files and generated diagrams where available.">
+    <title>Circuit cookbook | Breadkit</title>
+    <link rel="canonical" href="https://breadkit.github.io/breadkit/cookbook/">
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../assets/site.css">
+  </head>
+  <body class="min-h-dvh bg-ink font-sans text-paper antialiased">
+    <a class="sr-only rounded-sm bg-copper px-4 py-3 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:outline-2 focus:outline-offset-4 focus:outline-paper" href="#main">Skip to content</a>
+    <header class="border-b border-line">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-10">
+        <a class="flex items-center gap-3 rounded-sm text-xl font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../" aria-label="Breadkit home"><img class="size-8" src="../favicon.svg" alt="" width="32" height="32"><span>breadkit</span></a>
+        <nav aria-label="Main navigation" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../guide/">Guide</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../gallery/">Gallery</a>
+          <a class="rounded-sm text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="./" aria-current="page">Cookbook</a>
+          <a class="rounded-sm hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../playground/">Playground</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="mx-auto max-w-5xl px-5 py-12 sm:px-8 lg:px-10">
+      <h1 class="text-balance text-4xl font-semibold leading-tight sm:text-5xl">Circuit cookbook</h1>
+      <p class="mt-5 max-w-3xl text-pretty text-lg leading-8 text-muted">Start with a complete example, inspect its connections, then change one part or wire at a time. Every source below is in the repository. Open the gallery for the larger diagrams.</p>
+      <div class="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold">
+        <a class="rounded-sm text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../guide/">Learn the syntax</a>
+        <a class="rounded-sm text-paper underline decoration-copper underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-copper" href="../gallery/">Browse diagrams</a>
+      </div>
+
+      <ol class="mt-12 divide-y divide-line border-y border-line">
+        <li class="grid gap-2 py-6 sm:grid-cols-[3rem_1fr] sm:gap-5">
+          <span class="font-mono text-sm tabular-nums text-copper">01</span>
+          <div><h2 class="text-balance text-xl font-semibold">Button-controlled LED</h2><p class="mt-2 text-pretty leading-7 text-muted">A switch completes a 5 V path through a 330 Ω resistor and LED.</p><p class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm"><a class="text-paper underline decoration-copper underline-offset-4" href="https://github.com/breadkit/breadkit/blob/main/examples/01_led_button.bk.rb">Ruby source</a><a class="text-paper underline decoration-line underline-offset-4" href="../assets/gallery_01_led_button.svg">Generated diagram</a></p></div>
+        </li>
+        <li class="grid gap-2 py-6 sm:grid-cols-[3rem_1fr] sm:gap-5">
+          <span class="font-mono text-sm tabular-nums text-copper">02</span>
+          <div><h2 class="text-balance text-xl font-semibold">NE555 LED blinker</h2><p class="mt-2 text-pretty leading-7 text-muted">Timing resistors and capacitors surround a 555 timer and resistor-limited LED.</p><p class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm"><a class="text-paper underline decoration-copper underline-offset-4" href="https://github.com/breadkit/breadkit/blob/main/examples/02_555_blinker.bk.rb">Ruby source</a><a class="text-paper underline decoration-line underline-offset-4" href="../assets/gallery_02_555_blinker.svg">Generated diagram</a></p></div>
+        </li>
+        <li class="grid gap-2 py-6 sm:grid-cols-[3rem_1fr] sm:gap-5">
+          <span class="font-mono text-sm tabular-nums text-copper">03</span>
+          <div><h2 class="text-balance text-xl font-semibold">Arduino Uno output</h2><p class="mt-2 text-pretty leading-7 text-muted">An offboard Uno drives an LED through a current-limiting resistor.</p><p class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm"><a class="text-paper underline decoration-copper underline-offset-4" href="https://github.com/breadkit/breadkit/blob/main/examples/03_arduino_blink.bk.rb">Ruby source</a><a class="text-paper underline decoration-line underline-offset-4" href="../assets/gallery_03_arduino_blink.svg">Generated diagram</a></p></div>
+        </li>
+        <li class="grid gap-2 py-6 sm:grid-cols-[3rem_1fr] sm:gap-5">
+          <span class="font-mono text-sm tabular-nums text-copper">04</span>
+          <div><h2 class="text-balance text-xl font-semibold">Four LED branches</h2><p class="mt-2 text-pretty leading-7 text-muted">A Ruby loop repeats four independent resistor and LED paths.</p><p class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm"><a class="text-paper underline decoration-copper underline-offset-4" href="https://github.com/breadkit/breadkit/blob/main/examples/04_led_bar.bk.rb">Ruby source</a><a class="text-paper underline decoration-line underline-offset-4" href="../assets/gallery_04_led_bar.svg">Generated diagram</a></p></div>
+        </li>
+        <li class="grid gap-2 py-6 sm:grid-cols-[3rem_1fr] sm:gap-5">
+          <span class="font-mono text-sm tabular-nums text-copper">05</span>
+          <div><h2 class="text-balance text-xl font-semibold">RP2040 fermentation logger</h2><p class="mt-2 text-pretty leading-7 text-muted">A full breadboard connects an RP2040 module, OLED, two SHT31 sensors, switches, and infrared modules in separate wire layers.</p><p class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm"><a class="text-paper underline decoration-copper underline-offset-4" href="https://github.com/breadkit/breadkit/blob/main/examples/05_sensor_demo.bk.rb">Ruby source</a><a class="text-paper underline decoration-line underline-offset-4" href="https://breadkit.github.io/breadkit-render/images/sensor-demo.svg">Layered diagram</a></p></div>
+        </li>
+        <li class="grid gap-2 py-6 sm:grid-cols-[3rem_1fr] sm:gap-5">
+          <span class="font-mono text-sm tabular-nums text-copper">06</span>
+          <div><h2 class="text-balance text-xl font-semibold">Declarative LED in YAML</h2><p class="mt-2 text-pretty leading-7 text-muted">A mini-board LED circuit with supply, nets, wire, and connection expectations expressed as data.</p><p class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm"><a class="text-paper underline decoration-copper underline-offset-4" href="https://github.com/breadkit/breadkit/blob/main/examples/06_declarative_led.bk.yml">YAML source</a><a class="text-paper underline decoration-line underline-offset-4" href="../guide/#declarative">Code and net output</a></p></div>
+        </li>
+        <li class="grid gap-2 py-6 sm:grid-cols-[3rem_1fr] sm:gap-5">
+          <span class="font-mono text-sm tabular-nums text-copper">07</span>
+          <div><h2 class="text-balance text-xl font-semibold">The same LED circuit in TOML</h2><p class="mt-2 text-pretty leading-7 text-muted">The YAML circuit above written with TOML tables, with the same board and connections.</p><p class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm"><a class="text-paper underline decoration-copper underline-offset-4" href="https://github.com/breadkit/breadkit/blob/main/examples/07_declarative_led.bk.toml">TOML source</a><a class="text-paper underline decoration-line underline-offset-4" href="../guide/#declarative">Compare the YAML output</a></p></div>
+        </li>
+        <li class="grid gap-2 py-6 sm:grid-cols-[3rem_1fr] sm:gap-5">
+          <span class="font-mono text-sm tabular-nums text-copper">08</span>
+          <div><h2 class="text-balance text-xl font-semibold">74HC595 LED sequencer</h2><p class="mt-2 text-pretty leading-7 text-muted">An Uno feeds a shift register; four outputs each drive a resistor and LED.</p><p class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm"><a class="text-paper underline decoration-copper underline-offset-4" href="https://github.com/breadkit/breadkit/blob/main/examples/08_shift_register.bk.rb">Ruby source</a><a class="text-paper underline decoration-line underline-offset-4" href="../assets/gallery_08_shift_register.svg">Generated diagram</a></p></div>
+        </li>
+        <li class="grid gap-2 py-6 sm:grid-cols-[3rem_1fr] sm:gap-5">
+          <span class="font-mono text-sm tabular-nums text-copper">09</span>
+          <div><h2 class="text-balance text-xl font-semibold">Light-activated buzzer</h2><p class="mt-2 text-pretty leading-7 text-muted">A photoresistor and adjustable threshold drive a transistor-switched active buzzer.</p><p class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm"><a class="text-paper underline decoration-copper underline-offset-4" href="https://github.com/breadkit/breadkit/blob/main/examples/09_light_buzzer.bk.rb">Ruby source</a><a class="text-paper underline decoration-line underline-offset-4" href="../assets/gallery_09_light_buzzer.svg">Generated diagram</a></p></div>
+        </li>
+        <li class="grid gap-2 py-6 sm:grid-cols-[3rem_1fr] sm:gap-5">
+          <span class="font-mono text-sm tabular-nums text-copper">10</span>
+          <div><h2 class="text-balance text-xl font-semibold">Two-button AND gate</h2><p class="mt-2 text-pretty leading-7 text-muted">Two button inputs and pull-down resistors feed a 74HC08 gate and LED.</p><p class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm"><a class="text-paper underline decoration-copper underline-offset-4" href="https://github.com/breadkit/breadkit/blob/main/examples/10_two_button_and.bk.rb">Ruby source</a><a class="text-paper underline decoration-line underline-offset-4" href="../assets/gallery_10_two_button_and.svg">Generated diagram</a></p></div>
+        </li>
+      </ol>
+    </main>
+    <footer class="mt-12 border-t border-line"><div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-7 text-sm text-muted sm:px-8 lg:px-10"><p>breadkit · describe the connection before you build it.</p><a class="text-paper underline decoration-line underline-offset-4 hover:decoration-copper" href="https://github.com/breadkit/breadkit">GitHub</a></div></footer>
+  </body>
+</html>
