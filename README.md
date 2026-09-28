@@ -19,7 +19,12 @@ Breadkit resolves board holes, part pins, wires, and switch states into connecte
 nets. It exports JSON IR for other tools and checks declared connection intent.
 
 <p align="center">
-  <img src="site/assets/01_led_button.svg" width="240" alt="Half-size breadboard diagram with a button, resistor, and LED">
+  <img src="site/assets/05_sensor_demo.png" width="700" alt="RP2040 breadboard circuit with an OLED, two SHT31 sensors, switches, and IR modules">
+</p>
+
+<p align="center">
+  <a href="examples/05_sensor_demo.bk.rb">Circuit source</a> ·
+  <a href="https://breadkit.github.io/breadkit-render/images/sensor-demo.svg">Explore its layers</a>
 </p>
 
 ## Quick start
@@ -57,6 +62,26 @@ This README follows main (0.2.0). If `breadkit --version` shows an older
 published release, use the [source checkout](#development) for newer features.
 The same circuit is available in [YAML](examples/06_declarative_led.bk.yml) and
 [TOML](examples/07_declarative_led.bk.toml).
+
+## Layered module example
+
+The [sensor demo](examples/05_sensor_demo.bk.rb) combines an RP2040 module with
+an OLED, two SHT31 sensors, switches, and IR modules. Its `layer:` declarations
+group parts and wires in the interactive SVG. These lines are from the full
+example:
+
+```ruby
+offboard :OLED, :ssd1306_oled, side: :right, at: "a7", address: "0x3C", layer: "2 I2C"
+offboard :SHT31A, :sht31, side: :right, at: "a12", address: "0x44", unused: ["ALR"], layer: "2 I2C"
+offboard :SHT31B, :sht31, side: :right, at: "a19", address: "0x45", unused: ["ALR"], layer: "2 I2C"
+
+wire "j5", "T+5", color: "#E24B4A", layer: "1 Power"
+wire "OLED.SDA", "g24", color: "#378ADD", route: :edge, layer: "2 I2C"
+```
+
+Run `bundle exec ruby exe/breadkit nets examples/05_sensor_demo.bk.rb` from a
+source checkout to inspect the full circuit. The optional 5 V emitter layer is
+an alternative: disconnect its 3.3 V feed before using it.
 
 ## Explore
 
