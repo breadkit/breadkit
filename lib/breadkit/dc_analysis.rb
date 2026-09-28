@@ -133,7 +133,7 @@ module Breadkit
       ensure
         uncertain.each_with_index { |(key, item, _range), index| item[key] = original[index] }
       end
-      result.bounds_status = :ok
+      result.bounds_status = @diodes.any? && uncertain.any? ? :endpoint_only : :ok
       result
     end
 

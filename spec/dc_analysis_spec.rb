@@ -133,6 +133,19 @@ RSpec.describe Breadkit::DCAnalysis do
     expect(result.current_ranges).to be_nil
   end
 
+  it "distinguishes diode endpoint estimates from certified passive ranges" do
+    circuit = resolve(<<~DSL)
+      board :mini
+      supply :BAT, voltage: 3.0..4.2, plus: "b1", minus: "b5"
+      resistor :R1, "100 5%", pins: %w[a1 a3]
+      led :D1, anode: "b3", cathode: "a5"
+    DSL
+    result = circuit.dc_analysis(nil, worst_case: true)
+
+    expect(result.bounds_status).to eq(:endpoint_only)
+    expect(result.current_ranges.fetch("D1").last).to be > result.currents.fetch("D1")
+  end
+
   it "does not assign an invented voltage to a diode without a return path" do
     circuit = resolve('board :mini; led :D1, anode: "a1", cathode: "a3"')
     result = circuit.dc_analysis

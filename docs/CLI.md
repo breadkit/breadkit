@@ -34,15 +34,19 @@ Breadkit logical names, not a claim about the manufacturer's terminal numbers.
 `explain` uses DC operating-point analysis for
 voltage sources, resistors, LEDs, and diodes. It reports the fixed-drop diode
 assumptions and labels ungrounded voltages as relative. Unsupported parts or
-indeterminate circuits leave currents unknown. Supply ranges use their midpoint
-and resistor tolerances are not propagated into DC current estimates; check
-the highest supply voltage and lowest resistance when sizing components.
+indeterminate circuits leave currents unknown. The `explain` command reports
+nominal current: it uses the midpoint of a supply range and does not propagate
+resistor tolerance. Check the highest supply voltage and lowest resistance
+when sizing components.
 Library callers can request `circuit.dc_analysis(state, worst_case: true)` to
-calculate voltage, current, and resistor power intervals over source voltage
-ranges and resistor tolerances. `bounds_status` is `:ok` only when all endpoint
-combinations were solved; `:too_complex` means the 512-scenario limit was
-reached, and `:indeterminate` means at least one combination could not be
-solved. The ordinary `voltages`, `currents`, and `power` fields remain nominal.
+calculate voltage, current, and resistor power ranges across endpoint
+combinations of standalone supply voltage ranges and resistor tolerances.
+`bounds_status` is `:ok` for solved passive linear networks, `:endpoint_only`
+when a modeled diode may change conduction state between endpoints,
+`:too_complex` when the 512-scenario limit is reached, and `:indeterminate`
+when at least one combination cannot be solved. The ordinary `voltages`,
+`currents`, and `power` fields remain nominal. Endpoint-only ranges do not
+certify a safe limit between the sampled endpoints.
 
 `bom` reports quantities, not supplier part numbers or prices. `diff` compares
 resolved circuit content and ignores source locations.
