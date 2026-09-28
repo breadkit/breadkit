@@ -34,9 +34,12 @@ Breadkit logical names, not a claim about the manufacturer's terminal numbers.
 `explain` uses DC operating-point analysis for
 voltage sources, resistors, LEDs, and diodes. It reports the fixed-drop diode
 assumptions and labels ungrounded voltages as relative. Unsupported parts or
-indeterminate circuits leave currents unknown. `bom` reports quantities, not
-supplier part numbers or prices. `diff` compares resolved circuit content and
-ignores source locations.
+indeterminate circuits leave currents unknown. Supply ranges use their midpoint
+and resistor tolerances are not propagated into DC current estimates; check
+the highest supply voltage and lowest resistance when sizing components.
+
+`bom` reports quantities, not supplier part numbers or prices. `diff` compares
+resolved circuit content and ignores source locations.
 
 `nets`, `where`, `explain`, and `bom` print error diagnostics to standard error
 and stop before printing inspection results when the circuit is invalid.
