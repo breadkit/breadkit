@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0
+## 0.2.0 — 2026-09-28
 
 ### Circuit authoring
 
@@ -33,6 +33,6 @@
 - Run explicit circuit files from a build with `Breadkit::RakeTask`. Public part, board, and IR schemas are available on GitHub Pages for editor validation.
 - Reject invalid component values, attributes, wire colors, routes, and ambiguous IDs with source locations. Stop runaway Ruby DSL evaluation after a timeout and allow `breadkit ir --force` when diagnostics are present.
 
-## 0.1.0
+## 0.1.0 — 2026-09-26
 
 - Initial release.
