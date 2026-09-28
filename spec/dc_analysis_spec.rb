@@ -106,6 +106,29 @@ RSpec.describe Breadkit::DCAnalysis do
     expect(result.power_ranges.fetch("R1").last).to be_within(1e-9).of(4.2**2 / 95.0)
   end
 
+  it "uses a provided offboard output's declared voltage range" do
+    builder = Breadkit::DSL::Builder.new
+    uno = Marshal.load(Marshal.dump(Breadkit::PartLibrary.new.find("arduino_uno").data))
+    uno["override"] = true
+    uno.fetch("provides").last["voltage_range"] = [3.0, 3.6]
+    builder.document.part_definitions << uno
+    builder.instance_eval(<<~DSL, "offboard-range.bk.rb", 1)
+      board :mini
+      offboard :UNO, :arduino_uno
+      resistor :R1, "1k", pins: %w[a1 a5]
+      wire "UNO.3V3", "b1"
+      wire "UNO.GND", "b5"
+    DSL
+    circuit = Breadkit::Resolver.new.call(builder.document)
+    result = circuit.dc_analysis(nil, worst_case: true)
+
+    expect(result.bounds_status).to eq(:ok)
+    expect(circuit.voltage_sources.find { |source| source.name == "UNO.3V3" }.voltage_range).to eq([3.0, 3.6])
+    expect(result.current_ranges.fetch("R1")).to eq([0.003, 0.0036])
+    restored = Breadkit::IR::Reader.new.read(circuit.to_ir)
+    expect(restored.dc_analysis(nil, worst_case: true).current_ranges.fetch("R1")).to eq([0.003, 0.0036])
+  end
+
   it "bounds a divider voltage with both resistor tolerances" do
     circuit = resolve(<<~DSL)
       board :mini

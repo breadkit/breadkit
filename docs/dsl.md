@@ -96,6 +96,9 @@ supply from: "UNO.5V", plus: "T+", minus: "T-"
 entry on the placed offboard part, and both destinations are required. For
 named boards, qualify the destinations, for example `B1.T+` and `B1.T-`.
 The resolved IR stores the two ordinary wires.
+An offboard part's `provides` entry may declare `voltage_range: [3.0, 3.6]`
+alongside its nominal `voltage: 3.3`. The nominal voltage must lie inside the
+range. DC bounds include that range when the provided output is connected.
 
 ## Reusable blocks and buses
 

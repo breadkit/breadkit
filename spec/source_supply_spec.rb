@@ -34,6 +34,17 @@ RSpec.describe "offboard supply routing" do
     expect(circuit.potentials.values.fetch(circuit.net_of("B+1").name) - circuit.potentials.values.fetch(circuit.net_of("B-1").name)).to eq(3.3)
   end
 
+  it "validates a provided output's optional voltage range" do
+    data = Marshal.load(Marshal.dump(Breadkit::PartLibrary.new.find("arduino_uno").data))
+    output = data.fetch("provides").last
+    [[3.6, 3.0], [3.4, 3.6], [0, 3.6]].each do |range|
+      output["voltage_range"] = range
+      expect { Breadkit::PartDef.new(data) }.to raise_error(ArgumentError, /invalid voltage source range/)
+    end
+    output["voltage_range"] = [3.0, 3.6]
+    expect(Breadkit::PartDef.new(data).data.fetch("provides").last.fetch("voltage_range")).to eq([3.0, 3.6])
+  end
+
   it "preserves step metadata and chooses rails on a named board" do
     circuit = resolve(<<~RUBY)
       board :half, as: :B1

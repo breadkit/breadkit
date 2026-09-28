@@ -134,10 +134,18 @@ module Breadkit
       end
       Array(data["provides"]).each do |source|
         unless source.is_a?(Hash) && %w[positive negative voltage].all? { |key| source.key?(key) } &&
-               (source.keys - %w[positive negative voltage when]).empty? &&
+               (source.keys - %w[positive negative voltage voltage_range when]).empty? &&
                %w[positive negative].all? { |key| identities.key?(source[key].to_s.downcase) } &&
                source["voltage"].is_a?(Numeric) && source["voltage"].finite? && source["voltage"].positive?
           raise ArgumentError, "part #{id} has invalid voltage source"
+        end
+        if source.key?("voltage_range")
+          range = source["voltage_range"]
+          unless range.is_a?(Array) && range.length == 2 &&
+                 range.all? { |value| value.is_a?(Numeric) && value.finite? && value.positive? } &&
+                 range[0] <= source["voltage"] && source["voltage"] <= range[1]
+            raise ArgumentError, "part #{id} has invalid voltage source range"
+          end
         end
         conditions = source["when"]
         if conditions && (!conditions.is_a?(Hash) || conditions.empty? || conditions.any? do |key, value|

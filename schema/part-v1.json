@@ -27,6 +27,7 @@
       "type": "array",
       "items": { "type": "object", "required": ["positive", "negative", "voltage"],
         "properties": { "positive": { "type": "string" }, "negative": { "type": "string" }, "voltage": { "type": "number", "exclusiveMinimum": 0 },
+          "voltage_range": { "type": "array", "prefixItems": [{ "type": "number", "exclusiveMinimum": 0 }, { "type": "number", "exclusiveMinimum": 0 }], "minItems": 2, "maxItems": 2 },
           "when": { "type": "object", "minProperties": 1, "additionalProperties": { "type": ["string", "number"] } } },
         "additionalProperties": false }
     },

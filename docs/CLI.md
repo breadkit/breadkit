@@ -40,7 +40,8 @@ resistor tolerance. Check the highest supply voltage and lowest resistance
 when sizing components.
 Library callers can request `circuit.dc_analysis(state, worst_case: true)` to
 calculate voltage and current ranges across endpoint combinations of standalone
-supply voltage ranges and resistor tolerances. Resistor power ranges also check
+and declared offboard output voltage ranges and resistor tolerances. Resistor
+power ranges also check
 interior resistance peaks and zero-current crossings.
 `bounds_status` is `:ok` for solved passive linear networks, `:endpoint_only`
 when a modeled diode may change conduction state between endpoints or a power

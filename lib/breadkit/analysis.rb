@@ -121,7 +121,7 @@ module Breadkit
           Supply.new(name: "#{component.ref}.#{source.fetch('positive')}", voltage: Value.parse(source.fetch("voltage")),
                      plus: "#{component.ref}.#{source.fetch('positive')}",
                      minus: "#{component.ref}.#{source.fetch('negative')}", location: component.location,
-                     isolated: false, voltage_range: nil)
+                     isolated: false, voltage_range: source["voltage_range"])
         end
       end
     end
