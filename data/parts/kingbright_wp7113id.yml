@@ -1,0 +1,14 @@
+id: kingbright_wp7113id
+aliases: [WP7113ID]
+category: diode
+placement: leads
+pins:
+  - {num: A, name: anode, aliases: [a, "+"]}
+  - {num: K, name: cathode, aliases: [k, "-"]}
+polarity: {positive: anode, negative: cathode}
+flags: [needs_series_resistor]
+render: {shape: led_5mm, label: WP7113ID}
+forward_voltage: 1.9
+max_forward_current: 0.03
+max_reverse_voltage: 5
+datasheet_url: https://www.kingbrightusa.com/images/catalog/SPEC/WP7113ID.pdf

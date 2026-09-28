@@ -67,6 +67,19 @@ RSpec.describe Breadkit::DCAnalysis do
     expect(result.currents.fetch("D1")).to be_within(1e-9).of(2.0 / 332.0)
   end
 
+  it "analyzes a rated model-specific LED as an LED" do
+    circuit = resolve(<<~DSL)
+      board :mini
+      supply :BAT, voltage: 5, plus: "b1", minus: "b5"
+      resistor :R1, "330", pins: %w[a1 a3]
+      part :D1, :kingbright_wp7113id, pins: %w[b3 a5]
+    DSL
+    result = circuit.dc_analysis
+
+    expect(result).to be_success
+    expect(result.currents.fetch("D1")).to be_within(1e-9).of(3.1 / 331.0)
+  end
+
   it "marks an ungrounded supply domain as relative" do
     circuit = resolve('board :mini; supply :BAT, voltage: 5, plus: "b1", minus: "b5"; resistor :R1, "1k", pins: %w[a1 a5]')
     result = circuit.dc_analysis

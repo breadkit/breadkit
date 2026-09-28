@@ -249,6 +249,12 @@ no inferred current limit. The value is preserved in JSON IR for lint tools.
 For a pin explicitly named as `provides.positive`, DC analysis reports the
 source current under `REF.PIN`. Other GPIO output states remain unknown to the
 DC solver; `max_current` alone does not assign an output voltage.
+The generic `led` has no assumed electrical rating. For an actual Kingbright
+WP7113ID, use `part :D1, :kingbright_wp7113id, pins: %w[b3 a5]`. Its
+[datasheet](https://www.kingbrightusa.com/images/catalog/SPEC/WP7113ID.pdf)
+lists a typical 1.9 V forward drop at 10 mA, a 30 mA DC forward-current maximum,
+and a 5 V reverse-voltage maximum at 25 °C. DC analysis uses the typical drop
+as a fixed-drop approximation; the linter can use the named part's ratings.
 Use `type:` for new definitions; the legacy `role:` spelling is accepted and
 normalized to `type:`. A pin cannot declare both. Unknown part and pin keys,
 and unsupported pin types, are rejected when the definition is loaded.

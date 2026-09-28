@@ -48,6 +48,17 @@ RSpec.describe "standard part catalog" do
     end
   end
 
+  it "keeps model-specific LED limits separate from the generic LED" do
+    generic = library.find("led")
+    model = library.find("kingbright_wp7113id")
+
+    expect(generic.data).not_to have_key("max_forward_current")
+    expect(model.data).to include("forward_voltage" => 1.9, "max_forward_current" => 0.03,
+                                  "max_reverse_voltage" => 5)
+    expect(model.data.fetch("datasheet_url")).to include("kingbrightusa.com")
+    expect(library.find("WP7113ID")).to eq(model)
+  end
+
   it "places each supported board across the breadboard gap" do
     {
       "pico" => ["a1", "f1"],

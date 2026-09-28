@@ -211,6 +211,8 @@ module Breadkit
 
     def collect_component(component, unsupported)
       part = component.part
+      return collect_diode(component) if part.data["category"] == "diode" && part.data["polarity"]
+
       case part.id
       when "resistor"
         value = Value.parse(component.value)
@@ -218,14 +220,6 @@ module Breadkit
 
         @resistors << { name: component.ref, a: net_name("#{component.ref}.1"), b: net_name("#{component.ref}.2"),
                         ohms: value, tolerance: Value.tolerance(component.value) }
-      when "led", "diode"
-        default_drop, default_resistance = DIODE_MODELS.fetch(part.id)
-        drop = part.data.fetch("forward_voltage", default_drop).to_f
-        resistance = part.data.fetch("on_resistance", default_resistance).to_f
-        polarity = part.data.fetch("polarity")
-        @diodes << { name: component.ref, anode: net_name("#{component.ref}.#{polarity.fetch('positive')}"),
-                     cathode: net_name("#{component.ref}.#{polarity.fetch('negative')}"),
-                     drop: drop, resistance: resistance }
       when "capacitor", "electrolytic", "pin_header", "battery_box", "dc_jack_2wire"
         nil
       else
@@ -246,6 +240,17 @@ module Breadkit
 
         unsupported << component.ref
       end
+    end
+
+    def collect_diode(component)
+      part = component.part
+      model = Array(part.data["flags"]).include?("needs_series_resistor") ? "led" : "diode"
+      default_drop, default_resistance = DIODE_MODELS.fetch(model)
+      polarity = part.data.fetch("polarity")
+      @diodes << { name: component.ref, anode: net_name("#{component.ref}.#{polarity.fetch('positive')}"),
+                   cathode: net_name("#{component.ref}.#{polarity.fetch('negative')}"),
+                   drop: part.data.fetch("forward_voltage", default_drop).to_f,
+                   resistance: part.data.fetch("on_resistance", default_resistance).to_f }
     end
 
     def solve_linear(active)
