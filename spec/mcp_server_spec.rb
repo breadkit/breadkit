@@ -48,7 +48,8 @@ RSpec.describe "MCP stdio server" do
       with_server(root) do |stdin, stdout|
         listed = request(stdin, stdout, 2, "tools/list").fetch("result").fetch("tools")
         names = listed.map { |item| item.fetch("name") }
-        expect(names).to contain_exactly("breadkit_resolve", "breadkit_nets", "breadkit_ir")
+        expect(names).to contain_exactly("breadkit_resolve", "breadkit_nets", "breadkit_ir",
+                                         "breadkit_resolve_source", "breadkit_lint_source", "breadkit_render_source")
         expect(listed).to all(include("annotations" => include("readOnlyHint" => true)))
 
         resolved = tool(stdin, stdout, 3, "breadkit_resolve", { path: "example.bk.yml" })
@@ -68,6 +69,71 @@ RSpec.describe "MCP stdio server" do
         expect(ir.dig("structuredContent", "schema_version")).to eq(1)
         expect(ir.dig("structuredContent", "components", 0, "ref")).to eq("R1")
       end
+    end
+  end
+
+  it "resolves an in-memory declarative draft without creating a file" do
+    Dir.mktmpdir do |root|
+      service = Breadkit::MCPServer.new(root: root).server
+      source = "board: mini\nparts:\n  - {ref: R1, type: resistor, value: 1k, pins: [a1, a3]}\n"
+      response = service.tools.fetch("breadkit_resolve_source").call(format: "yaml", source: source)
+
+      expect(response.error?).to be(false)
+      expect(response.structured_content.fetch(:components)).to eq(["R1"])
+      expect(Dir.children(root)).to be_empty
+      expect(service.tools.fetch("breadkit_resolve_source").call(format: "ruby", source: "exit").error?).to be(true)
+    end
+  end
+
+  it "rejects in-memory drafts that reference definitions outside the root" do
+    Dir.mktmpdir do |parent|
+      root = File.join(parent, "project")
+      Dir.mkdir(root)
+      File.write(File.join(parent, "external.yml"), "id: external\npins: []\n")
+      source = "board: mini\nuse_parts: ../external.yml\n"
+      service = Breadkit::MCPServer.new(root: root).server
+      response = service.tools.fetch("breadkit_resolve_source").call(format: "yaml", source: source)
+
+      expect(response.error?).to be(true)
+      expect(response.content.first.fetch(:text)).to include("outside the MCP root")
+    end
+  end
+
+  it "rejects a symlinked definition outside the root before resolving a draft" do
+    Dir.mktmpdir do |parent|
+      root = File.join(parent, "project")
+      Dir.mkdir(root)
+      File.write(File.join(parent, "external.yml"), "id: external\npins: []\n")
+      File.symlink(File.join(parent, "external.yml"), File.join(root, "linked.yml"))
+      service = Breadkit::MCPServer.new(root: root).server
+      response = service.tools.fetch("breadkit_resolve_source")
+                        .call(format: "yaml", source: "board: mini\nuse_parts: linked.yml\n")
+
+      expect(response.error?).to be(true)
+      expect(response.content.first.fetch(:text)).to include("outside the MCP root")
+    end
+  end
+
+  it "refuses oversized or executable in-memory input" do
+    Dir.mktmpdir do |root|
+      service = Breadkit::MCPServer.new(root: root).server
+      tool = service.tools.fetch("breadkit_resolve_source")
+
+      expect(tool.call(format: "yaml", source: "x" * (8 * 1024 * 1024 + 1)).error?).to be(true)
+      expect(tool.call(format: "yaml", source: "\xFF".b.force_encoding("UTF-8")).error?).to be(true)
+      expect(tool.call(format: "yaml", source: "--- !ruby/object:Object {}\n").error?).to be(true)
+      expect(tool.call(format: "ruby", source: "exit\n").error?).to be(true)
+    end
+  end
+
+  it "caps responses before returning them to a client" do
+    Dir.mktmpdir do |root|
+      service = Breadkit::MCPServer.new(root: root)
+      allow(service).to receive(:resolve_draft).and_return({ data: "x" * (8 * 1024 * 1024) })
+
+      response = service.server.tools.fetch("breadkit_resolve_source").call(format: "yaml", source: "board: mini")
+      expect(response.error?).to be(true)
+      expect(response.content.first.fetch(:text)).to include("response exceeds 8 MiB")
     end
   end
 

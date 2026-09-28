@@ -25,8 +25,9 @@ module Breadkit
 
     def build_server
       result = MCP::Server.new(name: "breadkit", version: VERSION,
-                               instructions: "Read-only circuit tools. Inputs must be declarative YAML, TOML, or JSON IR files inside the configured root.")
+                               instructions: "Read-only circuit tools. Files may be YAML, TOML, or JSON IR; in-memory drafts may be YAML or TOML. Ruby is never evaluated.")
       responder, resolver, nets, valid = method(:respond), method(:resolve), method(:inspect_nets), method(:valid_circuit)
+      draft_resolver, draft_linter, draft_renderer = method(:resolve_draft), method(:lint_draft), method(:render_draft)
       path_schema = { type: "object", properties: { path: { type: "string", minLength: 1 } },
                       required: ["path"], additionalProperties: false }
       result.define_tool(name: "breadkit_resolve", description: "Resolve a circuit and report its parts, wiring, and diagnostics.",
@@ -42,6 +43,21 @@ module Breadkit
                          input_schema: path_schema, annotations: read_only_annotations) do |path:|
         responder.call { valid.call(path).to_ir }
       end
+      source_schema = { type: "object", properties: { format: { type: "string", enum: %w[yaml toml] },
+                                                      source: { type: "string", minLength: 1 } },
+                        required: %w[format source], additionalProperties: false }
+      result.define_tool(name: "breadkit_resolve_source", description: "Validate a YAML or TOML draft in memory and report diagnostics.",
+                         input_schema: source_schema, annotations: read_only_annotations) do |format:, source:|
+        responder.call { draft_resolver.call(format, source) }
+      end
+      result.define_tool(name: "breadkit_lint_source", description: "Lint a YAML or TOML draft in memory; requires breadkit-lint.",
+                         input_schema: source_schema, annotations: read_only_annotations) do |format:, source:|
+        responder.call { draft_linter.call(format, source) }
+      end
+      result.define_tool(name: "breadkit_render_source", description: "Render a valid YAML or TOML draft as static SVG; requires breadkit-render.",
+                         input_schema: source_schema, annotations: read_only_annotations) do |format:, source:|
+        responder.call { draft_renderer.call(format, source) }
+      end
       result
     end
 
@@ -51,16 +67,84 @@ module Breadkit
 
     def respond
       value = yield
-      MCP::Tool::Response.new([{ type: "text", text: JSON.generate(value) }], structured_content: value)
+      json = JSON.generate(value)
+      raise ArgumentError, "tool response exceeds 8 MiB" if json.bytesize > MAX_INPUT_BYTES
+
+      MCP::Tool::Response.new([{ type: "text", text: json }], structured_content: value)
     rescue StandardError => e
       MCP::Tool::Response.new([{ type: "text", text: e.message }], error: true)
     end
 
     def resolve(path)
       circuit = load_circuit(path)
+      summary(circuit)
+    end
+
+    def summary(circuit)
       { valid: circuit.diagnostics.none? { |item| item.severity == "error" }, title: circuit.title,
         boards: board_summary(circuit), components: circuit.components.keys, wires: circuit.wires.length,
         supplies: circuit.supplies.map(&:name), diagnostics: circuit.diagnostics.map { |item| diagnostic_data(item) } }
+    end
+
+    def resolve_draft(format, source)
+      summary(load_draft(format, source))
+    end
+
+    def lint_draft(format, source)
+      circuit = load_draft(format, source)
+      require_optional("breadkit/lint", "breadkit-lint")
+      engine = Lint::Engine.new
+      raise ArgumentError, "breadkit-lint with Engine#run_circuit is required" unless engine.respond_to?(:run_circuit)
+
+      result = engine.run_circuit(circuit, path: draft_path(format))
+      report = Lint::Formatter.new.json([result])
+      raise ArgumentError, "lint report exceeds 8 MiB" if report.bytesize > MAX_INPUT_BYTES
+
+      parsed = JSON.parse(report)
+      parsed.fetch("files").each do |file|
+        virtual_path = file.fetch("path")
+        file["path"] = "draft.bk.#{format == 'yaml' ? 'yml' : 'toml'}"
+        file.fetch("offenses").each do |offense|
+          location = offense["location"]
+          location["path"] = file["path"] if location && location["path"] == virtual_path
+        end
+      end
+      parsed
+    end
+
+    def render_draft(format, source)
+      circuit = load_draft(format, source)
+      errors = circuit.diagnostics.select { |item| item.severity == "error" }
+      raise DSLError, errors.map(&:message).join("; ") unless errors.empty?
+
+      require_optional("breadkit/render", "breadkit-render")
+      svg = Render::SvgRenderer.new.render(circuit, theme: "dark", interactive_layers: false)
+      raise ArgumentError, "rendered SVG exceeds 8 MiB" if svg.bytesize > MAX_INPUT_BYTES
+
+      { svg: svg }
+    end
+
+    def require_optional(path, gem_name)
+      require path
+    rescue LoadError => e
+      raise ArgumentError, "#{gem_name} is required for this tool (#{e.message})"
+    end
+
+    def draft_path(format)
+      raise ArgumentError, "format must be yaml or toml" unless %w[yaml toml].include?(format)
+
+      File.join(@root, "_breadkit_mcp_draft.bk.#{format == 'yaml' ? 'yml' : 'toml'}")
+    end
+
+    def load_draft(format, source)
+      unless source.is_a?(String) && source.encoding == Encoding::UTF_8 && source.valid_encoding? && !source.empty?
+        raise ArgumentError, "source must be nonempty UTF-8 text"
+      end
+      raise ArgumentError, "input source exceeds 8 MiB" if source.bytesize > MAX_INPUT_BYTES
+
+      document = StructuredInput.load_source(draft_path(format), source)
+      (document.part_paths + document.board_paths).each { |dependency| checked_path(dependency) }
+      Resolver.new.call(document)
     end
 
     def inspect_nets(path, state_name)
