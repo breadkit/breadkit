@@ -2,7 +2,7 @@
 
 require "tmpdir"
 
-RSpec.describe "review2 core regressions" do
+RSpec.describe "potential solver and supply validation" do
   def circuit(source, path: "example.bk.rb")
     Breadkit::Resolver.new.call(Breadkit::DSL.load_file(path, source: source))
   end
@@ -44,15 +44,4 @@ RSpec.describe "review2 core regressions" do
     end
   end
 
-  it "rejects misspelled part keys and invalid pin roles while normalizing legacy role" do
-    part = { "id" => "custom", "pins" => [{ "num" => 1 }] }
-    expect { Breadkit::PartDef.new(part.merge("polarty" => {})) }.to raise_error(ArgumentError, /polarty/)
-    expect { Breadkit::PartDef.new(part.merge("pins" => [{ "num" => 1, "type" => "power", "role" => "power" }])) }
-      .to raise_error(ArgumentError, /both type and role/)
-    expect { Breadkit::PartDef.new(part.merge("pins" => [{ "num" => 1, "type" => "potato" }])) }
-      .to raise_error(ArgumentError, /invalid type/)
-    normalized = Breadkit::PartDef.new(part.merge("pins" => [{ "num" => 1, "role" => "ground" }]))
-    expect(normalized.pins.first).to include("type" => "ground")
-    expect(normalized.pins.first).not_to have_key("role")
-  end
 end

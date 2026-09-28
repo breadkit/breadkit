@@ -2,7 +2,7 @@
 
 require "json_schemer"
 
-RSpec.describe "review batch 3" do
+RSpec.describe "model validation" do
   def custom_board
     { "id" => "custom_grid", "terminal" => { "columns" => 4, "rows" => %w[u v],
       "groups" => [%w[u], %w[v]], "ravine_between" => %w[u v] },
@@ -165,5 +165,17 @@ RSpec.describe "review batch 3" do
         .to output(/unknown_option.*not_a_real_option/).to_stderr
       expect(status).to eq(1)
     end
+  end
+
+  it "rejects misspelled part keys and invalid pin roles while normalizing legacy role" do
+    part = { "id" => "custom", "pins" => [{ "num" => 1 }] }
+    expect { Breadkit::PartDef.new(part.merge("polarty" => {})) }.to raise_error(ArgumentError, /polarty/)
+    expect { Breadkit::PartDef.new(part.merge("pins" => [{ "num" => 1, "type" => "power", "role" => "power" }])) }
+      .to raise_error(ArgumentError, /both type and role/)
+    expect { Breadkit::PartDef.new(part.merge("pins" => [{ "num" => 1, "type" => "potato" }])) }
+      .to raise_error(ArgumentError, /invalid type/)
+    normalized = Breadkit::PartDef.new(part.merge("pins" => [{ "num" => 1, "role" => "ground" }]))
+    expect(normalized.pins.first).to include("type" => "ground")
+    expect(normalized.pins.first).not_to have_key("role")
   end
 end
