@@ -121,6 +121,34 @@ RSpec.describe Breadkit::DCAnalysis do
     expect(result.voltage_ranges.fetch(midpoint).last).to be_within(1e-9).of(2.625)
   end
 
+  it "finds resistor power peaks inside a tolerance interval" do
+    circuit = resolve(<<~DSL)
+      board :mini
+      supply :BAT, voltage: 5, plus: "b1", minus: "b7"
+      resistor :R1, "800 50%", pins: %w[a1 a3]
+      resistor :R2, "1k", pins: %w[b3 a7]
+    DSL
+    result = circuit.dc_analysis(nil, worst_case: true)
+
+    expect(result.bounds_status).to eq(:ok)
+    expect(result.power_ranges.fetch("R1").last).to be_within(1e-9).of(0.00625)
+  end
+
+  it "includes zero power when uncertain sources cancel inside their ranges" do
+    circuit = resolve(<<~DSL)
+      board :mini
+      supply :BAT, voltage: 2.0..3.2, plus: "b1", minus: "b7"
+      supply :REF, voltage: 2.8, plus: "b3", minus: "c7"
+      resistor :R1, "1k", pins: %w[a1 a3]
+    DSL
+    result = circuit.dc_analysis(nil, worst_case: true)
+
+    expect(result.bounds_status).to eq(:ok)
+    expect(result.current_ranges.fetch("R1").first).to be < 0
+    expect(result.current_ranges.fetch("R1").last).to be > 0
+    expect(result.power_ranges.fetch("R1").first).to eq(0.0)
+  end
+
   it "reports when exact bounds exceed the scenario budget" do
     declarations = (1..10).map do |number|
       "supply :S#{number}, voltage: 3.0..4.2, plus: 'a#{number * 2 - 1}', minus: 'a#{number * 2}'"

@@ -76,6 +76,12 @@ jobs:
           bundler: default
       - run: gem install rbs --no-document # zizmor: ignore[adhoc-packages]
       - run: rbs -I sig validate
+      - name: Check DC bounds signatures
+        run: |
+          rbs -I sig method Breadkit::Circuit dc_analysis | grep -Fq 'worst_case: bool'
+          for field in voltage_ranges current_ranges power_ranges bounds_status; do
+            rbs -I sig method Breadkit::DCResult "$field" | grep -Fq 'accessibility: public'
+          done
 
   vscode:
     name: VS Code extension

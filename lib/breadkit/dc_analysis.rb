@@ -110,6 +110,7 @@ module Breadkit
       result.current_ranges = result.currents.transform_values { |value| [value, value] }
       result.power_ranges = result.power.transform_values { |value| [value, value] }
       original = uncertain.map { |key, item, _range| item[key] }
+      points = []
       begin
         (0...(1 << uncertain.length)).each do |scenario|
           uncertain.each_with_index do |(key, item, range), index|
@@ -121,6 +122,7 @@ module Breadkit
             result.voltage_ranges = result.current_ranges = result.power_ranges = nil
             return result
           end
+          points << point
           [[:voltage_ranges, point.voltages], [:current_ranges, point.currents], [:power_ranges, point.power]].each do |field, values|
             bounds = result.public_send(field)
             values.each do |name, value|
@@ -133,8 +135,49 @@ module Breadkit
       ensure
         uncertain.each_with_index { |(key, item, _range), index| item[key] = original[index] }
       end
-      result.bounds_status = @diodes.any? && uncertain.any? ? :endpoint_only : :ok
+      certified = add_resistor_power_extrema(result, uncertain, points)
+      result.bounds_status = (@diodes.any? && uncertain.any?) || !certified ? :endpoint_only : :ok
       result
+    end
+
+    def add_resistor_power_extrema(result, uncertain, points)
+      certified = true
+      uncertain.each_with_index do |(key, resistor, (low, high)), index|
+        next unless key == :ohms
+
+        bit = 1 << index
+        points.each_index do |scenario|
+          next unless (scenario & bit).zero?
+
+          low_current = points[scenario].currents.fetch(resistor[:name])
+          high_current = points[scenario | bit].currents.fetch(resistor[:name])
+          difference = low_current - high_current
+          if difference.abs <= 1e-12 * [low_current.abs, high_current.abs].max
+            certified = false unless low_current.zero? && high_current.zero?
+            next
+          end
+
+          thevenin_resistance = (high_current * high - low_current * low) / difference
+          next unless thevenin_resistance.between?(low, high)
+
+          unless thevenin_resistance.positive? && thevenin_resistance.finite?
+            certified = false
+            next
+          end
+
+          thevenin_voltage = low_current * (low + thevenin_resistance)
+          peak = thevenin_voltage**2 / (4 * thevenin_resistance)
+          if peak.finite?
+            result.power_ranges.fetch(resistor[:name])[1] = [result.power_ranges.fetch(resistor[:name])[1], peak].max
+          else
+            certified = false
+          end
+        end
+      end
+      result.current_ranges.each do |name, (low, high)|
+        result.power_ranges[name][0] = 0.0 if result.power_ranges.key?(name) && low <= 0 && high >= 0
+      end
+      certified
     end
 
     def failure(status, message)

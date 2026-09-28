@@ -96,6 +96,10 @@ module Breadkit
     attr_reader reference_nodes: Array[String]
     attr_reader assumptions: Array[String]
     attr_reader errors: Array[String]
+    attr_reader voltage_ranges: Hash[String, [Float, Float]]?
+    attr_reader current_ranges: Hash[String, [Float, Float]]?
+    attr_reader power_ranges: Hash[String, [Float, Float]]?
+    attr_reader bounds_status: Symbol?
     def success?: () -> bool
   end
 
@@ -118,7 +122,7 @@ module Breadkit
     def state: (String? name) -> State?
     def nets: (?State? state) -> Array[Net]
     def potentials: (?State? state) -> PotentialResult
-    def dc_analysis: (?State? state) -> DCResult
+    def dc_analysis: (?State? state, ?worst_case: bool) -> DCResult
     def net_of: (String reference, ?State? state) -> Net?
     def wire_suggestions: () -> Array[Hash[Symbol, untyped]]
     def shortest_path: (String a, String b, ?State? state) -> Array[untyped]
