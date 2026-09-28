@@ -90,6 +90,49 @@ RSpec.describe Breadkit::DCAnalysis do
     expect(circuit.dc_analysis(closed).currents.fetch("R1")).to be_within(1e-9).of(0.0025)
   end
 
+  it "bounds current and power across source voltage and resistor tolerance" do
+    circuit = resolve(<<~DSL)
+      board :mini
+      supply :BAT, voltage: 3.0..4.2, plus: "b1", minus: "b5"
+      resistor :R1, "100 5%", pins: %w[a1 a5]
+    DSL
+    result = circuit.dc_analysis(nil, worst_case: true)
+
+    expect(result).to be_success
+    expect(result.bounds_status).to eq(:ok)
+    expect(result.currents.fetch("R1")).to be_within(1e-9).of(0.036)
+    expect(result.current_ranges.fetch("R1")).to eq([3.0 / 105.0, 4.2 / 95.0])
+    expect(result.power_ranges.fetch("R1").first).to be_within(1e-9).of(3.0**2 / 105.0)
+    expect(result.power_ranges.fetch("R1").last).to be_within(1e-9).of(4.2**2 / 95.0)
+  end
+
+  it "bounds a divider voltage with both resistor tolerances" do
+    circuit = resolve(<<~DSL)
+      board :mini
+      supply :BAT, voltage: 5, plus: "b1", minus: "b7"
+      resistor :R1, "1k 5%", pins: %w[a1 a3]
+      resistor :R2, "1k 5%", pins: %w[b3 a7]
+    DSL
+    result = circuit.dc_analysis(nil, worst_case: true)
+    midpoint = circuit.net_of("a3").name
+
+    expect(result.bounds_status).to eq(:ok)
+    expect(result.voltage_ranges.fetch(midpoint).first).to be_within(1e-9).of(2.375)
+    expect(result.voltage_ranges.fetch(midpoint).last).to be_within(1e-9).of(2.625)
+  end
+
+  it "reports when exact bounds exceed the scenario budget" do
+    declarations = (1..10).map do |number|
+      "supply :S#{number}, voltage: 3.0..4.2, plus: 'a#{number * 2 - 1}', minus: 'a#{number * 2}'"
+    end
+    circuit = resolve((["board :full"] + declarations).join("\n"))
+    result = circuit.dc_analysis(nil, worst_case: true)
+
+    expect(result).to be_success
+    expect(result.bounds_status).to eq(:too_complex)
+    expect(result.current_ranges).to be_nil
+  end
+
   it "does not assign an invented voltage to a diode without a return path" do
     circuit = resolve('board :mini; led :D1, anode: "a1", cathode: "a3"')
     result = circuit.dc_analysis

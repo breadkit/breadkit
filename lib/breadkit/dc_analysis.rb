@@ -4,15 +4,16 @@ require "matrix"
 
 module Breadkit
   DCResult = Struct.new(:status, :voltages, :currents, :power, :floating, :reference_nodes,
-                        :assumptions, :errors, keyword_init: true) do
+                        :assumptions, :errors, :voltage_ranges, :current_ranges, :power_ranges,
+                        :bounds_status, keyword_init: true) do
     def success?
       status == :ok
     end
   end
 
   class Circuit
-    def dc_analysis(state = nil)
-      DCAnalysis.new(self).solve(state)
+    def dc_analysis(state = nil, worst_case: false)
+      DCAnalysis.new(self).solve(state, worst_case: worst_case)
     end
   end
 
@@ -22,12 +23,13 @@ module Breadkit
   class DCAnalysis
     DIODE_MODELS = { "led" => [2.0, 1.0], "diode" => [0.7, 1.0] }.freeze
     MAX_ITERATIONS = 32
+    MAX_BOUND_SCENARIOS = 512
 
     def initialize(circuit)
       @circuit = circuit
     end
 
-    def solve(state = nil)
+    def solve(state = nil, worst_case: false)
       return failure(:invalid, "circuit has errors") if circuit.diagnostics.any? { |item| item.severity == "error" }
 
       @state = state
@@ -40,6 +42,17 @@ module Breadkit
       circuit.components.each_value { |component| collect_component(component, unsupported) }
       return failure(:unsupported, "no DC model for #{unsupported.join(', ')}") unless unsupported.empty?
 
+      result = solve_operating_point
+      worst_case && result.success? ? add_bounds(result) : result
+    rescue ArgumentError, TypeError, KeyError => error
+      failure(:invalid, error.message)
+    end
+
+    private
+
+    attr_reader :circuit
+
+    def solve_operating_point
       active = Array.new(@diodes.length, true)
       seen = {}
       MAX_ITERATIONS.times do
@@ -79,17 +92,54 @@ module Breadkit
         active = next_active
       end
       failure(:nonconvergent, "diode states did not converge")
-    rescue ArgumentError, TypeError, KeyError => error
-      failure(:invalid, error.message)
     end
 
-    private
+    def add_bounds(result)
+      uncertain = @sources.filter_map do |source|
+        [:volts, source, source[:range]] if source[:range] && source[:range].uniq.length > 1
+      end + @resistors.filter_map do |resistor|
+        tolerance = resistor[:tolerance]
+        [:ohms, resistor, [resistor[:ohms] * (1 - tolerance), resistor[:ohms] * (1 + tolerance)]] if tolerance&.positive?
+      end
+      if (1 << uncertain.length) > MAX_BOUND_SCENARIOS
+        result.bounds_status = :too_complex
+        return result
+      end
 
-    attr_reader :circuit
+      result.voltage_ranges = result.voltages.transform_values { |value| [value, value] }
+      result.current_ranges = result.currents.transform_values { |value| [value, value] }
+      result.power_ranges = result.power.transform_values { |value| [value, value] }
+      original = uncertain.map { |key, item, _range| item[key] }
+      begin
+        (0...(1 << uncertain.length)).each do |scenario|
+          uncertain.each_with_index do |(key, item, range), index|
+            item[key] = range[(scenario >> index) & 1]
+          end
+          point = solve_operating_point
+          unless point.success?
+            result.bounds_status = :indeterminate
+            result.voltage_ranges = result.current_ranges = result.power_ranges = nil
+            return result
+          end
+          [[:voltage_ranges, point.voltages], [:current_ranges, point.currents], [:power_ranges, point.power]].each do |field, values|
+            bounds = result.public_send(field)
+            values.each do |name, value|
+              bounds[name] = [value, value] unless bounds.key?(name)
+              bounds[name][0] = [bounds[name][0], value].min
+              bounds[name][1] = [bounds[name][1], value].max
+            end
+          end
+        end
+      ensure
+        uncertain.each_with_index { |(key, item, _range), index| item[key] = original[index] }
+      end
+      result.bounds_status = :ok
+      result
+    end
 
     def failure(status, message)
       DCResult.new(status: status, voltages: {}, currents: {}, power: {}, floating: [],
-                   reference_nodes: [], assumptions: assumptions, errors: [message])
+                   reference_nodes: [], assumptions: assumptions, errors: [message], bounds_status: :unavailable)
     end
 
     def assumptions
@@ -123,7 +173,8 @@ module Breadkit
         value = Value.parse(component.value)
         raise ArgumentError, "invalid resistance #{component.ref}" unless value.finite? && value >= 0
 
-        @resistors << { name: component.ref, a: net_name("#{component.ref}.1"), b: net_name("#{component.ref}.2"), ohms: value }
+        @resistors << { name: component.ref, a: net_name("#{component.ref}.1"), b: net_name("#{component.ref}.2"),
+                        ohms: value, tolerance: Value.tolerance(component.value) }
       when "led", "diode"
         default_drop, default_resistance = DIODE_MODELS.fetch(part.id)
         drop = part.data.fetch("forward_voltage", default_drop).to_f

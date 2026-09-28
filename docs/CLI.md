@@ -37,6 +37,12 @@ assumptions and labels ungrounded voltages as relative. Unsupported parts or
 indeterminate circuits leave currents unknown. Supply ranges use their midpoint
 and resistor tolerances are not propagated into DC current estimates; check
 the highest supply voltage and lowest resistance when sizing components.
+Library callers can request `circuit.dc_analysis(state, worst_case: true)` to
+calculate voltage, current, and resistor power intervals over source voltage
+ranges and resistor tolerances. `bounds_status` is `:ok` only when all endpoint
+combinations were solved; `:too_complex` means the 512-scenario limit was
+reached, and `:indeterminate` means at least one combination could not be
+solved. The ordinary `voltages`, `currents`, and `power` fields remain nominal.
 
 `bom` reports quantities, not supplier part numbers or prices. `diff` compares
 resolved circuit content and ignores source locations.
