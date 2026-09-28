@@ -220,6 +220,7 @@ module Breadkit
 
         names = {}
         definitions = {}
+        total_holes = 0
         boards.each_with_index do |item, index|
           item = require_hash(item, "boards[#{index}]")
           name = item["name"]
@@ -236,7 +237,11 @@ module Breadkit
             raise DSLError, "invalid IR: boards[#{index}].definition.id must match type"
           end
           begin
-            board = Board.new(BoardDef.new(definition), split_rails: item.fetch("options").fetch("split_rails", false))
+            board_definition = BoardDef.new(definition)
+            total_holes += board_definition.hole_count
+            raise ArgumentError, "total board hole limit is #{BoardDef::MAX_HOLES}" if total_holes > BoardDef::MAX_HOLES
+
+            board = Board.new(board_definition, split_rails: item.fetch("options").fetch("split_rails", false))
             raise ArgumentError, "board has no holes" if board.holes.empty?
           rescue StandardError => e
             raise DSLError, "invalid IR: boards[#{index}].definition: #{e.message}"

@@ -2,6 +2,7 @@
 
 module Breadkit
   class BoardDef
+    MAX_HOLES = 10_000
     attr_reader :data
 
     def initialize(data)
@@ -20,9 +21,11 @@ module Breadkit
       if data["ground_labels"] && (!data["ground_labels"].is_a?(Array) || !data["ground_labels"].all? { |label| label.is_a?(String) && !label.empty? })
         raise ArgumentError, "ground_labels must be a list of names"
       end
-      unless data["id"] && terminal["columns"].to_i.positive? && terminal["rows"].is_a?(Array) && terminal["groups"].is_a?(Array)
+      unless data["id"] && terminal["columns"].is_a?(Integer) && terminal["columns"].positive? &&
+             terminal["rows"].is_a?(Array) && terminal["groups"].is_a?(Array)
         raise ArgumentError, "invalid board definition: #{data['id'] || '(missing id)'}"
       end
+      raise ArgumentError, "board definition exceeds #{MAX_HOLES} hole limit" if hole_count > MAX_HOLES
       rows = terminal.fetch("rows").map(&:to_s)
       rails = Array(data["rails"]).map { |rail| rail.fetch("id").to_s }
       unless Array(data["rails"]).all? { |rail| !rail.key?("polarity") || %w[+ -].include?(rail["polarity"]) }
@@ -71,6 +74,27 @@ module Breadkit
 
     def id
       data.fetch("id")
+    end
+
+    def hole_count
+      terminal = data.fetch("terminal")
+      count = terminal.fetch("columns") * terminal.fetch("rows").length
+      layout = data["rail_layout"]
+      return count unless layout
+
+      segments = [layout.fetch("segments"), layout.fetch("split_segments", layout.fetch("segments"))]
+      rail_count = segments.map do |ranges|
+        raise ArgumentError, "invalid rail segments" unless ranges.is_a?(Array)
+
+        ranges.sum do |range|
+          unless range.is_a?(Array) && range.length == 2 && range.all? { |value| value.is_a?(Integer) } &&
+                 range[0].positive? && range[1] >= range[0]
+            raise ArgumentError, "invalid rail segment"
+          end
+          range[1] - range[0] + 1
+        end
+      end.max
+      count + Array(data["rails"]).length * rail_count
     end
 
     def self.load(id, extra_paths: [], extra_definitions: [])

@@ -43,6 +43,8 @@ inspect lint findings, revise the source, and request an SVG without writing
 temporary circuit files. The tools do not generate the draft text themselves.
 Outputs are limited to 8 MiB. Installed optional gems must be available in
 the server's Ruby environment.
+Draft lint uses the built-in rule configuration. It does not load the project's
+`.bklint.yml`, because that file may request Ruby code through `require`.
 
 All project paths must remain inside the configured root, including symlink
 targets and referenced part or board definition files. Accepted file inputs are

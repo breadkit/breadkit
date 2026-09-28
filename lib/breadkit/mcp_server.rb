@@ -87,7 +87,12 @@ module Breadkit
     end
 
     def resolve_draft(format, source)
-      summary(load_draft(format, source))
+      result = summary(load_draft(format, source))
+      result[:diagnostics].each do |diagnostic|
+        location = diagnostic[:location]
+        location[:path] = "draft.bk.#{format == 'yaml' ? 'yml' : 'toml'}" if location && location[:path] == draft_path(format)
+      end
+      result
     end
 
     def lint_draft(format, source)

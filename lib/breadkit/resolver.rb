@@ -37,14 +37,25 @@ module Breadkit
 
           names[name.downcase] = true
         end
-        boards = @document.boards.to_h do |item|
+        definitions = @document.boards.map do |item|
           definition = BoardDef.load(item[:type], extra_paths: @document.board_paths,
                                      extra_definitions: @document.board_definitions)
+          [item, definition]
+        rescue StandardError => e
+          @diagnostics << diagnostic(:unknown_board, "error", e.message, nil)
+          [item, BoardDef.load("full")]
+        end
+        if definitions.sum { |_item, definition| definition.hole_count } > BoardDef::MAX_HOLES
+          raise DSLError, "total board hole limit is #{BoardDef::MAX_HOLES}"
+        end
+        boards = definitions.to_h do |item, definition|
           [item[:name], Board.new(definition, split_rails: item[:options][:split_rails] || false)]
         rescue StandardError => e
           @diagnostics << diagnostic(:unknown_board, "error", e.message, nil)
           [item[:name], Board.new(BoardDef.load("full"))]
         end
+        raise DSLError, "total board hole limit is #{BoardDef::MAX_HOLES}" if boards.values.sum { |board| board.holes.length } > BoardDef::MAX_HOLES
+
         return BoardSet.new(boards)
       end
 

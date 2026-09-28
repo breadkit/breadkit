@@ -118,6 +118,20 @@ RSpec.describe "named breadboards" do
     expect { Breadkit::Resolver.new.call(document) }.to raise_error(Breadkit::DSLError, /duplicate board name/)
   end
 
+  it "rejects a multi-board circuit that exceeds the combined hole limit" do
+    document = Breadkit::Document.new
+    document.boards = (1..13).map { |number| { name: "B#{number}", type: "full", options: {} } }
+
+    expect { Breadkit::Resolver.new.call(document) }.to raise_error(Breadkit::DSLError, /total board hole limit/)
+
+    valid = circuit('board :mini, as: :B1; board :mini, as: :B2').to_ir
+    full = Breadkit::BoardDef.load("full").data
+    valid[:boards] = (1..13).map do |number|
+      { name: "B#{number}", type: "full", options: {}, definition: full }
+    end
+    expect { Breadkit::IR::Reader.new.read(valid) }.to raise_error(Breadkit::DSLError, /total board hole limit/)
+  end
+
   it "loads named boards from declarative YAML and TOML" do
     Dir.mktmpdir do |dir|
       yaml = File.join(dir, "boards.bk.yml")

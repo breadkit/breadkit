@@ -39,4 +39,14 @@ RSpec.describe "isolated and row-strip boards" do
     grouped = data.merge("terminal" => data.fetch("terminal").merge("strip_direction" => "row", "groups" => [%w[a b]] + rows.drop(2).map { |row| [row] }))
     expect { Breadkit::BoardDef.new(grouped) }.to raise_error(ArgumentError, /one terminal row/)
   end
+
+  it "rejects board definitions that would materialize too many holes" do
+    data = Breadkit::BoardDef.load("mini").data
+    huge_terminal = data.merge("terminal" => data.fetch("terminal").merge("columns" => 100_000_000))
+    expect { Breadkit::BoardDef.new(huge_terminal) }.to raise_error(ArgumentError, /hole limit/)
+
+    full = Breadkit::BoardDef.load("full").data
+    huge_rails = full.merge("rail_layout" => full.fetch("rail_layout").merge("segments" => [[1, 100_000_000]]))
+    expect { Breadkit::BoardDef.new(huge_rails) }.to raise_error(ArgumentError, /hole limit/)
+  end
 end

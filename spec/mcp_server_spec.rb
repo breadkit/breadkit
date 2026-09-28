@@ -85,6 +85,37 @@ RSpec.describe "MCP stdio server" do
     end
   end
 
+  it "returns relative diagnostic paths for in-memory drafts" do
+    Dir.mktmpdir do |root|
+      service = Breadkit::MCPServer.new(root: root).server
+      source = "board: mini\nwires:\n  - {from: z99, to: a1}\n"
+      response = service.tools.fetch("breadkit_resolve_source").call(format: "yaml", source: source)
+
+      expect(response.error?).to be(false)
+      diagnostics = response.structured_content.fetch(:diagnostics)
+      expect(diagnostics.find { |item| item.fetch(:code) == "invalid_hole" }.dig(:location, :path)).to eq("draft.bk.yml")
+    end
+  end
+
+  it "rejects oversized custom boards before allocating holes" do
+    Dir.mktmpdir do |root|
+      File.write(File.join(root, "huge.yml"), <<~YAML)
+        id: huge
+        terminal:
+          columns: 100000000
+          rows: [a]
+          groups: [[a]]
+      YAML
+      service = Breadkit::MCPServer.new(root: root).server
+      response = service.tools.fetch("breadkit_resolve_source")
+                        .call(format: "yaml", source: "use_boards: [huge.yml]\nboard: huge\n")
+
+      expect(response.error?).to be(false)
+      expect(response.structured_content.fetch(:valid)).to be(false)
+      expect(response.structured_content.fetch(:diagnostics).map { |item| item.fetch(:message) }.join).to include("hole limit")
+    end
+  end
+
   it "rejects in-memory drafts that reference definitions outside the root" do
     Dir.mktmpdir do |parent|
       root = File.join(parent, "project")
