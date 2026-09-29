@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Analysis and safety
+
+- Bound supported DC voltages, currents, and resistor power across supply ranges and resistor tolerances, including interior resistor-power peaks and correlated voltage differences. Report when diode switching or model limits prevent certified bounds.
+- Propagate declared voltage ranges from offboard power outputs and add a datasheet-rated Kingbright WP7113ID LED without assigning unsupported ratings to generic LEDs.
+- Limit custom board size before materializing holes.
+
+### Integrations and examples
+
+- Resolve, lint, and render in-memory YAML or TOML drafts through the MCP server without evaluating Ruby source.
+- Add an English circuit cookbook linking ten working examples and their available diagrams.
+
 ## 0.2.0 — 2026-09-28
 
 ### Circuit authoring
