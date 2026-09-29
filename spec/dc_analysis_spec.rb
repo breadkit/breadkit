@@ -157,6 +157,39 @@ RSpec.describe Breadkit::DCAnalysis do
     expect(result.voltage_ranges.fetch(midpoint).last).to be_within(1e-9).of(2.625)
   end
 
+  it "bounds correlated voltage differences within one DC domain" do
+    circuit = resolve(<<~DSL)
+      board :mini
+      supply :BAT, voltage: 3.0..4.2, plus: "b1", minus: "b7"
+      resistor :R1, "1k 5%", pins: %w[a1 a3]
+      resistor :R2, "1k 5%", pins: %w[b3 a7]
+    DSL
+    result = circuit.dc_analysis(nil, worst_case: true)
+    plus = circuit.net_of("a1").name
+    middle = circuit.net_of("a3").name
+    ground = circuit.net_of("a7").name
+
+    expect(result.bounds_status).to eq(:ok)
+    expect(result.voltage_difference_range(plus, middle)).to all(be_a(Float))
+    expect(result.voltage_difference_range(plus, middle).first).to be_within(1e-9).of(1.425)
+    expect(result.voltage_difference_range(plus, middle).last).to be_within(1e-9).of(2.205)
+    expect(result.voltage_difference_range(plus, ground)).to eq([3.0, 4.2])
+    expect(result.voltage_difference_range(middle, middle)).to eq([0.0, 0.0])
+    expect(circuit.dc_analysis.voltage_difference_range(plus, middle)).to be_nil
+  end
+
+  it "does not compare voltages across independent DC domains" do
+    circuit = resolve(<<~DSL)
+      board :mini
+      supply :LEFT, voltage: 3.0..4.2, plus: "a1", minus: "a3"
+      supply :RIGHT, voltage: 5, plus: "a5", minus: "a7"
+    DSL
+    result = circuit.dc_analysis(nil, worst_case: true)
+
+    expect(result.bounds_status).to eq(:ok)
+    expect(result.voltage_difference_range(circuit.net_of("a1").name, circuit.net_of("a5").name)).to be_nil
+  end
+
   it "finds resistor power peaks inside a tolerance interval" do
     circuit = resolve(<<~DSL)
       board :mini
@@ -208,6 +241,8 @@ RSpec.describe Breadkit::DCAnalysis do
 
     expect(result.bounds_status).to eq(:endpoint_only)
     expect(result.current_ranges.fetch("D1").last).to be > result.currents.fetch("D1")
+    expect(result.voltage_scenarios.first).not_to equal(result)
+    expect(result.voltage_scenarios.first.voltages).to eq(result.voltages)
   end
 
   it "does not assign an invented voltage to a diode without a return path" do

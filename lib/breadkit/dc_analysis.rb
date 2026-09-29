@@ -5,9 +5,21 @@ require "matrix"
 module Breadkit
   DCResult = Struct.new(:status, :voltages, :currents, :power, :floating, :reference_nodes,
                         :assumptions, :errors, :voltage_ranges, :current_ranges, :power_ranges,
-                        :bounds_status, keyword_init: true) do
+                        :bounds_status, :voltage_domains, :voltage_scenarios, keyword_init: true) do
     def success?
       status == :ok
+    end
+
+    def voltage_difference_range(left, right)
+      return unless %i[ok endpoint_only].include?(bounds_status) && voltage_scenarios
+
+      return unless voltage_scenarios.all? do |point|
+        domains = point.voltage_domains
+        domains.key?(left) && domains[left] == domains[right]
+      end
+
+      differences = voltage_scenarios.map { |point| point.voltages.fetch(left) - point.voltages.fetch(right) }
+      differences.minmax
     end
   end
 
@@ -63,7 +75,7 @@ module Breadkit
         solved = solve_linear(active)
         return solved if solved.is_a?(DCResult)
 
-        voltages, source_currents, references, floating = solved
+        voltages, source_currents, references, floating, domains = solved
         next_active = @diodes.map do |diode|
           anode, cathode, drop, resistance = diode.values_at(:anode, :cathode, :drop, :resistance)
           voltages.fetch(anode) - voltages.fetch(cathode) > drop - 1e-9 &&
@@ -87,7 +99,8 @@ module Breadkit
             currents[diode[:name]] = current
           end
           return DCResult.new(status: :ok, voltages: voltages, currents: currents, power: power,
-                              floating: floating, reference_nodes: references, assumptions: assumptions, errors: [])
+                              floating: floating, reference_nodes: references, assumptions: assumptions, errors: [],
+                              voltage_domains: domains)
         end
         active = next_active
       end
@@ -135,6 +148,7 @@ module Breadkit
       ensure
         uncertain.each_with_index { |(key, item, _range), index| item[key] = original[index] }
       end
+      result.voltage_scenarios = [result.dup, *points]
       certified = add_resistor_power_extrema(result, uncertain, points)
       result.bounds_status = (@diodes.any? && uncertain.any?) || !certified ? :endpoint_only : :ok
       result
@@ -299,7 +313,7 @@ module Breadkit
 
       voltages = nodes.to_h { |node| [node, index.key?(node) ? solution.fetch(index.fetch(node)) : 0.0] }
       currents = ideal.each_with_index.to_h { |item, position| [item[:name], solution.fetch(variables.length + position)] }
-      [voltages, currents, references, floating]
+      [voltages, currents, references, floating, group_of]
     rescue ExceptionForMatrix::ErrNotRegular
       failure(:singular, "DC equations are inconsistent or underdetermined")
     end

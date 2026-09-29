@@ -82,6 +82,7 @@ jobs:
           for field in voltage_ranges current_ranges power_ranges bounds_status; do
             rbs -I sig method Breadkit::DCResult "$field" | grep -Fq 'accessibility: public'
           done
+          rbs -I sig method Breadkit::DCResult voltage_difference_range | grep -Fq '::String left, ::String right'
 
   vscode:
     name: VS Code extension

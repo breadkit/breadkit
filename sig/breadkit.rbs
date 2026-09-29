@@ -100,7 +100,10 @@ module Breadkit
     attr_reader current_ranges: Hash[String, [Float, Float]]?
     attr_reader power_ranges: Hash[String, [Float, Float]]?
     attr_reader bounds_status: Symbol?
+    attr_reader voltage_domains: Hash[String, Integer]?
+    attr_reader voltage_scenarios: Array[DCResult]?
     def success?: () -> bool
+    def voltage_difference_range: (String left, String right) -> [Float, Float]?
   end
 
   class Circuit

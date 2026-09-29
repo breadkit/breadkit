@@ -50,6 +50,11 @@ is exceeded, and `:indeterminate`
 when at least one combination cannot be solved. The ordinary `voltages`,
 `currents`, and `power` fields remain nominal. Endpoint-only ranges do not
 certify a safe limit between the sampled endpoints.
+Use `result.voltage_difference_range(net_a.name, net_b.name)` to bound the
+voltage between two resolved nets from the same scenarios. This preserves their
+correlation; subtracting two separate `voltage_ranges` does not. The method
+returns `nil` when bounds are unavailable or the nets are in independent DC
+domains. A result with `bounds_status: :endpoint_only` is still an estimate.
 
 `bom` reports quantities, not supplier part numbers or prices. `diff` compares
 resolved circuit content and ignores source locations.
