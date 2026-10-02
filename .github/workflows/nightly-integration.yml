@@ -46,7 +46,7 @@ jobs:
           path: breadkit-parts
           persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y librsvg2-bin libvips-dev fonts-noto-cjk
-      - uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073 # v1.324.0
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
         with:
           ruby-version: "4.0"
           bundler: default
