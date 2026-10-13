@@ -1,0 +1,6 @@
+id: pico_2_w
+extends: pico
+datasheet_url: https://datasheets.raspberrypi.com/picow/pico-2-w-datasheet.pdf
+provides:
+  - {positive: 3V3_OUT, negative: GND7, voltage: 3.3}
+render: {shape: module, label: Pico 2 W, size_mm: [51, 21], fill: "#2C2C2A", stroke: "#171715", text_color: "#FFFFFF"}

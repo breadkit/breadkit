@@ -83,6 +83,9 @@ Run `bundle exec ruby exe/breadkit nets examples/05_sensor_demo.bk.rb` from a
 source checkout to inspect the full circuit. The optional 5 V emitter layer is
 an alternative: disconnect its 3.3 V feed before using it.
 
+For the Pico 2 WH fermentation logger with an OLED, two SHT31 sensors, switches, and IR, see the
+[circuit source](examples/11_pico_2_w_sensors.bk.rb) and [SVG diagram](site/assets/11_pico_2_w_sensors.svg).
+
 ## Explore
 
 - [User guide](https://breadkit.github.io/breadkit/guide/) and [circuit gallery](https://breadkit.github.io/breadkit/gallery/)

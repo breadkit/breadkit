@@ -302,6 +302,12 @@ RSpec.describe "resolver and DSL regressions" do
     expect(sensor.components.fetch("IR_RX").pins.values.map(&:hole_id)).to eq(%w[c34 c35 c36])
     expect(sensor.components.fetch("IR_TX").pins.values.map(&:hole_id)).to eq(%w[g34 g35])
 
+    pico_2_w_demo = Breadkit.load(File.expand_path("../examples/11_pico_2_w_sensors.bk.rb", __dir__))
+    expect(pico_2_w_demo.diagnostics).to be_empty
+    pico_2_w = pico_2_w_demo.components.fetch("PICO")
+    expect(pico_2_w.pins.values_at("GP0", "GP1", "GND1", "GP2", "GP3", "GP4", "3V3_OUT", "GND7").map { |pin| [pin.number, pin.hole_id] })
+      .to eq([%w[1 c1], %w[2 c2], %w[3 c3], %w[4 c4], %w[5 c5], %w[6 c6], %w[36 h5], %w[38 h3]])
+
     builder = Breadkit::DSL::Builder.new(base_dir: File.expand_path("..", __dir__))
     builder.instance_eval('use_parts "examples/parts/pico_w.yml"; board :full; part :PICO, :pico_w, at: "c1"', "review.bk.rb", 1)
     pico_w = Breadkit::Resolver.new.call(builder.document)
