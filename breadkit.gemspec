@@ -32,6 +32,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "matrix", ">= 0.4"
   spec.add_dependency "mcp", "~> 1.6"
-  spec.add_dependency "tomlrb", "~> 2.0"
+  spec.add_dependency "tomlrb", ">= 2", "< 4"
 
 end
