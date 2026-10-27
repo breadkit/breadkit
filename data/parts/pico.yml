@@ -4,12 +4,12 @@ category: module
 placement: footprint
 straddle: true
 pins:
-  - {num: 1, name: GP0, type: gpio, max_voltage: 3.3, output_capable: true}
-  - {num: 2, name: GP1, type: gpio, max_voltage: 3.3, output_capable: true}
-  - {num: 3, name: GND1, type: ground, aliases: [GND]}
-  - {num: 4, name: GP2, type: gpio, max_voltage: 3.3, output_capable: true}
-  - {num: 5, name: GP3, type: gpio, max_voltage: 3.3, output_capable: true}
-  - {num: 6, name: GP4, type: gpio, max_voltage: 3.3, output_capable: true}
+  - {num: 1, name: GP0, type: gpio, label: true, max_voltage: 3.3, output_capable: true}
+  - {num: 2, name: GP1, type: gpio, label: true, max_voltage: 3.3, output_capable: true}
+  - {num: 3, name: GND1, type: ground, label: GND, aliases: [GND]}
+  - {num: 4, name: GP2, type: gpio, label: true, max_voltage: 3.3, output_capable: true}
+  - {num: 5, name: GP3, type: gpio, label: true, max_voltage: 3.3, output_capable: true}
+  - {num: 6, name: GP4, type: gpio, label: true, max_voltage: 3.3, output_capable: true}
   - {num: 7, name: GP5, type: gpio, max_voltage: 3.3, output_capable: true}
   - {num: 8, name: GND2, type: ground}
   - {num: 9, name: GP6, type: gpio, max_voltage: 3.3, output_capable: true}
@@ -38,12 +38,12 @@ pins:
   - {num: 32, name: GP27, type: gpio, max_voltage: 3.3, output_capable: true}
   - {num: 33, name: AGND, type: ground}
   - {num: 34, name: GP28, type: gpio, max_voltage: 3.3, output_capable: true}
-  - {num: 35, name: ADC_VREF, type: analog}
-  - {num: 36, name: 3V3_OUT, type: power, aliases: [3V3]}
-  - {num: 37, name: 3V3_EN, type: input}
-  - {num: 38, name: GND7, type: ground}
-  - {num: 39, name: VSYS, type: power}
-  - {num: 40, name: VBUS, type: power}
+  - {num: 35, name: ADC_VREF, type: analog, label: VREF}
+  - {num: 36, name: 3V3_OUT, type: power, label: 3V3, aliases: [3V3]}
+  - {num: 37, name: 3V3_EN, type: input, label: EN}
+  - {num: 38, name: GND7, type: ground, label: GND}
+  - {num: 39, name: VSYS, type: power, label: true}
+  - {num: 40, name: VBUS, type: power, label: true}
 internal: [[GND1, GND2], [GND2, GND3], [GND3, GND4], [GND4, GND5], [GND5, GND6], [GND6, AGND], [AGND, GND7]]
 footprint:
   "1": [0, 0]

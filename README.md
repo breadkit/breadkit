@@ -85,6 +85,13 @@ an alternative: disconnect its 3.3 V feed before using it.
 
 For the Pico 2 WH fermentation logger with an OLED, two SHT31 sensors, switches, and IR, see the
 [circuit source](examples/11_pico_2_w_sensors.bk.rb) and [SVG diagram](site/assets/11_pico_2_w_sensors.svg).
+The diagram uses the sensor demo's dark theme and English labels. Regenerate it
+from a sibling `breadkit-render` checkout:
+
+```sh
+bundle exec ruby -Ilib exe/bkrender ../breadkit/examples/11_pico_2_w_sensors.bk.rb \
+  --theme dark --crop none -o ../breadkit/site/assets/11_pico_2_w_sensors.svg
+```
 
 ## Explore
 
